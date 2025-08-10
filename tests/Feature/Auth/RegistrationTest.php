@@ -1,9 +1,17 @@
 <?php
 
+/**
+ * REGISTRATION TESTS DISABLED
+ * Registration feature has been disabled - only admin can create users
+ * These tests are commented out to prevent failures
+ */
+
 use Livewire\Volt\Volt;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
+// Registration tests disabled - feature has been turned off
+/*
 test('registration screen can be rendered', function () {
   $response = $this->get('/register');
 
@@ -25,3 +33,4 @@ test('new users can register', function () {
 
   $this->assertAuthenticated();
 });
+*/

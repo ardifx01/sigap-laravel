@@ -13,9 +13,10 @@
             @else
                 <a href="{{ route('login') }}" class="btn btn-secondary me-2">Log in</a>
 
-                @if (Route::has('register'))
+                {{-- Register button disabled - only admin can create users --}}
+                {{-- @if (Route::has('register'))
                     <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
-                @endif
+                @endif --}}
             @endauth
           @endif
       </div>

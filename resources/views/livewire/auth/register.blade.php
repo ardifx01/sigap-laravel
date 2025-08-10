@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * REGISTER FEATURE DISABLED
+ * This component is disabled - only admin can create users
+ * Route has been commented out in routes/auth.php
+ */
+
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
