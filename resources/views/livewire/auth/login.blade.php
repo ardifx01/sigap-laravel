@@ -112,11 +112,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
         <div class="mb-6 form-password-toggle">
             <div class="d-flex justify-content-between">
                 <label for="password" class="form-label">{{ __('Password') }}</label>
-                @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" wire:navigate>
-                        <span>{{ __('Forgot Password?') }}</span>
-                    </a>
-                @endif
+                {{-- Forgot password link removed --}}
             </div>
             <div class="input-group input-group-merge">
                 <input
