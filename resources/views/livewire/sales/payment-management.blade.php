@@ -1,0 +1,365 @@
+<div>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Payment & Billing System</h4>
+            <p class="text-muted mb-0">Kelola invoice dan pembayaran pelanggan</p>
+        </div>
+        <button wire:click="openCreateModal" class="btn btn-primary">
+            <i class="bx bx-plus me-1"></i>
+            Buat Invoice
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-warning">
+                                <i class="bx bx-money"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Total Piutang</small>
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-0 me-1">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded-circle bg-label-danger">
+                                <i class="bx bx-time-five"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Overdue</small>
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-0 me-1 text-danger">{{ $overdueCount }}</h6>
+                                <small class="text-muted fw-semibold">invoice</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Cari Invoice</label>
+                    <input type="text" wire:model.live="search" class="form-control" placeholder="Nomor invoice, order, atau toko...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter Status</label>
+                    <select wire:model.live="statusFilter" class="form-select">
+                        <option value="">Semua Status</option>
+                        <option value="belum_lunas">Belum Lunas</option>
+                        <option value="sebagian">Sebagian</option>
+                        <option value="lunas">Lunas</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter Pelanggan</label>
+                    <select wire:model.live="customerFilter" class="form-select">
+                        <option value="">Semua Pelanggan</option>
+                        @foreach($customers as $customer)
+                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Pelanggan</th>
+                            <th>Tagihan</th>
+                            <th>Dibayar</th>
+                            <th>Sisa</th>
+                            <th>Status</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($payments as $payment)
+                            <tr class="{{ $payment->isOverdue() ? 'table-danger' : '' }}">
+                                <td>
+                                    <div>
+                                        <h6 class="mb-0">{{ $payment->nomor_invoice }}</h6>
+                                        <small class="text-muted">{{ $payment->order->nomor_order }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-medium">{{ $payment->customer->nama_toko }}</div>
+                                        <small class="text-muted">{{ $payment->customer->phone }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium">Rp {{ number_format($payment->jumlah_tagihan, 0, ',', '.') }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-success">Rp {{ number_format($payment->jumlah_dibayar, 0, ',', '.') }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium {{ $payment->sisa_tagihan > 0 ? 'text-warning' : 'text-success' }}">
+                                        Rp {{ number_format($payment->sisa_tagihan, 0, ',', '.') }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-label-{{
+                                        $payment->status === 'lunas' ? 'success' :
+                                        ($payment->status === 'sebagian' ? 'warning' : 'danger')
+                                    }}">
+                                        {{ ucfirst(str_replace('_', ' ', $payment->status)) }}
+                                    </span>
+                                    @if($payment->isOverdue())
+                                        <br><small class="text-danger">{{ $payment->getDaysOverdue() }} hari terlambat</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-medium">{{ $payment->tanggal_jatuh_tempo->format('d/m/Y') }}</div>
+                                        @if($payment->tanggal_pembayaran)
+                                            <small class="text-success">Dibayar: {{ $payment->tanggal_pembayaran->format('d/m/Y') }}</small>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                            Aksi
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @if($payment->status !== 'lunas')
+                                                <a class="dropdown-item" href="#" wire:click.prevent="openProofModal({{ $payment->id }})">
+                                                    <i class="bx bx-upload me-1"></i> Upload Bukti
+                                                </a>
+                                                <a class="dropdown-item" href="#" wire:click.prevent="openEditModal({{ $payment->id }})">
+                                                    <i class="bx bx-edit me-1"></i> Edit
+                                                </a>
+                                            @endif
+                                            @if($payment->getFirstMediaUrl('payment_proofs'))
+                                                <a class="dropdown-item" href="{{ $payment->getFirstMediaUrl('payment_proofs') }}" target="_blank">
+                                                    <i class="bx bx-image me-1"></i> Lihat Bukti
+                                                </a>
+                                            @endif
+                                            @if($payment->jumlah_dibayar == 0)
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item text-danger" href="#"
+                                                   wire:click.prevent="deletePayment({{ $payment->id }})"
+                                                   onclick="return confirm('Yakin ingin menghapus invoice ini?')">
+                                                    <i class="bx bx-trash me-1"></i> Hapus
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="bx bx-receipt text-muted" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-2">Belum ada invoice</p>
+                                    <button wire:click="openCreateModal" class="btn btn-primary btn-sm">
+                                        <i class="bx bx-plus me-1"></i> Buat Invoice Pertama
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-3">
+                {{ $payments->links() }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Payment Modal -->
+    @if($showPaymentModal)
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ $editMode ? 'Edit Invoice' : 'Buat Invoice Baru' }}</h5>
+                        <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
+                    </div>
+                    <form wire:submit.prevent="save">
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <!-- Order Selection -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Pilih Order <span class="text-danger">*</span></label>
+                                    <select wire:model="order_id" wire:change="updatedOrderId" class="form-select @error('order_id') is-invalid @enderror" {{ $editMode ? 'disabled' : '' }}>
+                                        <option value="">-- Pilih Order --</option>
+                                        @foreach($orders as $order)
+                                            <option value="{{ $order->id }}">
+                                                {{ $order->nomor_order }} - {{ $order->customer->nama_toko }}
+                                                (Rp {{ number_format($order->total_amount, 0, ',', '.') }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('order_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Customer (Auto-filled) -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Pelanggan <span class="text-danger">*</span></label>
+                                    <select wire:model="customer_id" class="form-select @error('customer_id') is-invalid @enderror" disabled>
+                                        <option value="">-- Pilih Pelanggan --</option>
+                                        @foreach($customers as $customer)
+                                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('customer_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Amount -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Jumlah Tagihan <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" wire:model="jumlah_tagihan" class="form-control @error('jumlah_tagihan') is-invalid @enderror" min="0" step="100">
+                                    </div>
+                                    @error('jumlah_tagihan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Payment Method -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
+                                    <select wire:model="metode_pembayaran" class="form-select @error('metode_pembayaran') is-invalid @enderror">
+                                        <option value="cash">Cash</option>
+                                        <option value="transfer">Transfer Bank</option>
+                                        <option value="credit">Kredit</option>
+                                    </select>
+                                    @error('metode_pembayaran') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Due Date -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Tanggal Jatuh Tempo <span class="text-danger">*</span></label>
+                                    <input type="date" wire:model="tanggal_jatuh_tempo" class="form-control @error('tanggal_jatuh_tempo') is-invalid @enderror" min="{{ date('Y-m-d') }}">
+                                    @error('tanggal_jatuh_tempo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Notes -->
+                                <div class="col-12">
+                                    <label class="form-label">Catatan</label>
+                                    <textarea wire:model="catatan" class="form-control @error('catatan') is-invalid @enderror" rows="3" placeholder="Catatan tambahan untuk invoice..."></textarea>
+                                    @error('catatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closePaymentModal">Batal</button>
+                            <button type="submit" class="btn btn-primary">
+                                {{ $editMode ? 'Update Invoice' : 'Buat Invoice' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    @endif
+
+    <!-- Upload Payment Proof Modal -->
+    @if($showProofModal)
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Upload Bukti Pembayaran</h5>
+                        <button type="button" class="btn-close" wire:click="closeProofModal"></button>
+                    </div>
+                    <form wire:submit.prevent="uploadPaymentProof">
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="bx bx-info-circle me-2"></i>
+                                Upload bukti transfer atau pembayaran dari customer untuk memperbarui status invoice.
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Payment Amount -->
+                                <div class="col-12">
+                                    <label class="form-label">Jumlah Dibayar <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" wire:model="proofAmount" class="form-control @error('proofAmount') is-invalid @enderror" min="1" step="100">
+                                    </div>
+                                    @error('proofAmount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Proof Photo -->
+                                <div class="col-12">
+                                    <label class="form-label">Foto Bukti Transfer <span class="text-danger">*</span></label>
+                                    <input type="file" wire:model="proofPhoto" class="form-control @error('proofPhoto') is-invalid @enderror" accept="image/*">
+                                    @error('proofPhoto') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @if($proofPhoto)
+                                        <div class="mt-2">
+                                            <img src="{{ $proofPhoto->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                                        </div>
+                                    @endif
+                                    <small class="text-muted">Upload screenshot atau foto bukti transfer</small>
+                                </div>
+
+                                <!-- Notes -->
+                                <div class="col-12">
+                                    <label class="form-label">Catatan</label>
+                                    <textarea wire:model="proofNotes" class="form-control @error('proofNotes') is-invalid @enderror" rows="2" placeholder="Catatan pembayaran..."></textarea>
+                                    @error('proofNotes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" wire:click="closeProofModal">Batal</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bx bx-upload me-1"></i> Upload Bukti
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    @endif
+
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+</div>
