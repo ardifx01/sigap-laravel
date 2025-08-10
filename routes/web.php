@@ -4,7 +4,20 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::get('/', function () {
-  return view('welcome');
+    // Jika user sudah login, redirect ke dashboard sesuai role
+    if (auth()->check()) {
+        $user = auth()->user();
+        return match($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'sales' => redirect()->route('sales.dashboard'),
+            'gudang' => redirect()->route('gudang.dashboard'),
+            'supir' => redirect()->route('supir.dashboard'),
+            default => redirect()->route('login'),
+        };
+    }
+
+    // Jika belum login, redirect ke halaman login
+    return redirect()->route('login');
 })->name('home');
 
 // Role-based dashboard redirects
