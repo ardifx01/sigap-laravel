@@ -106,32 +106,32 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="col-lg-8">
+        <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Aksi Cepat</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('gudang.orders') }}" class="btn btn-primary w-100">
+                        <div class="col-6">
+                            <a href="{{ route('gudang.orders') }}" class="btn btn-outline-primary w-100">
                                 <i class="bx bx-check-circle me-1"></i>
                                 Konfirmasi Order
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('gudang.products') }}" class="btn btn-outline-primary w-100">
+                        <div class="col-6">
+                            <a href="{{ route('gudang.products') }}" class="btn btn-outline-success w-100">
                                 <i class="bx bx-plus-circle me-1"></i>
                                 Kelola Produk
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('gudang.deliveries') }}" class="btn btn-outline-success w-100">
+                        <div class="col-6">
+                            <a href="{{ route('gudang.deliveries') }}" class="btn btn-outline-info w-100">
                                 <i class="bx bx-truck me-1"></i>
                                 Atur Pengiriman
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-6">
                             <a href="{{ route('gudang.backorders') }}" class="btn btn-outline-warning w-100">
                                 <i class="bx bx-error-circle me-1"></i>
                                 Stok Kosong
@@ -143,7 +143,7 @@
         </div>
 
         <!-- Inventory Alert -->
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Alert Stok</h5>

@@ -106,32 +106,32 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="col-lg-8">
+        <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Aksi Cepat</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('supir.k3-checklist') }}" class="btn btn-primary w-100">
-                                <i class="bx bx-shield-check me-1"></i>
+                        <div class="col-6">
+                            <a href="{{ route('supir.k3-checklist') }}" class="btn btn-outline-primary w-100">
+                                <i class="bx bx-shield me-1"></i>
                                 K3 Checklist
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('supir.deliveries') }}" class="btn btn-outline-primary w-100">
+                        <div class="col-6">
+                            <a href="{{ route('supir.deliveries') }}" class="btn btn-outline-success w-100">
                                 <i class="bx bx-package me-1"></i>
                                 Lihat Tugas
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('supir.tracking') }}" class="btn btn-outline-success w-100">
+                        <div class="col-6">
+                            <a href="{{ route('supir.tracking') }}" class="btn btn-outline-info w-100">
                                 <i class="bx bx-map me-1"></i>
                                 Update Lokasi
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-6">
                             <button class="btn btn-outline-warning w-100">
                                 <i class="bx bx-phone me-1"></i>
                                 Hubungi Gudang
@@ -143,7 +143,7 @@
         </div>
 
         <!-- K3 Status -->
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Status K3</h5>

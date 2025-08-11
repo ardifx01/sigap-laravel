@@ -116,32 +116,32 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="col-lg-8">
+        <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Aksi Cepat</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('sales.check-in') }}" class="btn btn-primary w-100">
+                        <div class="col-6">
+                            <a href="{{ route('sales.check-in') }}" class="btn btn-outline-primary w-100">
                                 <i class="bx bx-map-pin me-1"></i>
                                 Check-in Toko
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('sales.orders') }}" class="btn btn-outline-primary w-100">
+                        <div class="col-6">
+                            <a href="{{ route('sales.orders') }}" class="btn btn-outline-success w-100">
                                 <i class="bx bx-plus-circle me-1"></i>
                                 Buat Pre Order
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
-                            <a href="{{ route('sales.customers') }}" class="btn btn-outline-success w-100">
+                        <div class="col-6">
+                            <a href="{{ route('sales.customers') }}" class="btn btn-outline-info w-100">
                                 <i class="bx bx-user-plus me-1"></i>
                                 Kelola Pelanggan
                             </a>
                         </div>
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-6">
                             <a href="{{ route('sales.payments') }}" class="btn btn-outline-warning w-100">
                                 <i class="bx bx-credit-card me-1"></i>
                                 Penagihan
@@ -153,7 +153,7 @@
         </div>
 
         <!-- Today's Schedule -->
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Jadwal Hari Ini</h5>
