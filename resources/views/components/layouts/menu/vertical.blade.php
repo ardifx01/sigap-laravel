@@ -19,10 +19,59 @@
       <!-- Admin Menu -->
       <li class="menu-header small text-uppercase"><span class="menu-header-text">Admin</span></li>
 
+      <li class="menu-item {{ request()->is('admin/analytics*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.analytics') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-line-chart"></i>
+          <div class="text-truncate">Analytics</div>
+        </a>
+      </li>
+
       <li class="menu-item {{ request()->is('admin/users*') ? 'active' : '' }}">
         <a class="menu-link" href="{{ route('admin.users') }}" wire:navigate>
           <i class="menu-icon tf-icons bx bx-user"></i>
           <div class="text-truncate">Manajemen User</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ request()->is('admin/customers*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.customers') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-store"></i>
+          <div class="text-truncate">Data Pelanggan</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ request()->is('admin/products*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.products') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-package"></i>
+          <div class="text-truncate">Manajemen Produk</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ request()->is('admin/orders*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.orders') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-cart"></i>
+          <div class="text-truncate">Manajemen Order</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ request()->is('admin/deliveries*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.deliveries') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-truck"></i>
+          <div class="text-truncate">Manajemen Pengiriman</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ request()->is('admin/payments*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.payments') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-credit-card"></i>
+          <div class="text-truncate">Manajemen Pembayaran</div>
+        </a>
+      </li>
+
+      <li class="menu-item {{ request()->is('admin/backorders*') ? 'active' : '' }}">
+        <a class="menu-link" href="{{ route('admin.backorders') }}" wire:navigate>
+          <i class="menu-icon tf-icons bx bx-time"></i>
+          <div class="text-truncate">Manajemen Backorder</div>
         </a>
       </li>
 

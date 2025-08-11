@@ -36,7 +36,14 @@ Route::get('dashboard', function () {
 // Admin Routes
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::view('dashboard', 'admin.dashboard')->name('dashboard');
+    Route::view('analytics', 'admin.analytics')->name('analytics');
     Route::view('users', 'admin.users')->name('users');
+    Route::view('customers', 'admin.customers')->name('customers');
+    Route::view('products', 'admin.products')->name('products');
+    Route::view('orders', 'admin.orders')->name('orders');
+    Route::view('deliveries', 'admin.deliveries')->name('deliveries');
+    Route::view('payments', 'admin.payments')->name('payments');
+    Route::view('backorders', 'admin.backorders')->name('backorders');
     Route::view('reports', 'admin.reports')->name('reports');
     Route::view('activity-logs', 'admin.activity-logs')->name('activity-logs');
 });
