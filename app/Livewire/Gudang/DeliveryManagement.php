@@ -105,9 +105,9 @@ class DeliveryManagement extends Component
 
             $this->showAssignModal = false;
             $this->resetAssignForm();
-            
+
             session()->flash('success', 'Pengiriman berhasil diassign ke supir!');
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal assign pengiriman: ' . $e->getMessage());
         }
@@ -124,18 +124,18 @@ class DeliveryManagement extends Component
     {
         try {
             $delivery = Delivery::find($deliveryId);
-            
+
             if ($delivery && in_array($delivery->status, ['assigned', 'k3_checked'])) {
                 $delivery->update(['status' => 'cancelled']);
-                
+
                 // Update order status back to confirmed
                 $delivery->order->update(['status' => 'confirmed']);
-                
+
                 session()->flash('success', 'Pengiriman berhasil dibatalkan!');
             } else {
                 session()->flash('error', 'Pengiriman tidak dapat dibatalkan!');
             }
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal membatalkan pengiriman: ' . $e->getMessage());
         }
@@ -184,12 +184,24 @@ class DeliveryManagement extends Component
                   ->get();
     }
 
+    public function getStatsProperty()
+    {
+        return [
+            'assigned' => Delivery::where('status', 'assigned')->count(),
+            'in_progress' => Delivery::where('status', 'in_progress')->count(),
+            'delivered_today' => Delivery::where('status', 'delivered')
+                                        ->whereDate('delivered_at', today())
+                                        ->count(),
+        ];
+    }
+
     public function render()
     {
         return view('livewire.gudang.delivery-management', [
             'deliveries' => $this->deliveries,
             'confirmedOrders' => $this->confirmedOrders,
             'availableSupirs' => $this->availableSupirs,
+            'stats' => $this->stats,
         ]);
     }
 }

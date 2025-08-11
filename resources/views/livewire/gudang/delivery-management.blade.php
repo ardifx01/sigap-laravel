@@ -52,7 +52,7 @@
                         </div>
                         <div>
                             <small class="text-muted d-block">Assigned</small>
-                            <h6 class="mb-0">{{ $deliveries->where('status', 'assigned')->count() }}</h6>
+                            <h6 class="mb-0">{{ $stats['assigned'] }}</h6>
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                         </div>
                         <div>
                             <small class="text-muted d-block">Dalam Perjalanan</small>
-                            <h6 class="mb-0">{{ $deliveries->where('status', 'in_progress')->count() }}</h6>
+                            <h6 class="mb-0">{{ $stats['in_progress'] }}</h6>
                         </div>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                         </div>
                         <div>
                             <small class="text-muted d-block">Delivered Hari Ini</small>
-                            <h6 class="mb-0">{{ $deliveries->where('status', 'delivered')->whereDate('delivered_at', today())->count() }}</h6>
+                            <h6 class="mb-0">{{ $stats['delivered_today'] }}</h6>
                         </div>
                     </div>
                 </div>
