@@ -103,7 +103,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Pencarian</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama toko, pemilik, atau telepon...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama toko atau telepon...">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Status</label>
@@ -145,10 +145,9 @@
                     <thead class="table-light">
                         <tr>
                             <th>Toko</th>
-                            <th>Pemilik</th>
                             <th>Kontak</th>
                             <th>Sales</th>
-                            <th>Credit Limit</th>
+                            <th>Limit Piutang</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -163,20 +162,19 @@
                                         <small class="text-muted">{{ Str::limit($customer->alamat, 30) }}</small>
                                     </div>
                                 </td>
-                                <td>{{ $customer->nama_pemilik }}</td>
                                 <td>
                                     <div>
-                                        <span class="fw-medium">{{ $customer->telepon }}</span>
-                                        @if($customer->email)
-                                            <br>
-                                            <small class="text-muted">{{ $customer->email }}</small>
-                                        @endif
+                                        <span class="fw-medium">{{ $customer->phone }}</span>
                                     </div>
                                 </td>
                                 <td>{{ $customer->sales->name ?? '-' }}</td>
                                 <td>
-                                    @if($customer->credit_limit)
-                                        <span class="fw-medium">Rp {{ number_format($customer->credit_limit, 0, ',', '.') }}</span>
+                                    @if($customer->limit_amount_piutang)
+                                        <div>
+                                            <span class="fw-medium">Rp {{ number_format($customer->limit_amount_piutang, 0, ',', '.') }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ $customer->limit_hari_piutang }} hari</small>
+                                        </div>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -224,7 +222,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="6" class="text-center py-4">
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="bx bx-store text-muted" style="font-size: 3rem;"></i>
                                         <p class="text-muted mt-2 mb-0">Tidak ada customer ditemukan</p>
@@ -262,24 +260,14 @@
                                     @error('nama_toko') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Nama Pemilik <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="nama_pemilik" class="form-control @error('nama_pemilik') is-invalid @enderror">
-                                    @error('nama_pemilik') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <label class="form-label">Telepon <span class="text-danger">*</span></label>
+                                    <input type="text" wire:model="phone" class="form-control @error('phone') is-invalid @enderror">
+                                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Alamat <span class="text-danger">*</span></label>
                                     <textarea wire:model="alamat" class="form-control @error('alamat') is-invalid @enderror" rows="3"></textarea>
                                     @error('alamat') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Telepon <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="telepon" class="form-control @error('telepon') is-invalid @enderror">
-                                    @error('telepon') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" wire:model="email" class="form-control @error('email') is-invalid @enderror">
-                                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Sales <span class="text-danger">*</span></label>
@@ -292,9 +280,14 @@
                                     @error('sales_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Credit Limit</label>
-                                    <input type="number" wire:model="credit_limit" class="form-control @error('credit_limit') is-invalid @enderror" min="0">
-                                    @error('credit_limit') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <label class="form-label">Limit Hari Piutang <span class="text-danger">*</span></label>
+                                    <input type="number" wire:model="limit_hari_piutang" class="form-control @error('limit_hari_piutang') is-invalid @enderror" min="1" max="365">
+                                    @error('limit_hari_piutang') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Limit Amount Piutang</label>
+                                    <input type="number" wire:model="limit_amount_piutang" class="form-control @error('limit_amount_piutang') is-invalid @enderror" min="0">
+                                    @error('limit_amount_piutang') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Latitude</label>

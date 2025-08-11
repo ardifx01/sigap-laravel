@@ -20,12 +20,11 @@ class CustomerManagement extends Component
     public $showCustomerModal = false;
     public $customerId;
     public $nama_toko;
-    public $nama_pemilik;
+    public $phone;
     public $alamat;
-    public $telepon;
-    public $email;
     public $sales_id;
-    public $credit_limit;
+    public $limit_amount_piutang;
+    public $limit_hari_piutang = 30;
     public $is_active = true;
     public $latitude;
     public $longitude;
@@ -42,12 +41,11 @@ class CustomerManagement extends Component
     {
         return [
             'nama_toko' => 'required|string|max:255',
-            'nama_pemilik' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
             'alamat' => 'required|string',
-            'telepon' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255',
             'sales_id' => 'required|exists:users,id',
-            'credit_limit' => 'nullable|numeric|min:0',
+            'limit_amount_piutang' => 'nullable|numeric|min:0',
+            'limit_hari_piutang' => 'required|integer|min:1|max:365',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
         ];
@@ -71,32 +69,32 @@ class CustomerManagement extends Component
     public function openCustomerModal($customerId = null)
     {
         $this->resetCustomerForm();
-        
+
         if ($customerId) {
             $customer = Customer::find($customerId);
             $this->customerId = $customer->id;
             $this->nama_toko = $customer->nama_toko;
-            $this->nama_pemilik = $customer->nama_pemilik;
+            $this->phone = $customer->phone;
             $this->alamat = $customer->alamat;
-            $this->telepon = $customer->telepon;
-            $this->email = $customer->email;
             $this->sales_id = $customer->sales_id;
-            $this->credit_limit = $customer->credit_limit;
+            $this->limit_amount_piutang = $customer->limit_amount_piutang;
+            $this->limit_hari_piutang = $customer->limit_hari_piutang;
             $this->is_active = $customer->is_active;
             $this->latitude = $customer->latitude;
             $this->longitude = $customer->longitude;
         }
-        
+
         $this->showCustomerModal = true;
     }
 
     public function resetCustomerForm()
     {
         $this->reset([
-            'customerId', 'nama_toko', 'nama_pemilik', 'alamat', 'telepon',
-            'email', 'sales_id', 'credit_limit', 'latitude', 'longitude'
+            'customerId', 'nama_toko', 'phone', 'alamat', 'sales_id',
+            'limit_amount_piutang', 'latitude', 'longitude'
         ]);
         $this->is_active = true;
+        $this->limit_hari_piutang = 30;
     }
 
     public function saveCustomer()
@@ -106,12 +104,11 @@ class CustomerManagement extends Component
         try {
             $data = [
                 'nama_toko' => $this->nama_toko,
-                'nama_pemilik' => $this->nama_pemilik,
+                'phone' => $this->phone,
                 'alamat' => $this->alamat,
-                'telepon' => $this->telepon,
-                'email' => $this->email,
                 'sales_id' => $this->sales_id,
-                'credit_limit' => $this->credit_limit,
+                'limit_amount_piutang' => $this->limit_amount_piutang,
+                'limit_hari_piutang' => $this->limit_hari_piutang,
                 'is_active' => $this->is_active,
                 'latitude' => $this->latitude,
                 'longitude' => $this->longitude,
@@ -127,7 +124,7 @@ class CustomerManagement extends Component
 
             $this->showCustomerModal = false;
             $this->resetCustomerForm();
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menyimpan customer: ' . $e->getMessage());
         }
@@ -148,7 +145,7 @@ class CustomerManagement extends Component
         try {
             $customer = Customer::find($customerId);
             $customer->update(['is_active' => !$customer->is_active]);
-            
+
             $status = $customer->is_active ? 'diaktifkan' : 'dinonaktifkan';
             session()->flash('success', "Customer berhasil {$status}!");
         } catch (\Exception $e) {
@@ -161,8 +158,7 @@ class CustomerManagement extends Component
         $query = Customer::with(['sales'])
             ->when($this->search, function ($query) {
                 $query->where('nama_toko', 'like', '%' . $this->search . '%')
-                      ->orWhere('nama_pemilik', 'like', '%' . $this->search . '%')
-                      ->orWhere('telepon', 'like', '%' . $this->search . '%');
+                      ->orWhere('phone', 'like', '%' . $this->search . '%');
             })
             ->when($this->statusFilter !== '', function ($query) {
                 $query->where('is_active', $this->statusFilter);
@@ -188,7 +184,7 @@ class CustomerManagement extends Component
         $totalCustomers = Customer::count();
         $activeCustomers = Customer::where('is_active', true)->count();
         $inactiveCustomers = Customer::where('is_active', false)->count();
-        $totalCreditLimit = Customer::sum('credit_limit');
+        $totalCreditLimit = Customer::sum('limit_amount_piutang');
 
         return view('livewire.admin.customer-management', [
             'customers' => $this->customers,
