@@ -173,8 +173,10 @@ class AnalyticsDashboard extends Component
             'total_invoices' => Payment::where('created_at', '>=', $startDate)->count(),
             'paid_invoices' => Payment::where('created_at', '>=', $startDate)->where('status', 'lunas')->count(),
             'overdue_invoices' => Payment::where('status', 'belum_lunas')->where('tanggal_jatuh_tempo', '<', now())->count(),
-            'total_outstanding' => Payment::where('status', '!=', 'lunas')->sum('sisa_tagihan'),
-            'total_collected' => Payment::where('created_at', '>=', $startDate)->sum('jumlah_dibayar')
+            'total_outstanding' => Payment::where('status', '!=', 'lunas')->get()->sum(function($payment) {
+                return $payment->jumlah_tagihan - $payment->jumlah_bayar;
+            }),
+            'total_collected' => Payment::where('created_at', '>=', $startDate)->sum('jumlah_bayar')
         ];
     }
 
@@ -186,8 +188,8 @@ class AnalyticsDashboard extends Component
         return [
             'total_checkins' => CheckIn::where('checked_in_at', '>=', $startDate)->count(),
             'today_checkins' => CheckIn::whereDate('checked_in_at', today())->count(),
-            'k3_completed' => K3Checklist::where('created_at', '>=', $startDate)->where('status', 'approved')->count(),
-            'k3_pending' => K3Checklist::where('status', 'pending')->count(),
+            'k3_completed' => K3Checklist::where('created_at', '>=', $startDate)->count(),
+            'k3_today' => K3Checklist::whereDate('checked_at', today())->count(),
             'active_users' => User::where('last_login_at', '>=', now()->subDays(7))->count()
         ];
     }

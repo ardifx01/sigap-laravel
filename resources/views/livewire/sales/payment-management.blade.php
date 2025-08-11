@@ -91,7 +91,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Invoice</th>
+                            <th>Nota</th>
                             <th>Pelanggan</th>
                             <th>Tagihan</th>
                             <th>Dibayar</th>
@@ -106,7 +106,7 @@
                             <tr class="{{ $payment->isOverdue() ? 'table-danger' : '' }}">
                                 <td>
                                     <div>
-                                        <h6 class="mb-0">{{ $payment->nomor_invoice }}</h6>
+                                        <h6 class="mb-0">{{ $payment->nomor_nota }}</h6>
                                         <small class="text-muted">{{ $payment->order->nomor_order }}</small>
                                     </div>
                                 </td>
@@ -120,11 +120,14 @@
                                     <div class="fw-medium">Rp {{ number_format($payment->jumlah_tagihan, 0, ',', '.') }}</div>
                                 </td>
                                 <td>
-                                    <div class="fw-medium text-success">Rp {{ number_format($payment->jumlah_dibayar, 0, ',', '.') }}</div>
+                                    <div class="fw-medium text-success">Rp {{ number_format($payment->jumlah_bayar, 0, ',', '.') }}</div>
                                 </td>
                                 <td>
-                                    <div class="fw-medium {{ $payment->sisa_tagihan > 0 ? 'text-warning' : 'text-success' }}">
-                                        Rp {{ number_format($payment->sisa_tagihan, 0, ',', '.') }}
+                                    @php
+                                        $sisaTagihan = $payment->jumlah_tagihan - $payment->jumlah_bayar;
+                                    @endphp
+                                    <div class="fw-medium {{ $sisaTagihan > 0 ? 'text-warning' : 'text-success' }}">
+                                        Rp {{ number_format($sisaTagihan, 0, ',', '.') }}
                                     </div>
                                 </td>
                                 <td>
@@ -165,7 +168,7 @@
                                                     <i class="bx bx-image me-1"></i> Lihat Bukti
                                                 </a>
                                             @endif
-                                            @if($payment->jumlah_dibayar == 0)
+                                            @if($payment->jumlah_bayar == 0)
                                                 <div class="dropdown-divider"></div>
                                                 <a class="dropdown-item text-danger" href="#"
                                                    wire:click.prevent="deletePayment({{ $payment->id }})"

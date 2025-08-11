@@ -166,22 +166,22 @@ class ReportManagement extends Component
         if ($this->format === 'excel') {
             $data = $payments->map(function ($payment) {
                 return [
-                    'Invoice' => $payment->nomor_invoice,
+                    'Nota' => $payment->nomor_nota,
                     'Order' => $payment->order->nomor_order,
                     'Customer' => $payment->customer->nama_toko,
                     'Sales' => $payment->sales->name,
                     'Jumlah Tagihan' => $payment->jumlah_tagihan,
-                    'Jumlah Dibayar' => $payment->jumlah_dibayar,
-                    'Sisa Tagihan' => $payment->sisa_tagihan,
+                    'Jumlah Dibayar' => $payment->jumlah_bayar,
+                    'Sisa Tagihan' => $payment->jumlah_tagihan - $payment->jumlah_bayar,
                     'Status' => ucfirst(str_replace('_', ' ', $payment->status)),
                     'Jatuh Tempo' => $payment->tanggal_jatuh_tempo->format('d/m/Y'),
-                    'Tanggal Bayar' => $payment->tanggal_pembayaran ? $payment->tanggal_pembayaran->format('d/m/Y') : '-'
+                    'Tanggal Bayar' => $payment->tanggal_bayar ? $payment->tanggal_bayar->format('d/m/Y') : '-'
                 ];
             });
 
             $this->generationProgress = 75;
             return $this->downloadExcel($data, $filename, [
-                'Invoice', 'Order', 'Customer', 'Sales', 'Jumlah Tagihan',
+                'Nota', 'Order', 'Customer', 'Sales', 'Jumlah Tagihan',
                 'Jumlah Dibayar', 'Sisa Tagihan', 'Status', 'Jatuh Tempo', 'Tanggal Bayar'
             ]);
         } else {
@@ -191,8 +191,10 @@ class ReportManagement extends Component
                 'startDate' => $this->startDate,
                 'endDate' => $this->endDate,
                 'totalTagihan' => $payments->sum('jumlah_tagihan'),
-                'totalDibayar' => $payments->sum('jumlah_dibayar'),
-                'totalOutstanding' => $payments->sum('sisa_tagihan')
+                'totalDibayar' => $payments->sum('jumlah_bayar'),
+                'totalOutstanding' => $payments->sum(function($payment) {
+                    return $payment->jumlah_tagihan - $payment->jumlah_bayar;
+                })
             ]);
 
             $this->generationProgress = 100;

@@ -113,7 +113,7 @@ class Delivery extends Model implements HasMedia
      */
     public function canBeStarted()
     {
-        return $this->status === 'assigned' && $this->k3Checklist && $this->k3Checklist->status === 'approved';
+        return $this->status === 'assigned' && $this->k3Checklist && $this->k3Checklist->isAllItemsPassed();
     }
 
     public function canBeCompleted()

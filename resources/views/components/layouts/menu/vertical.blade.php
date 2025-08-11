@@ -19,11 +19,11 @@
       <!-- Admin Menu -->
       <li class="menu-header small text-uppercase"><span class="menu-header-text">Admin</span></li>
 
-      <!-- Dashboard -->
+      <!-- Analytics -->
       <li class="menu-item {{ request()->is('admin/analytics*') ? 'active' : '' }}">
         <a class="menu-link" href="{{ route('admin.analytics') }}" wire:navigate>
           <i class="menu-icon tf-icons bx bx-line-chart"></i>
-          <div class="text-truncate">Dashboard</div>
+          <div class="text-truncate">Analytics</div>
         </a>
       </li>
 

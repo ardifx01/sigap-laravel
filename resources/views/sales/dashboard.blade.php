@@ -4,7 +4,9 @@
         $totalCustomers = \App\Models\Customer::where('sales_id', auth()->id())->where('is_active', true)->count();
         $todayCheckins = \App\Models\CheckIn::where('sales_id', auth()->id())->whereDate('checked_in_at', today())->count();
         $pendingOrders = \App\Models\Order::where('sales_id', auth()->id())->where('status', 'pending')->count();
-        $unpaidAmount = \App\Models\Payment::whereHas('order', function($q) { $q->where('sales_id', auth()->id()); })->where('status', 'belum_lunas')->sum('jumlah_tagihan');
+        $unpaidAmount = \App\Models\Payment::where('sales_id', auth()->id())->where('status', 'belum_lunas')->get()->sum(function($payment) {
+            return $payment->jumlah_tagihan - $payment->jumlah_bayar;
+        });
         $myOrders = \App\Models\Order::where('sales_id', auth()->id())->with('customer')->latest()->take(5)->get();
         $myCustomers = \App\Models\Customer::where('sales_id', auth()->id())->where('is_active', true)->latest()->take(5)->get();
     @endphp

@@ -92,10 +92,10 @@ class PaymentManagement extends Component
         $this->order_id = $payment->order_id;
         $this->customer_id = $payment->customer_id;
         $this->jumlah_tagihan = $payment->jumlah_tagihan;
-        $this->jumlah_dibayar = $payment->jumlah_dibayar;
-        $this->metode_pembayaran = $payment->metode_pembayaran;
+        $this->jumlah_dibayar = $payment->jumlah_bayar;
+        $this->metode_pembayaran = $payment->jenis_pembayaran;
         $this->tanggal_jatuh_tempo = $payment->tanggal_jatuh_tempo->format('Y-m-d');
-        $this->tanggal_pembayaran = $payment->tanggal_pembayaran?->format('Y-m-d');
+        $this->tanggal_pembayaran = $payment->tanggal_bayar?->format('Y-m-d');
         $this->catatan = $payment->catatan;
 
         $this->showPaymentModal = true;
@@ -154,14 +154,12 @@ class PaymentManagement extends Component
                 session()->flash('success', 'Data pembayaran berhasil diperbarui!');
             } else {
                 $payment = Payment::create([
-                    'nomor_invoice' => $this->generateInvoiceNumber(),
+                    'nomor_nota' => $this->generateNotaNumber(),
                     'order_id' => $this->order_id,
-                    'customer_id' => $this->customer_id,
                     'sales_id' => auth()->id(),
                     'jumlah_tagihan' => $this->jumlah_tagihan,
-                    'jumlah_dibayar' => 0,
-                    'sisa_tagihan' => $this->jumlah_tagihan,
-                    'metode_pembayaran' => $this->metode_pembayaran,
+                    'jumlah_bayar' => 0,
+                    'jenis_pembayaran' => $this->metode_pembayaran,
                     'tanggal_jatuh_tempo' => $this->tanggal_jatuh_tempo,
                     'status' => 'belum_lunas',
                     'catatan' => $this->catatan,
@@ -183,7 +181,7 @@ class PaymentManagement extends Component
                          ->findOrFail($paymentId);
 
         $this->proofPaymentId = $payment->id;
-        $this->proofAmount = $payment->sisa_tagihan;
+        $this->proofAmount = $payment->jumlah_tagihan - $payment->jumlah_bayar;
         $this->resetProofForm();
         $this->showProofModal = true;
     }
@@ -261,7 +259,7 @@ class PaymentManagement extends Component
             ->with(['order', 'customer'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nomor_invoice', 'like', '%' . $this->search . '%')
+                    $q->where('nomor_nota', 'like', '%' . $this->search . '%')
                       ->orWhereHas('customer', function ($customer) {
                           $customer->where('nama_toko', 'like', '%' . $this->search . '%');
                       })
@@ -292,7 +290,10 @@ class PaymentManagement extends Component
 
         $totalTagihan = Payment::where('sales_id', auth()->id())
                               ->where('status', 'belum_lunas')
-                              ->sum('sisa_tagihan');
+                              ->get()
+                              ->sum(function($payment) {
+                                  return $payment->jumlah_tagihan - $payment->jumlah_bayar;
+                              });
 
         $overdueCount = Payment::where('sales_id', auth()->id())
                               ->where('status', 'belum_lunas')
@@ -306,5 +307,14 @@ class PaymentManagement extends Component
             'totalTagihan' => $totalTagihan,
             'overdueCount' => $overdueCount,
         ]);
+    }
+
+    private function generateNotaNumber()
+    {
+        $date = now()->format('Ymd');
+        $count = Payment::where('sales_id', auth()->id())
+                       ->whereDate('created_at', now())
+                       ->count() + 1;
+        return 'NOTA-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }

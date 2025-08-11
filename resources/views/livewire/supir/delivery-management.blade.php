@@ -163,10 +163,10 @@
                                     @if($delivery->k3Checklist)
                                         <div>
                                             <span class="badge bg-label-{{
-                                                $delivery->k3Checklist->status === 'approved' ? 'success' :
-                                                ($delivery->k3Checklist->status === 'pending' ? 'warning' : 'danger')
+                                                $delivery->k3Checklist->isAllItemsPassed() ? 'success' :
+                                                ($delivery->k3Checklist->getCompletionPercentage() >= 50 ? 'warning' : 'danger')
                                             }}">
-                                                {{ ucfirst($delivery->k3Checklist->status) }}
+                                                {{ $delivery->k3Checklist->isAllItemsPassed() ? 'Complete' : 'Incomplete' }}
                                             </span>
                                             <br><small class="text-muted">{{ $delivery->k3Checklist->getCompletionPercentage() }}% complete</small>
                                         </div>

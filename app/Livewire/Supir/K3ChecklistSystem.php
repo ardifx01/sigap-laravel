@@ -88,8 +88,8 @@ class K3ChecklistSystem extends Component
 
         try {
             // Check if already have checklist today
-            $existingChecklist = K3Checklist::where('supir_id', auth()->id())
-                                          ->whereDate('tanggal_checklist', today())
+            $existingChecklist = K3Checklist::where('driver_id', auth()->id())
+                                          ->whereDate('checked_at', today())
                                           ->when($this->delivery_id, function($q) {
                                               $q->where('delivery_id', $this->delivery_id);
                                           })
@@ -131,7 +131,7 @@ class K3ChecklistSystem extends Component
 
     public function viewChecklist($checklistId)
     {
-        $this->viewChecklist = K3Checklist::with(['supir', 'delivery'])
+        $this->viewChecklist = K3Checklist::with(['driver', 'delivery'])
                                          ->where('driver_id', auth()->id())
                                          ->findOrFail($checklistId);
         $this->showViewModal = true;
@@ -146,12 +146,12 @@ class K3ChecklistSystem extends Component
     public function deleteChecklist($checklistId)
     {
         try {
-            $checklist = K3Checklist::where('supir_id', auth()->id())
+            $checklist = K3Checklist::where('driver_id', auth()->id())
                                    ->findOrFail($checklistId);
 
-            // Only allow deletion if pending and from today
-            if ($checklist->status !== 'pending' || !$checklist->tanggal_checklist->isToday()) {
-                session()->flash('error', 'Hanya checklist pending hari ini yang dapat dihapus!');
+            // Only allow deletion if from today
+            if (!$checklist->checked_at->isToday()) {
+                session()->flash('error', 'Hanya checklist hari ini yang dapat dihapus!');
                 return;
             }
 
@@ -166,7 +166,7 @@ class K3ChecklistSystem extends Component
     public function render()
     {
         $checklists = K3Checklist::where('driver_id', auth()->id())
-            ->with(['supir', 'delivery'])
+            ->with(['driver', 'delivery'])
             ->when($this->search, function ($query) {
                 $query->where('catatan', 'like', '%' . $this->search . '%');
             })

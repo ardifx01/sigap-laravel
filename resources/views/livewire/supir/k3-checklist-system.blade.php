@@ -154,7 +154,7 @@
                                                     <i class="bx bx-image me-1"></i> Lihat Foto
                                                 </a>
                                             @endif
-                                            @if($checklist->status === 'pending' && $checklist->tanggal_checklist->isToday())
+                                            @if($checklist->checked_at->isToday())
                                                 <div class="dropdown-divider"></div>
                                                 <a class="dropdown-item text-danger" href="#"
                                                    wire:click.prevent="deleteChecklist({{ $checklist->id }})"

@@ -266,7 +266,7 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <small class="text-muted d-block">K3 Approved</small>
+                                    <small class="text-muted d-block">K3 Completed</small>
                                     <h6 class="mb-0">{{ $activityMetrics['k3_completed'] }}</h6>
                                 </div>
                             </div>
@@ -275,12 +275,12 @@
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm me-2">
                                     <span class="avatar-initial rounded-circle bg-label-warning">
-                                        <i class="bx bx-time"></i>
+                                        <i class="bx bx-shield"></i>
                                     </span>
                                 </div>
                                 <div>
-                                    <small class="text-muted d-block">K3 Pending</small>
-                                    <h6 class="mb-0">{{ $activityMetrics['k3_pending'] }}</h6>
+                                    <small class="text-muted d-block">K3 Today</small>
+                                    <h6 class="mb-0">{{ $activityMetrics['k3_today'] }}</h6>
                                 </div>
                             </div>
                         </div>
