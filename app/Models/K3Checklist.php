@@ -16,44 +16,24 @@ class K3Checklist extends Model implements HasMedia
     protected $fillable = [
         'driver_id',
         'delivery_id',
-        'tanggal_checklist',
-        'kondisi_ban',
-        'kondisi_rem',
-        'level_oli_mesin',
-        'level_bbm',
-        'kondisi_lampu',
-        'kondisi_spion',
-        'kondisi_klakson',
-        'kondisi_sabuk_pengaman',
-        'kondisi_kaca',
-        'kondisi_wiper',
-        'kelengkapan_p3k',
-        'kelengkapan_apar',
-        'kelengkapan_segitiga',
-        'kondisi_muatan',
-        'catatan_tambahan',
-        'status',
-        'approved_by',
-        'approved_at',
+        'cek_ban',
+        'cek_oli',
+        'cek_air_radiator',
+        'cek_rem',
+        'cek_bbm',
+        'cek_terpal',
+        'catatan',
+        'checked_at',
     ];
 
     protected $casts = [
-        'tanggal_checklist' => 'datetime',
-        'approved_at' => 'datetime',
-        'kondisi_ban' => 'boolean',
-        'kondisi_rem' => 'boolean',
-        'level_oli_mesin' => 'boolean',
-        'level_bbm' => 'boolean',
-        'kondisi_lampu' => 'boolean',
-        'kondisi_spion' => 'boolean',
-        'kondisi_klakson' => 'boolean',
-        'kondisi_sabuk_pengaman' => 'boolean',
-        'kondisi_kaca' => 'boolean',
-        'kondisi_wiper' => 'boolean',
-        'kelengkapan_p3k' => 'boolean',
-        'kelengkapan_apar' => 'boolean',
-        'kelengkapan_segitiga' => 'boolean',
-        'kondisi_muatan' => 'boolean',
+        'checked_at' => 'datetime',
+        'cek_ban' => 'boolean',
+        'cek_oli' => 'boolean',
+        'cek_air_radiator' => 'boolean',
+        'cek_rem' => 'boolean',
+        'cek_bbm' => 'boolean',
+        'cek_terpal' => 'boolean',
     ];
 
     /**
@@ -62,7 +42,7 @@ class K3Checklist extends Model implements HasMedia
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['driver_id', 'status', 'approved_by', 'approved_at'])
+            ->logOnly(['driver_id', 'delivery_id', 'checked_at'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -85,10 +65,7 @@ class K3Checklist extends Model implements HasMedia
         return $this->belongsTo(Delivery::class);
     }
 
-    public function approvedBy()
-    {
-        return $this->belongsTo(User::class, 'approved_by');
-    }
+
 
     /**
      * Scopes
@@ -103,19 +80,9 @@ class K3Checklist extends Model implements HasMedia
         return $query->where('driver_id', $driverId);
     }
 
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    public function scopeApproved($query)
-    {
-        return $query->where('status', 'approved');
-    }
-
     public function scopeToday($query)
     {
-        return $query->whereDate('tanggal_checklist', today());
+        return $query->whereDate('checked_at', today());
     }
 
     /**
@@ -124,20 +91,12 @@ class K3Checklist extends Model implements HasMedia
     public function getChecklistItems()
     {
         return [
-            'kondisi_ban' => 'Kondisi Ban',
-            'kondisi_rem' => 'Kondisi Rem',
-            'level_oli_mesin' => 'Level Oli Mesin',
-            'level_bbm' => 'Level BBM',
-            'kondisi_lampu' => 'Kondisi Lampu',
-            'kondisi_spion' => 'Kondisi Spion',
-            'kondisi_klakson' => 'Kondisi Klakson',
-            'kondisi_sabuk_pengaman' => 'Sabuk Pengaman',
-            'kondisi_kaca' => 'Kondisi Kaca',
-            'kondisi_wiper' => 'Kondisi Wiper',
-            'kelengkapan_p3k' => 'Kelengkapan P3K',
-            'kelengkapan_apar' => 'Kelengkapan APAR',
-            'kelengkapan_segitiga' => 'Segitiga Pengaman',
-            'kondisi_muatan' => 'Kondisi Muatan',
+            'cek_ban' => 'Kondisi Ban',
+            'cek_oli' => 'Kondisi Oli',
+            'cek_air_radiator' => 'Air Radiator',
+            'cek_rem' => 'Kondisi Rem',
+            'cek_bbm' => 'Level BBM',
+            'cek_terpal' => 'Kondisi Terpal',
         ];
     }
 
@@ -168,10 +127,5 @@ class K3Checklist extends Model implements HasMedia
     public function isAllItemsPassed()
     {
         return $this->getPassedItemsCount() === $this->getTotalItemsCount();
-    }
-
-    public function canBeApproved()
-    {
-        return $this->status === 'pending' && $this->getCompletionPercentage() >= 80;
     }
 }

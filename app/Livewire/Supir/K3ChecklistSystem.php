@@ -13,28 +13,19 @@ class K3ChecklistSystem extends Component
     use WithPagination, WithFileUploads;
 
     public $search = '';
-    public $statusFilter = '';
     public $dateFilter = '';
 
     // Checklist form
     public $showChecklistModal = false;
     public $checklistId;
     public $delivery_id;
-    public $kondisi_ban = false;
-    public $kondisi_rem = false;
-    public $level_oli_mesin = false;
-    public $level_bbm = false;
-    public $kondisi_lampu = false;
-    public $kondisi_spion = false;
-    public $kondisi_klakson = false;
-    public $kondisi_sabuk_pengaman = false;
-    public $kondisi_kaca = false;
-    public $kondisi_wiper = false;
-    public $kelengkapan_p3k = false;
-    public $kelengkapan_apar = false;
-    public $kelengkapan_segitiga = false;
-    public $kondisi_muatan = false;
-    public $catatan_tambahan;
+    public $cek_ban = false;
+    public $cek_oli = false;
+    public $cek_air_radiator = false;
+    public $cek_rem = false;
+    public $cek_bbm = false;
+    public $cek_terpal = false;
+    public $catatan;
     public $foto_kendaraan;
 
     // View checklist modal
@@ -47,21 +38,13 @@ class K3ChecklistSystem extends Component
     {
         return [
             'delivery_id' => 'nullable|exists:deliveries,id',
-            'kondisi_ban' => 'boolean',
-            'kondisi_rem' => 'boolean',
-            'level_oli_mesin' => 'boolean',
-            'level_bbm' => 'boolean',
-            'kondisi_lampu' => 'boolean',
-            'kondisi_spion' => 'boolean',
-            'kondisi_klakson' => 'boolean',
-            'kondisi_sabuk_pengaman' => 'boolean',
-            'kondisi_kaca' => 'boolean',
-            'kondisi_wiper' => 'boolean',
-            'kelengkapan_p3k' => 'boolean',
-            'kelengkapan_apar' => 'boolean',
-            'kelengkapan_segitiga' => 'boolean',
-            'kondisi_muatan' => 'boolean',
-            'catatan_tambahan' => 'nullable|string|max:500',
+            'cek_ban' => 'boolean',
+            'cek_oli' => 'boolean',
+            'cek_air_radiator' => 'boolean',
+            'cek_rem' => 'boolean',
+            'cek_bbm' => 'boolean',
+            'cek_terpal' => 'boolean',
+            'catatan' => 'nullable|string|max:500',
             'foto_kendaraan' => 'nullable|image|max:2048',
         ];
     }
@@ -71,10 +54,7 @@ class K3ChecklistSystem extends Component
         $this->resetPage();
     }
 
-    public function updatingStatusFilter()
-    {
-        $this->resetPage();
-    }
+
 
     public function updatingDateFilter()
     {
@@ -97,11 +77,8 @@ class K3ChecklistSystem extends Component
     public function resetChecklistForm()
     {
         $this->reset([
-            'checklistId', 'delivery_id', 'kondisi_ban', 'kondisi_rem', 'level_oli_mesin',
-            'level_bbm', 'kondisi_lampu', 'kondisi_spion', 'kondisi_klakson',
-            'kondisi_sabuk_pengaman', 'kondisi_kaca', 'kondisi_wiper',
-            'kelengkapan_p3k', 'kelengkapan_apar', 'kelengkapan_segitiga',
-            'kondisi_muatan', 'catatan_tambahan', 'foto_kendaraan'
+            'checklistId', 'delivery_id', 'cek_ban', 'cek_oli', 'cek_air_radiator',
+            'cek_rem', 'cek_bbm', 'cek_terpal', 'catatan', 'foto_kendaraan'
         ]);
     }
 
@@ -127,23 +104,14 @@ class K3ChecklistSystem extends Component
             $checklist = K3Checklist::create([
                 'driver_id' => auth()->id(),
                 'delivery_id' => $this->delivery_id,
-                'tanggal_checklist' => now(),
-                'kondisi_ban' => $this->kondisi_ban,
-                'kondisi_rem' => $this->kondisi_rem,
-                'level_oli_mesin' => $this->level_oli_mesin,
-                'level_bbm' => $this->level_bbm,
-                'kondisi_lampu' => $this->kondisi_lampu,
-                'kondisi_spion' => $this->kondisi_spion,
-                'kondisi_klakson' => $this->kondisi_klakson,
-                'kondisi_sabuk_pengaman' => $this->kondisi_sabuk_pengaman,
-                'kondisi_kaca' => $this->kondisi_kaca,
-                'kondisi_wiper' => $this->kondisi_wiper,
-                'kelengkapan_p3k' => $this->kelengkapan_p3k,
-                'kelengkapan_apar' => $this->kelengkapan_apar,
-                'kelengkapan_segitiga' => $this->kelengkapan_segitiga,
-                'kondisi_muatan' => $this->kondisi_muatan,
-                'catatan_tambahan' => $this->catatan_tambahan,
-                'status' => 'pending',
+                'cek_ban' => $this->cek_ban,
+                'cek_oli' => $this->cek_oli,
+                'cek_air_radiator' => $this->cek_air_radiator,
+                'cek_rem' => $this->cek_rem,
+                'cek_bbm' => $this->cek_bbm,
+                'cek_terpal' => $this->cek_terpal,
+                'catatan' => $this->catatan,
+                'checked_at' => now(),
             ]);
 
             // Upload vehicle photo if provided
@@ -163,7 +131,7 @@ class K3ChecklistSystem extends Component
 
     public function viewChecklist($checklistId)
     {
-        $this->viewChecklist = K3Checklist::with(['supir', 'delivery', 'approvedBy'])
+        $this->viewChecklist = K3Checklist::with(['supir', 'delivery'])
                                          ->where('driver_id', auth()->id())
                                          ->findOrFail($checklistId);
         $this->showViewModal = true;
@@ -198,17 +166,14 @@ class K3ChecklistSystem extends Component
     public function render()
     {
         $checklists = K3Checklist::where('driver_id', auth()->id())
-            ->with(['supir', 'delivery', 'approvedBy'])
+            ->with(['supir', 'delivery'])
             ->when($this->search, function ($query) {
-                $query->where('catatan_tambahan', 'like', '%' . $this->search . '%');
-            })
-            ->when($this->statusFilter, function ($query) {
-                $query->where('status', $this->statusFilter);
+                $query->where('catatan', 'like', '%' . $this->search . '%');
             })
             ->when($this->dateFilter, function ($query) {
-                $query->whereDate('tanggal_checklist', $this->dateFilter);
+                $query->whereDate('checked_at', $this->dateFilter);
             })
-            ->orderBy('tanggal_checklist', 'desc')
+            ->orderBy('checked_at', 'desc')
             ->paginate(10);
 
         $availableDeliveries = Delivery::where('driver_id', auth()->id())
@@ -217,18 +182,13 @@ class K3ChecklistSystem extends Component
                                      ->get();
 
         $todayChecklists = K3Checklist::where('driver_id', auth()->id())
-                                    ->whereDate('tanggal_checklist', today())
+                                    ->whereDate('checked_at', today())
                                     ->count();
-
-        $pendingChecklists = K3Checklist::where('driver_id', auth()->id())
-                                       ->where('status', 'pending')
-                                       ->count();
 
         return view('livewire.supir.k3-checklist-system', [
             'checklists' => $checklists,
             'availableDeliveries' => $availableDeliveries,
             'todayChecklists' => $todayChecklists,
-            'pendingChecklists' => $pendingChecklists,
         ]);
     }
 }

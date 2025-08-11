@@ -38,15 +38,15 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar flex-shrink-0 me-3">
-                            <span class="avatar-initial rounded-circle bg-label-warning">
-                                <i class="bx bx-time-five"></i>
+                            <span class="avatar-initial rounded-circle bg-label-info">
+                                <i class="bx bx-list-check"></i>
                             </span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Menunggu Approval</small>
+                            <small class="text-muted d-block">Total Checklist</small>
                             <div class="d-flex align-items-center">
-                                <h6 class="mb-0 me-1">{{ $pendingChecklists }}</h6>
-                                <small class="text-muted fw-semibold">pending</small>
+                                <h6 class="mb-0 me-1">{{ $checklists->total() }}</h6>
+                                <small class="text-muted fw-semibold">total</small>
                             </div>
                         </div>
                     </div>
@@ -83,20 +83,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Cari Checklist</label>
                     <input type="text" wire:model.live="search" class="form-control" placeholder="Cari catatan...">
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Filter Status</label>
-                    <select wire:model.live="statusFilter" class="form-select">
-                        <option value="">Semua Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Filter Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
@@ -114,8 +105,6 @@
                             <th>Tanggal</th>
                             <th>Pengiriman</th>
                             <th>Completion</th>
-                            <th>Status</th>
-                            <th>Approved By</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -124,8 +113,8 @@
                             <tr>
                                 <td>
                                     <div>
-                                        <div class="fw-medium">{{ $checklist->tanggal_checklist->format('d/m/Y') }}</div>
-                                        <small class="text-muted">{{ $checklist->tanggal_checklist->format('H:i') }}</small>
+                                        <div class="fw-medium">{{ $checklist->checked_at->format('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ $checklist->checked_at->format('H:i') }}</small>
                                     </div>
                                 </td>
                                 <td>
@@ -150,24 +139,7 @@
                                         <small class="text-muted">{{ $checklist->getPassedItemsCount() }}/{{ $checklist->getTotalItemsCount() }} items</small>
                                     </div>
                                 </td>
-                                <td>
-                                    <span class="badge bg-label-{{
-                                        $checklist->status === 'pending' ? 'warning' :
-                                        ($checklist->status === 'approved' ? 'success' : 'danger')
-                                    }}">
-                                        {{ ucfirst($checklist->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if($checklist->approvedBy)
-                                        <div>
-                                            <div class="fw-medium">{{ $checklist->approvedBy->name }}</div>
-                                            <small class="text-muted">{{ $checklist->approved_at->format('d/m/Y H:i') }}</small>
-                                        </div>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
+
                                 <td>
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
@@ -254,149 +226,61 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_ban" id="kondisi_ban">
-                                                <label class="form-check-label" for="kondisi_ban">
+                                                <input class="form-check-input" type="checkbox" wire:model="cek_ban" id="cek_ban">
+                                                <label class="form-check-label" for="cek_ban">
                                                     <i class="bx bx-car me-1"></i> Kondisi Ban Baik
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_rem" id="kondisi_rem">
-                                                <label class="form-check-label" for="kondisi_rem">
+                                                <input class="form-check-input" type="checkbox" wire:model="cek_rem" id="cek_rem">
+                                                <label class="form-check-label" for="cek_rem">
                                                     <i class="bx bx-stop-circle me-1"></i> Kondisi Rem Baik
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="level_oli_mesin" id="level_oli_mesin">
-                                                <label class="form-check-label" for="level_oli_mesin">
-                                                    <i class="bx bx-droplet me-1"></i> Level Oli Mesin Cukup
+                                                <input class="form-check-input" type="checkbox" wire:model="cek_oli" id="cek_oli">
+                                                <label class="form-check-label" for="cek_oli">
+                                                    <i class="bx bx-droplet me-1"></i> Kondisi Oli Baik
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="level_bbm" id="level_bbm">
-                                                <label class="form-check-label" for="level_bbm">
+                                                <input class="form-check-input" type="checkbox" wire:model="cek_bbm" id="cek_bbm">
+                                                <label class="form-check-label" for="cek_bbm">
                                                     <i class="bx bx-gas-station me-1"></i> Level BBM Cukup
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_lampu" id="kondisi_lampu">
-                                                <label class="form-check-label" for="kondisi_lampu">
-                                                    <i class="bx bx-bulb me-1"></i> Kondisi Lampu Baik
+                                                <input class="form-check-input" type="checkbox" wire:model="cek_air_radiator" id="cek_air_radiator">
+                                                <label class="form-check-label" for="cek_air_radiator">
+                                                    <i class="bx bx-droplet me-1"></i> Air Radiator Cukup
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_spion" id="kondisi_spion">
-                                                <label class="form-check-label" for="kondisi_spion">
-                                                    <i class="bx bx-reflect-horizontal me-1"></i> Kondisi Spion Baik
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_klakson" id="kondisi_klakson">
-                                                <label class="form-check-label" for="kondisi_klakson">
-                                                    <i class="bx bx-volume-full me-1"></i> Kondisi Klakson Baik
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_sabuk_pengaman" id="kondisi_sabuk_pengaman">
-                                                <label class="form-check-label" for="kondisi_sabuk_pengaman">
-                                                    <i class="bx bx-shield me-1"></i> Sabuk Pengaman Berfungsi
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_kaca" id="kondisi_kaca">
-                                                <label class="form-check-label" for="kondisi_kaca">
-                                                    <i class="bx bx-window me-1"></i> Kondisi Kaca Baik
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kondisi_wiper" id="kondisi_wiper">
-                                                <label class="form-check-label" for="kondisi_wiper">
-                                                    <i class="bx bx-wind me-1"></i> Kondisi Wiper Baik
+                                                <input class="form-check-input" type="checkbox" wire:model="cek_terpal" id="cek_terpal">
+                                                <label class="form-check-label" for="cek_terpal">
+                                                    <i class="bx bx-shield me-1"></i> Kondisi Terpal Baik
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Safety Equipment -->
-                                <div class="col-12">
-                                    <hr>
-                                    <h6 class="mb-3">Kelengkapan Keselamatan</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kelengkapan_p3k" id="kelengkapan_p3k">
-                                                <label class="form-check-label" for="kelengkapan_p3k">
-                                                    <i class="bx bx-plus-medical me-1"></i> Kotak P3K Lengkap
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kelengkapan_apar" id="kelengkapan_apar">
-                                                <label class="form-check-label" for="kelengkapan_apar">
-                                                    <i class="bx bx-spray-can me-1"></i> APAR Tersedia
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" wire:model="kelengkapan_segitiga" id="kelengkapan_segitiga">
-                                                <label class="form-check-label" for="kelengkapan_segitiga">
-                                                    <i class="bx bx-shape-triangle me-1"></i> Segitiga Pengaman
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Cargo Condition -->
-                                <div class="col-12">
-                                    <hr>
-                                    <h6 class="mb-3">Kondisi Muatan</h6>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" wire:model="kondisi_muatan" id="kondisi_muatan">
-                                        <label class="form-check-label" for="kondisi_muatan">
-                                            <i class="bx bx-package me-1"></i> Muatan Aman dan Terikat dengan Baik
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Vehicle Photo -->
-                                <div class="col-12">
-                                    <hr>
-                                    <label class="form-label">Foto Kendaraan (Opsional)</label>
-                                    <input type="file" wire:model="foto_kendaraan" class="form-control @error('foto_kendaraan') is-invalid @enderror" accept="image/*">
-                                    @error('foto_kendaraan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                    @if($foto_kendaraan)
-                                        <div class="mt-2">
-                                            <img src="{{ $foto_kendaraan->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-height: 150px;">
-                                        </div>
-                                    @endif
                                 </div>
 
                                 <!-- Additional Notes -->
                                 <div class="col-12">
-                                    <label class="form-label">Catatan Tambahan</label>
-                                    <textarea wire:model="catatan_tambahan" class="form-control @error('catatan_tambahan') is-invalid @enderror" rows="3" placeholder="Catatan atau temuan khusus..."></textarea>
-                                    @error('catatan_tambahan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <hr>
+                                    <label class="form-label">Catatan</label>
+                                    <textarea wire:model="catatan" class="form-control @error('catatan') is-invalid @enderror" rows="3" placeholder="Catatan atau temuan khusus..."></textarea>
+                                    @error('catatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                         </div>
@@ -430,18 +314,7 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Tanggal:</td>
-                                        <td><strong>{{ $viewChecklist->tanggal_checklist->format('d/m/Y H:i') }}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Status:</td>
-                                        <td>
-                                            <span class="badge bg-label-{{
-                                                $viewChecklist->status === 'pending' ? 'warning' :
-                                                ($viewChecklist->status === 'approved' ? 'success' : 'danger')
-                                            }}">
-                                                {{ ucfirst($viewChecklist->status) }}
-                                            </span>
-                                        </td>
+                                        <td><strong>{{ $viewChecklist->checked_at->format('d/m/Y H:i') }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Completion:</td>
@@ -455,15 +328,6 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    @if($viewChecklist->approvedBy)
-                                        <tr>
-                                            <td>Approved By:</td>
-                                            <td>
-                                                <strong>{{ $viewChecklist->approvedBy->name }}</strong><br>
-                                                <small class="text-muted">{{ $viewChecklist->approved_at->format('d/m/Y H:i') }}</small>
-                                            </td>
-                                        </tr>
-                                    @endif
                                 </table>
                             </div>
 
@@ -508,20 +372,11 @@
                             </div>
 
                             <!-- Additional Notes -->
-                            @if($viewChecklist->catatan_tambahan)
+                            @if($viewChecklist->catatan)
                                 <div class="col-12">
                                     <hr>
-                                    <h6>Catatan Tambahan</h6>
-                                    <p class="text-muted">{{ $viewChecklist->catatan_tambahan }}</p>
-                                </div>
-                            @endif
-
-                            <!-- Vehicle Photo -->
-                            @if($viewChecklist->getFirstMediaUrl('vehicle_photos'))
-                                <div class="col-12">
-                                    <hr>
-                                    <h6>Foto Kendaraan</h6>
-                                    <img src="{{ $viewChecklist->getFirstMediaUrl('vehicle_photos') }}" alt="Vehicle Photo" class="img-fluid rounded" style="max-height: 300px;">
+                                    <h6>Catatan</h6>
+                                    <p class="text-muted">{{ $viewChecklist->catatan }}</p>
                                 </div>
                             @endif
                         </div>
