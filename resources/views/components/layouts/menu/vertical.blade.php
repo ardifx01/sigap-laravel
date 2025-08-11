@@ -94,7 +94,7 @@
 
       <li class="menu-item {{ request()->is('gudang/deliveries*') ? 'active' : '' }}">
         <a class="menu-link" href="{{ route('gudang.deliveries') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-truck"></i>
+          <i class="menu-icon tf-icons bx bx-car"></i>
           <div class="text-truncate">Pengiriman</div>
         </a>
       </li>
