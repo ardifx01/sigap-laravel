@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\Backorder;
 use App\Models\Product;
 use App\Models\Customer;
+use App\Models\OrderItem;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -17,20 +18,17 @@ class BackorderManagement extends Component
     public $search = '';
     public $statusFilter = '';
     public $productFilter = '';
-    public $customerFilter = '';
-    public $priorityFilter = '';
     public $dateFilter = '';
     public $perPage = 15;
 
     // Backorder form
     public $showBackorderModal = false;
     public $backorderId;
+    public $order_item_id;
     public $product_id;
-    public $customer_id;
-    public $quantity_requested;
-    public $priority = 'medium';
+    public $jumlah_backorder;
     public $expected_date;
-    public $notes;
+    public $catatan;
 
     // View backorder modal
     public $showViewModal = false;
@@ -42,20 +40,17 @@ class BackorderManagement extends Component
         'search' => ['except' => ''],
         'statusFilter' => ['except' => ''],
         'productFilter' => ['except' => ''],
-        'customerFilter' => ['except' => ''],
-        'priorityFilter' => ['except' => ''],
         'dateFilter' => ['except' => ''],
     ];
 
     public function rules()
     {
         return [
+            'order_item_id' => 'required|exists:order_items,id',
             'product_id' => 'required|exists:products,id',
-            'customer_id' => 'required|exists:customers,id',
-            'quantity_requested' => 'required|integer|min:1',
-            'priority' => 'required|in:low,medium,high,urgent',
+            'jumlah_backorder' => 'required|integer|min:1',
             'expected_date' => 'nullable|date|after:today',
-            'notes' => 'nullable|string|max:500',
+            'catatan' => 'nullable|string|max:500',
         ];
     }
 
@@ -74,16 +69,6 @@ class BackorderManagement extends Component
         $this->resetPage();
     }
 
-    public function updatingCustomerFilter()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingPriorityFilter()
-    {
-        $this->resetPage();
-    }
-
     public function updatingDateFilter()
     {
         $this->resetPage();
@@ -92,28 +77,26 @@ class BackorderManagement extends Component
     public function openBackorderModal($backorderId = null)
     {
         $this->resetBackorderForm();
-        
+
         if ($backorderId) {
             $backorder = Backorder::find($backorderId);
             $this->backorderId = $backorder->id;
+            $this->order_item_id = $backorder->order_item_id;
             $this->product_id = $backorder->product_id;
-            $this->customer_id = $backorder->customer_id;
-            $this->quantity_requested = $backorder->quantity_requested;
-            $this->priority = $backorder->priority;
+            $this->jumlah_backorder = $backorder->jumlah_backorder;
             $this->expected_date = $backorder->expected_date?->format('Y-m-d');
-            $this->notes = $backorder->notes;
+            $this->catatan = $backorder->catatan;
         }
-        
+
         $this->showBackorderModal = true;
     }
 
     public function resetBackorderForm()
     {
         $this->reset([
-            'backorderId', 'product_id', 'customer_id', 'quantity_requested',
-            'expected_date', 'notes'
+            'backorderId', 'order_item_id', 'product_id', 'jumlah_backorder',
+            'expected_date', 'catatan'
         ]);
-        $this->priority = 'medium';
     }
 
     public function saveBackorder()
@@ -122,13 +105,11 @@ class BackorderManagement extends Component
 
         try {
             $data = [
+                'order_item_id' => $this->order_item_id,
                 'product_id' => $this->product_id,
-                'customer_id' => $this->customer_id,
-                'quantity_requested' => $this->quantity_requested,
-                'priority' => $this->priority,
+                'jumlah_backorder' => $this->jumlah_backorder,
                 'expected_date' => $this->expected_date,
-                'notes' => $this->notes,
-                'created_by' => auth()->id(),
+                'catatan' => $this->catatan,
             ];
 
             if ($this->backorderId) {
@@ -142,7 +123,7 @@ class BackorderManagement extends Component
 
             $this->showBackorderModal = false;
             $this->resetBackorderForm();
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menyimpan backorder: ' . $e->getMessage());
         }
@@ -159,7 +140,7 @@ class BackorderManagement extends Component
         try {
             $backorder = Backorder::find($backorderId);
             $backorder->update(['status' => $status]);
-            
+
             // Update timestamps based on status
             switch ($status) {
                 case 'processing':
@@ -172,9 +153,9 @@ class BackorderManagement extends Component
                     $backorder->update(['cancelled_at' => now()]);
                     break;
             }
-            
+
             session()->flash('success', "Status backorder berhasil diubah ke {$status}!");
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal mengubah status backorder: ' . $e->getMessage());
         }
@@ -184,24 +165,24 @@ class BackorderManagement extends Component
     {
         try {
             $backorder = Backorder::with('product')->find($backorderId);
-            
-            if ($backorder->product->stok_tersedia < $backorder->quantity_requested) {
+
+            if ($backorder->product->stok_tersedia < $backorder->jumlah_backorder) {
                 session()->flash('error', 'Stok tidak mencukupi untuk memenuhi backorder!');
                 return;
             }
-            
+
             // Reduce stock
-            $backorder->product->decrement('stok_tersedia', $backorder->quantity_requested);
-            
+            $backorder->product->decrement('stok_tersedia', $backorder->jumlah_backorder);
+
             // Update backorder status
             $backorder->update([
                 'status' => 'fulfilled',
-                'quantity_fulfilled' => $backorder->quantity_requested,
+                'jumlah_terpenuhi' => $backorder->jumlah_backorder,
                 'fulfilled_at' => now(),
             ]);
-            
+
             session()->flash('success', 'Backorder berhasil dipenuhi dan stok telah dikurangi!');
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal memenuhi backorder: ' . $e->getMessage());
         }
@@ -219,12 +200,12 @@ class BackorderManagement extends Component
 
     public function getBackordersProperty()
     {
-        $query = Backorder::with(['product', 'customer'])
+        $query = Backorder::with(['product', 'orderItem.order.customer'])
             ->when($this->search, function ($query) {
                 $query->whereHas('product', function ($q) {
                     $q->where('nama_barang', 'like', '%' . $this->search . '%')
                       ->orWhere('kode_item', 'like', '%' . $this->search . '%');
-                })->orWhereHas('customer', function ($q) {
+                })->orWhereHas('orderItem.order.customer', function ($q) {
                     $q->where('nama_toko', 'like', '%' . $this->search . '%');
                 });
             })
@@ -234,14 +215,8 @@ class BackorderManagement extends Component
             ->when($this->productFilter, function ($query) {
                 $query->where('product_id', $this->productFilter);
             })
-            ->when($this->customerFilter, function ($query) {
-                $query->where('customer_id', $this->customerFilter);
-            })
-            ->when($this->priorityFilter, function ($query) {
-                $query->where('priority', $this->priorityFilter);
-            })
             ->when($this->dateFilter, function ($query) {
-                $query->whereDate('created_at', $this->dateFilter);
+                $query->whereDate('expected_date', $this->dateFilter);
             })
             ->latest();
 
@@ -255,11 +230,12 @@ class BackorderManagement extends Component
                      ->get();
     }
 
-    public function getCustomersProperty()
+    public function getOrderItemsProperty()
     {
-        return Customer::where('is_active', true)
-                      ->orderBy('nama_toko')
-                      ->get();
+        return OrderItem::with(['order.customer', 'product'])
+                       ->where('status', 'backorder')
+                       ->orderBy('created_at', 'desc')
+                       ->get();
     }
 
     public function render()
@@ -269,25 +245,22 @@ class BackorderManagement extends Component
         $processingBackorders = Backorder::where('status', 'processing')->count();
         $fulfilledBackorders = Backorder::where('status', 'fulfilled')->count();
         $cancelledBackorders = Backorder::where('status', 'cancelled')->count();
-        
-        $urgentBackorders = Backorder::where('priority', 'urgent')
-                                   ->where('status', 'pending')
-                                   ->count();
-        
+
+        $partialBackorders = Backorder::where('status', 'partial')->count();
+
         $overdueBackorders = Backorder::where('expected_date', '<', now())
-                                    ->whereIn('status', ['pending', 'processing'])
+                                    ->whereIn('status', ['pending', 'partial'])
                                     ->count();
 
         return view('livewire.admin.backorder-management', [
             'backorders' => $this->backorders,
             'products' => $this->products,
-            'customers' => $this->customers,
+            'orderItems' => $this->orderItems,
             'totalBackorders' => $totalBackorders,
             'pendingBackorders' => $pendingBackorders,
-            'processingBackorders' => $processingBackorders,
+            'partialBackorders' => $partialBackorders,
             'fulfilledBackorders' => $fulfilledBackorders,
             'cancelledBackorders' => $cancelledBackorders,
-            'urgentBackorders' => $urgentBackorders,
             'overdueBackorders' => $overdueBackorders,
         ]);
     }

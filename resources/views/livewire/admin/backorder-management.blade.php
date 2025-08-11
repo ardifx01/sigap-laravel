@@ -26,24 +26,14 @@
     @endif
 
     <!-- Alert Cards -->
-    @if($urgentBackorders > 0 || $overdueBackorders > 0)
+    @if($overdueBackorders > 0)
         <div class="row g-3 mb-4">
-            @if($urgentBackorders > 0)
-                <div class="col-md-6">
-                    <div class="alert alert-warning">
-                        <i class="bx bx-error-circle me-1"></i>
-                        <strong>{{ $urgentBackorders }} backorder urgent</strong> memerlukan perhatian segera!
-                    </div>
+            <div class="col-md-12">
+                <div class="alert alert-danger">
+                    <i class="bx bx-time me-1"></i>
+                    <strong>{{ $overdueBackorders }} backorder terlambat</strong> dari tanggal yang diharapkan!
                 </div>
-            @endif
-            @if($overdueBackorders > 0)
-                <div class="col-md-6">
-                    <div class="alert alert-danger">
-                        <i class="bx bx-time me-1"></i>
-                        <strong>{{ $overdueBackorders }} backorder terlambat</strong> dari tanggal yang diharapkan!
-                    </div>
-                </div>
-            @endif
+            </div>
         </div>
     @endif
 
@@ -93,8 +83,8 @@
                             </span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Processing</small>
-                            <h6 class="mb-0">{{ $processingBackorders }}</h6>
+                            <small class="text-muted d-block">Partial</small>
+                            <h6 class="mb-0">{{ $partialBackorders }}</h6>
                         </div>
                     </div>
                 </div>
@@ -149,22 +139,12 @@
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
                         <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
+                        <option value="partial">Partial</option>
                         <option value="fulfilled">Fulfilled</option>
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Prioritas</label>
-                    <select wire:model.live="priorityFilter" class="form-select">
-                        <option value="">Semua Prioritas</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label">Produk</label>
                     <select wire:model.live="productFilter" class="form-select">
                         <option value="">Semua Produk</option>
@@ -173,17 +153,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Customer</label>
-                    <select wire:model.live="customerFilter" class="form-select">
-                        <option value="">Semua Customer</option>
-                        @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Tanggal</label>
+                <div class="col-md-3">
+                    <label class="form-label">Tanggal Expected</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
             </div>
@@ -203,7 +174,6 @@
                             <th>Produk</th>
                             <th>Customer</th>
                             <th>Jumlah</th>
-                            <th>Prioritas</th>
                             <th>Status</th>
                             <th>Target</th>
                             <th>Aksi</th>
@@ -211,7 +181,7 @@
                     </thead>
                     <tbody>
                         @forelse($backorders as $backorder)
-                            <tr class="{{ $backorder->expected_date && $backorder->expected_date->isPast() && in_array($backorder->status, ['pending', 'processing']) ? 'table-danger' : '' }}">
+                            <tr class="{{ $backorder->expected_date && $backorder->expected_date->isPast() && in_array($backorder->status, ['pending', 'partial']) ? 'table-danger' : '' }}">
                                 <td>
                                     <div>
                                         <span class="fw-medium">{{ $backorder->product->nama_barang }}</span>
@@ -221,36 +191,23 @@
                                 </td>
                                 <td>
                                     <div>
-                                        <span class="fw-medium">{{ $backorder->customer->nama_toko }}</span>
+                                        <span class="fw-medium">{{ $backorder->orderItem->order->customer->nama_toko }}</span>
                                         <br>
-                                        <small class="text-muted">{{ $backorder->customer->nama_pemilik }}</small>
+                                        <small class="text-muted">Order: {{ $backorder->orderItem->order->nomor_order }}</small>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="fw-medium">{{ $backorder->quantity_requested }} {{ $backorder->product->satuan }}</span>
-                                    @if($backorder->quantity_fulfilled)
+                                    <span class="fw-medium">{{ $backorder->jumlah_backorder }} {{ $backorder->product->jenis }}</span>
+                                    @if($backorder->jumlah_terpenuhi > 0)
                                         <br>
-                                        <small class="text-success">Dipenuhi: {{ $backorder->quantity_fulfilled }}</small>
+                                        <small class="text-success">Dipenuhi: {{ $backorder->jumlah_terpenuhi }}</small>
                                     @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $priorityColors = [
-                                            'low' => 'secondary',
-                                            'medium' => 'info',
-                                            'high' => 'warning',
-                                            'urgent' => 'danger'
-                                        ];
-                                    @endphp
-                                    <span class="badge bg-label-{{ $priorityColors[$backorder->priority] ?? 'secondary' }}">
-                                        {{ ucfirst($backorder->priority) }}
-                                    </span>
                                 </td>
                                 <td>
                                     @php
                                         $statusColors = [
                                             'pending' => 'warning',
-                                            'processing' => 'info',
+                                            'partial' => 'info',
                                             'fulfilled' => 'success',
                                             'cancelled' => 'danger'
                                         ];
@@ -370,29 +327,22 @@
                                     @error('product_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Customer <span class="text-danger">*</span></label>
-                                    <select wire:model="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
-                                        <option value="">Pilih Customer</option>
-                                        @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                                    <label class="form-label">Order Item <span class="text-danger">*</span></label>
+                                    <select wire:model="order_item_id" class="form-select @error('order_item_id') is-invalid @enderror">
+                                        <option value="">Pilih Order Item</option>
+                                        @foreach($orderItems as $orderItem)
+                                            <option value="{{ $orderItem->id }}">
+                                                {{ $orderItem->order->nomor_order }} - {{ $orderItem->order->customer->nama_toko }}
+                                                ({{ $orderItem->product->nama_barang }})
+                                            </option>
                                         @endforeach
                                     </select>
-                                    @error('customer_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('order_item_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Jumlah Diminta <span class="text-danger">*</span></label>
-                                    <input type="number" wire:model="quantity_requested" class="form-control @error('quantity_requested') is-invalid @enderror" min="1">
-                                    @error('quantity_requested') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Prioritas <span class="text-danger">*</span></label>
-                                    <select wire:model="priority" class="form-select @error('priority') is-invalid @enderror">
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
-                                    </select>
-                                    @error('priority') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <label class="form-label">Jumlah Backorder <span class="text-danger">*</span></label>
+                                    <input type="number" wire:model="jumlah_backorder" class="form-control @error('jumlah_backorder') is-invalid @enderror" min="1">
+                                    @error('jumlah_backorder') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Tanggal Diharapkan</label>
@@ -401,8 +351,8 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Catatan</label>
-                                    <textarea wire:model="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
-                                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <textarea wire:model="catatan" class="form-control @error('catatan') is-invalid @enderror" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                                    @error('catatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                         </form>
