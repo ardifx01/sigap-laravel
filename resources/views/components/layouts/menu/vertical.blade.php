@@ -120,7 +120,7 @@
 
       <li class="menu-item {{ request()->is('supir/k3-checklist*') ? 'active' : '' }}">
         <a class="menu-link" href="{{ route('supir.k3-checklist') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-shield-check"></i>
+          <i class="menu-icon tf-icons bx bx-check-square"></i>
           <div class="text-truncate">K3 Checklist</div>
         </a>
       </li>
