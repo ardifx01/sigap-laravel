@@ -15,14 +15,16 @@ class Delivery extends Model implements HasMedia
 
     protected $fillable = [
         'order_id',
-        'supir_id',
+        'driver_id',
+        'assigned_by',
+        'rute_kota',
         'assigned_at',
+        'k3_checked_at',
         'started_at',
         'delivered_at',
         'delivery_latitude',
         'delivery_longitude',
         'delivery_notes',
-        'customer_signature',
         'status',
         'estimated_arrival',
         'actual_distance',
@@ -45,7 +47,7 @@ class Delivery extends Model implements HasMedia
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['order_id', 'supir_id', 'status', 'assigned_at', 'started_at', 'delivered_at'])
+            ->logOnly(['order_id', 'driver_id', 'status', 'assigned_at', 'started_at', 'delivered_at'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -60,7 +62,12 @@ class Delivery extends Model implements HasMedia
 
     public function supir()
     {
-        return $this->belongsTo(User::class, 'supir_id');
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(User::class, 'driver_id');
     }
 
     public function trackingLogs()
@@ -78,7 +85,12 @@ class Delivery extends Model implements HasMedia
      */
     public function scopeBySupir($query, $supirId)
     {
-        return $query->where('supir_id', $supirId);
+        return $query->where('driver_id', $supirId);
+    }
+
+    public function scopeByDriver($query, $driverId)
+    {
+        return $query->where('driver_id', $driverId);
     }
 
     public function scopeAssigned($query)

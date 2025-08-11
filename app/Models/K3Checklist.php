@@ -14,7 +14,7 @@ class K3Checklist extends Model implements HasMedia
     use HasFactory, LogsActivity, InteractsWithMedia;
 
     protected $fillable = [
-        'supir_id',
+        'driver_id',
         'delivery_id',
         'tanggal_checklist',
         'kondisi_ban',
@@ -62,7 +62,7 @@ class K3Checklist extends Model implements HasMedia
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['supir_id', 'status', 'approved_by', 'approved_at'])
+            ->logOnly(['driver_id', 'status', 'approved_by', 'approved_at'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -72,7 +72,12 @@ class K3Checklist extends Model implements HasMedia
      */
     public function supir()
     {
-        return $this->belongsTo(User::class, 'supir_id');
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(User::class, 'driver_id');
     }
 
     public function delivery()
@@ -90,7 +95,12 @@ class K3Checklist extends Model implements HasMedia
      */
     public function scopeBySupir($query, $supirId)
     {
-        return $query->where('supir_id', $supirId);
+        return $query->where('driver_id', $supirId);
+    }
+
+    public function scopeByDriver($query, $driverId)
+    {
+        return $query->where('driver_id', $driverId);
     }
 
     public function scopePending($query)

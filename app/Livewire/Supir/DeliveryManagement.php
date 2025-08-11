@@ -54,7 +54,7 @@ class DeliveryManagement extends Component
     public function mount()
     {
         // Check if there's an active delivery
-        $this->currentDelivery = Delivery::where('supir_id', auth()->id())
+        $this->currentDelivery = Delivery::where('driver_id', auth()->id())
                                         ->where('status', 'in_progress')
                                         ->first();
 
@@ -76,7 +76,7 @@ class DeliveryManagement extends Component
 
     public function openStartModal($deliveryId)
     {
-        $delivery = Delivery::where('supir_id', auth()->id())
+        $delivery = Delivery::where('driver_id', auth()->id())
                            ->findOrFail($deliveryId);
 
         if (!$delivery->canBeStarted()) {
@@ -124,7 +124,7 @@ class DeliveryManagement extends Component
         }
 
         try {
-            $delivery = Delivery::where('supir_id', auth()->id())
+            $delivery = Delivery::where('driver_id', auth()->id())
                                ->findOrFail($this->startDeliveryId);
 
             if (!$delivery->canBeStarted()) {
@@ -162,7 +162,7 @@ class DeliveryManagement extends Component
 
     public function openCompleteModal($deliveryId)
     {
-        $delivery = Delivery::where('supir_id', auth()->id())
+        $delivery = Delivery::where('driver_id', auth()->id())
                            ->findOrFail($deliveryId);
 
         if (!$delivery->canBeCompleted()) {
@@ -210,7 +210,7 @@ class DeliveryManagement extends Component
         $this->validate();
 
         try {
-            $delivery = Delivery::where('supir_id', auth()->id())
+            $delivery = Delivery::where('driver_id', auth()->id())
                                ->findOrFail($this->completeDeliveryId);
 
             if (!$delivery->canBeCompleted()) {
@@ -289,7 +289,7 @@ class DeliveryManagement extends Component
 
     public function render()
     {
-        $deliveries = Delivery::where('supir_id', auth()->id())
+        $deliveries = Delivery::where('driver_id', auth()->id())
             ->with(['order.customer', 'k3Checklist'])
             ->when($this->search, function ($query) {
                 $query->whereHas('order', function ($q) {
@@ -305,15 +305,15 @@ class DeliveryManagement extends Component
             ->orderBy('assigned_at', 'desc')
             ->paginate(10);
 
-        $assignedDeliveries = Delivery::where('supir_id', auth()->id())
+        $assignedDeliveries = Delivery::where('driver_id', auth()->id())
                                     ->where('status', 'assigned')
                                     ->count();
 
-        $inProgressDeliveries = Delivery::where('supir_id', auth()->id())
+        $inProgressDeliveries = Delivery::where('driver_id', auth()->id())
                                        ->where('status', 'in_progress')
                                        ->count();
 
-        $completedToday = Delivery::where('supir_id', auth()->id())
+        $completedToday = Delivery::where('driver_id', auth()->id())
                                  ->where('status', 'delivered')
                                  ->whereDate('delivered_at', today())
                                  ->count();

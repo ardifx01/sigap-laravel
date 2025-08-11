@@ -125,7 +125,7 @@ class K3ChecklistSystem extends Component
 
             // Create checklist
             $checklist = K3Checklist::create([
-                'supir_id' => auth()->id(),
+                'driver_id' => auth()->id(),
                 'delivery_id' => $this->delivery_id,
                 'tanggal_checklist' => now(),
                 'kondisi_ban' => $this->kondisi_ban,
@@ -164,7 +164,7 @@ class K3ChecklistSystem extends Component
     public function viewChecklist($checklistId)
     {
         $this->viewChecklist = K3Checklist::with(['supir', 'delivery', 'approvedBy'])
-                                         ->where('supir_id', auth()->id())
+                                         ->where('driver_id', auth()->id())
                                          ->findOrFail($checklistId);
         $this->showViewModal = true;
     }
@@ -197,8 +197,8 @@ class K3ChecklistSystem extends Component
 
     public function render()
     {
-        $checklists = K3Checklist::where('supir_id', auth()->id())
-            ->with(['delivery'])
+        $checklists = K3Checklist::where('driver_id', auth()->id())
+            ->with(['supir', 'delivery', 'approvedBy'])
             ->when($this->search, function ($query) {
                 $query->where('catatan_tambahan', 'like', '%' . $this->search . '%');
             })
@@ -211,16 +211,16 @@ class K3ChecklistSystem extends Component
             ->orderBy('tanggal_checklist', 'desc')
             ->paginate(10);
 
-        $availableDeliveries = Delivery::where('supir_id', auth()->id())
+        $availableDeliveries = Delivery::where('driver_id', auth()->id())
                                      ->where('status', 'assigned')
                                      ->with('order.customer')
                                      ->get();
 
-        $todayChecklists = K3Checklist::where('supir_id', auth()->id())
+        $todayChecklists = K3Checklist::where('driver_id', auth()->id())
                                     ->whereDate('tanggal_checklist', today())
                                     ->count();
 
-        $pendingChecklists = K3Checklist::where('supir_id', auth()->id())
+        $pendingChecklists = K3Checklist::where('driver_id', auth()->id())
                                        ->where('status', 'pending')
                                        ->count();
 
