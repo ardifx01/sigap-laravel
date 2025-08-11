@@ -83,7 +83,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar flex-shrink-0 me-3">
                             <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-truck"></i>
+                                <i class="bx bx-car"></i>
                             </span>
                         </div>
                         <div>

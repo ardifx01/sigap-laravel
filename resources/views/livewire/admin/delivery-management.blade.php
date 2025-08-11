@@ -30,7 +30,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
                             <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-truck"></i>
+                                <i class="bx bx-list-ol"></i>
                             </span>
                         </div>
                         <div>
@@ -136,7 +136,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
                             <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-calendar-today"></i>
+                                <i class="bx bx-car"></i>
                             </span>
                         </div>
                         <div>
@@ -348,7 +348,7 @@
                             <tr>
                                 <td colspan="6" class="text-center py-4">
                                     <div class="d-flex flex-column align-items-center">
-                                        <i class="bx bx-truck text-muted" style="font-size: 3rem;"></i>
+                                        <i class="bx bx-car text-muted" style="font-size: 3rem;"></i>
                                         <p class="text-muted mt-2 mb-0">Tidak ada pengiriman ditemukan</p>
                                         <small class="text-muted">Pengiriman akan muncul setelah order dikonfirmasi</small>
                                     </div>

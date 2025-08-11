@@ -222,7 +222,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="text-center py-4">
-                                    <i class="bx bx-truck text-muted" style="font-size: 3rem;"></i>
+                                    <i class="bx bx-car text-muted" style="font-size: 3rem;"></i>
                                     <p class="text-muted mt-2">Belum ada delivery</p>
                                 </td>
                             </tr>

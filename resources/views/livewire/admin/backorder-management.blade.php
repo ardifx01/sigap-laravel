@@ -62,7 +62,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
                             <span class="avatar-initial rounded-circle bg-label-warning">
-                                <i class="bx bx-clock"></i>
+                                <i class="bx bx-time"></i>
                             </span>
                         </div>
                         <div>

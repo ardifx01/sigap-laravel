@@ -6,7 +6,7 @@
             <p class="text-muted mb-0">Checklist Keselamatan dan Kesehatan Kerja sebelum pengiriman</p>
         </div>
         <button wire:click="openChecklistModal" class="btn btn-primary">
-            <i class="bx bx-shield-check me-1"></i>
+            <i class="bx bx-shield me-1"></i>
             Buat Checklist
         </button>
     </div>
@@ -169,7 +169,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="text-center py-4">
-                                    <i class="bx bx-shield-check text-muted" style="font-size: 3rem;"></i>
+                                    <i class="bx bx-shield text-muted" style="font-size: 3rem;"></i>
                                     <p class="text-muted mt-2">Belum ada K3 checklist</p>
                                     <button wire:click="openChecklistModal" class="btn btn-primary btn-sm">
                                         <i class="bx bx-shield-check me-1"></i> Buat Checklist Pertama

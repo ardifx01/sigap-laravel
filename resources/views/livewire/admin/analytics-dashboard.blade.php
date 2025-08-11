@@ -262,7 +262,7 @@
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm me-2">
                                     <span class="avatar-initial rounded-circle bg-label-success">
-                                        <i class="bx bx-shield-check"></i>
+                                        <i class="bx bx-check-square"></i>
                                     </span>
                                 </div>
                                 <div>

@@ -81,7 +81,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
                             <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-truck"></i>
+                                <i class="bx bx-car"></i>
                             </span>
                         </div>
                         <div>
@@ -136,7 +136,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
                             <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-calendar-today"></i>
+                                <i class="bx  bx-list-ol"></i>
                             </span>
                         </div>
                         <div>

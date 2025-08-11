@@ -90,7 +90,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar flex-shrink-0 me-3">
                             <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-shield-check"></i>
+                                <i class="bx bx-shield"></i>
                             </span>
                         </div>
                         <div>
@@ -150,7 +150,7 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center py-4">
-                        <i class="bx bx-shield-check text-muted" style="font-size: 3rem;"></i>
+                        <i class="bx bx-shield text-muted" style="font-size: 3rem;"></i>
                         <p class="text-muted mt-2">Belum melakukan K3 check</p>
                         <small class="text-muted">Lakukan K3 checklist sebelum berangkat</small>
                     </div>
