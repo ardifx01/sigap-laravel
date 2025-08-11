@@ -19,74 +19,87 @@
       <!-- Admin Menu -->
       <li class="menu-header small text-uppercase"><span class="menu-header-text">Admin</span></li>
 
+      <!-- Dashboard -->
       <li class="menu-item {{ request()->is('admin/analytics*') ? 'active' : '' }}">
         <a class="menu-link" href="{{ route('admin.analytics') }}" wire:navigate>
           <i class="menu-icon tf-icons bx bx-line-chart"></i>
-          <div class="text-truncate">Analytics</div>
+          <div class="text-truncate">Dashboard</div>
         </a>
       </li>
 
-      <li class="menu-item {{ request()->is('admin/users*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.users') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-user"></i>
-          <div class="text-truncate">Manajemen User</div>
+      <!-- Master Data -->
+      <li class="menu-item {{ request()->is('admin/users*') || request()->is('admin/customers*') || request()->is('admin/products*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-collection"></i>
+          <div class="text-truncate">Master Data</div>
         </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ request()->is('admin/users*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.users') }}" wire:navigate>
+              <div class="text-truncate">Manajemen User</div>
+            </a>
+          </li>
+          <li class="menu-item {{ request()->is('admin/customers*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.customers') }}" wire:navigate>
+              <div class="text-truncate">Data Pelanggan</div>
+            </a>
+          </li>
+          <li class="menu-item {{ request()->is('admin/products*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.products') }}" wire:navigate>
+              <div class="text-truncate">Manajemen Produk</div>
+            </a>
+          </li>
+        </ul>
       </li>
 
-      <li class="menu-item {{ request()->is('admin/customers*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.customers') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-store"></i>
-          <div class="text-truncate">Data Pelanggan</div>
+      <!-- Operations -->
+      <li class="menu-item {{ request()->is('admin/orders*') || request()->is('admin/deliveries*') || request()->is('admin/payments*') || request()->is('admin/backorders*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
+          <i class="menu-icon tf-icons bx bx-cog"></i>
+          <div class="text-truncate">Operasional</div>
         </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ request()->is('admin/orders*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.orders') }}" wire:navigate>
+              <div class="text-truncate">Manajemen Order</div>
+            </a>
+          </li>
+          <li class="menu-item {{ request()->is('admin/deliveries*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.deliveries') }}" wire:navigate>
+              <div class="text-truncate">Manajemen Pengiriman</div>
+            </a>
+          </li>
+          <li class="menu-item {{ request()->is('admin/payments*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.payments') }}" wire:navigate>
+              <div class="text-truncate">Manajemen Pembayaran</div>
+            </a>
+          </li>
+          <li class="menu-item {{ request()->is('admin/backorders*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.backorders') }}" wire:navigate>
+              <div class="text-truncate">Manajemen Backorder</div>
+            </a>
+          </li>
+        </ul>
       </li>
 
-      <li class="menu-item {{ request()->is('admin/products*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.products') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-package"></i>
-          <div class="text-truncate">Manajemen Produk</div>
-        </a>
-      </li>
-
-      <li class="menu-item {{ request()->is('admin/orders*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.orders') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-cart"></i>
-          <div class="text-truncate">Manajemen Order</div>
-        </a>
-      </li>
-
-      <li class="menu-item {{ request()->is('admin/deliveries*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.deliveries') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-truck"></i>
-          <div class="text-truncate">Manajemen Pengiriman</div>
-        </a>
-      </li>
-
-      <li class="menu-item {{ request()->is('admin/payments*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.payments') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-credit-card"></i>
-          <div class="text-truncate">Manajemen Pembayaran</div>
-        </a>
-      </li>
-
-      <li class="menu-item {{ request()->is('admin/backorders*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.backorders') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-time"></i>
-          <div class="text-truncate">Manajemen Backorder</div>
-        </a>
-      </li>
-
-      <li class="menu-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.reports') }}" wire:navigate>
+      <!-- Reports & Monitoring -->
+      <li class="menu-item {{ request()->is('admin/reports*') || request()->is('admin/activity-logs*') ? 'active open' : '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle">
           <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
-          <div class="text-truncate">Laporan</div>
+          <div class="text-truncate">Laporan & Monitor</div>
         </a>
-      </li>
-
-      <li class="menu-item {{ request()->is('admin/activity-logs*') ? 'active' : '' }}">
-        <a class="menu-link" href="{{ route('admin.activity-logs') }}" wire:navigate>
-          <i class="menu-icon tf-icons bx bx-history"></i>
-          <div class="text-truncate">Activity Log</div>
-        </a>
+        <ul class="menu-sub">
+          <li class="menu-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.reports') }}" wire:navigate>
+              <div class="text-truncate">Laporan</div>
+            </a>
+          </li>
+          <li class="menu-item {{ request()->is('admin/activity-logs*') ? 'active' : '' }}">
+            <a class="menu-link" href="{{ route('admin.activity-logs') }}" wire:navigate>
+              <div class="text-truncate">Activity Log</div>
+            </a>
+          </li>
+        </ul>
       </li>
     @endif
 
