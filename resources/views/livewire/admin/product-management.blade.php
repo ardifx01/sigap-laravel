@@ -120,7 +120,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Pencarian</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama produk, kode, atau kategori...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama produk, kode, atau jenis...">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Status</label>
@@ -162,7 +162,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>Produk</th>
-                            <th>Kategori</th>
+                            <th>Jenis</th>
                             <th>Harga</th>
                             <th>Stok</th>
                             <th>Status</th>
@@ -175,8 +175,8 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
-                                            @if($product->getFirstMediaUrl('product_images'))
-                                                <img src="{{ $product->getFirstMediaUrl('product_images') }}" alt="Product" class="rounded">
+                                            @if($product->foto_produk)
+                                                <img src="{{ asset('storage/' . $product->foto_produk) }}" alt="Product" class="rounded">
                                             @else
                                                 <span class="avatar-initial rounded bg-label-secondary">
                                                     <i class="bx bx-package"></i>
@@ -191,19 +191,17 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-info">{{ $product->kategori }}</span>
+                                    <span class="badge bg-label-info">{{ ucfirst($product->jenis) }}</span>
                                 </td>
                                 <td>
                                     <div>
                                         <span class="fw-medium">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</span>
-                                        <br>
-                                        <small class="text-muted">Beli: Rp {{ number_format($product->harga_beli, 0, ',', '.') }}</small>
                                     </div>
                                 </td>
                                 <td>
                                     <div>
                                         <span class="fw-medium {{ $product->stok_tersedia <= $product->stok_minimum ? 'text-danger' : ($product->stok_tersedia == 0 ? 'text-danger' : 'text-success') }}">
-                                            {{ $product->stok_tersedia }} {{ $product->satuan }}
+                                            {{ $product->stok_tersedia }} {{ $product->jenis }}
                                         </span>
                                         <br>
                                         <small class="text-muted">Min: {{ $product->stok_minimum }}</small>
@@ -299,24 +297,13 @@
                                     @error('nama_barang') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Kategori <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="kategori" class="form-control @error('kategori') is-invalid @enderror" list="categories">
-                                    <datalist id="categories">
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category }}">
+                                    <label class="form-label">Jenis <span class="text-danger">*</span></label>
+                                    <select wire:model="jenis" class="form-select @error('jenis') is-invalid @enderror">
+                                        @foreach($jenisOptions as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
                                         @endforeach
-                                    </datalist>
-                                    @error('kategori') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Satuan <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="satuan" class="form-control @error('satuan') is-invalid @enderror" placeholder="pcs, kg, liter, dll">
-                                    @error('satuan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Harga Beli <span class="text-danger">*</span></label>
-                                    <input type="number" wire:model="harga_beli" class="form-control @error('harga_beli') is-invalid @enderror" min="0">
-                                    @error('harga_beli') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </select>
+                                    @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Harga Jual <span class="text-danger">*</span></label>
@@ -334,9 +321,9 @@
                                     @error('stok_minimum') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Deskripsi</label>
-                                    <textarea wire:model="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="3"></textarea>
-                                    @error('deskripsi') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <label class="form-label">Keterangan</label>
+                                    <textarea wire:model="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3"></textarea>
+                                    @error('keterangan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Foto Produk</label>

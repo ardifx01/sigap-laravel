@@ -21,13 +21,11 @@ class ProductManagement extends Component
     public $productId;
     public $kode_item;
     public $nama_barang;
-    public $kategori;
-    public $satuan;
-    public $harga_beli;
+    public $keterangan;
+    public $jenis = 'pack';
     public $harga_jual;
     public $stok_tersedia;
     public $stok_minimum;
-    public $deskripsi;
     public $is_active = true;
     public $foto_produk;
 
@@ -44,13 +42,11 @@ class ProductManagement extends Component
         return [
             'kode_item' => 'required|string|max:50|unique:products,kode_item,' . $this->productId,
             'nama_barang' => 'required|string|max:255',
-            'kategori' => 'required|string|max:100',
-            'satuan' => 'required|string|max:20',
-            'harga_beli' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string',
+            'jenis' => 'required|in:pack,ball,dus',
             'harga_jual' => 'required|numeric|min:0',
             'stok_tersedia' => 'required|integer|min:0',
             'stok_minimum' => 'required|integer|min:0',
-            'deskripsi' => 'nullable|string',
             'foto_produk' => 'nullable|image|max:2048',
         ];
     }
@@ -73,33 +69,31 @@ class ProductManagement extends Component
     public function openProductModal($productId = null)
     {
         $this->resetProductForm();
-        
+
         if ($productId) {
             $product = Product::find($productId);
             $this->productId = $product->id;
             $this->kode_item = $product->kode_item;
             $this->nama_barang = $product->nama_barang;
-            $this->kategori = $product->kategori;
-            $this->satuan = $product->satuan;
-            $this->harga_beli = $product->harga_beli;
+            $this->keterangan = $product->keterangan;
+            $this->jenis = $product->jenis;
             $this->harga_jual = $product->harga_jual;
             $this->stok_tersedia = $product->stok_tersedia;
             $this->stok_minimum = $product->stok_minimum;
-            $this->deskripsi = $product->deskripsi;
             $this->is_active = $product->is_active;
         }
-        
+
         $this->showProductModal = true;
     }
 
     public function resetProductForm()
     {
         $this->reset([
-            'productId', 'kode_item', 'nama_barang', 'kategori', 'satuan',
-            'harga_beli', 'harga_jual', 'stok_tersedia', 'stok_minimum',
-            'deskripsi', 'foto_produk'
+            'productId', 'kode_item', 'nama_barang', 'keterangan',
+            'harga_jual', 'stok_tersedia', 'stok_minimum', 'foto_produk'
         ]);
         $this->is_active = true;
+        $this->jenis = 'pack';
     }
 
     public function saveProduct()
@@ -110,39 +104,40 @@ class ProductManagement extends Component
             $data = [
                 'kode_item' => $this->kode_item,
                 'nama_barang' => $this->nama_barang,
-                'kategori' => $this->kategori,
-                'satuan' => $this->satuan,
-                'harga_beli' => $this->harga_beli,
+                'keterangan' => $this->keterangan,
+                'jenis' => $this->jenis,
                 'harga_jual' => $this->harga_jual,
                 'stok_tersedia' => $this->stok_tersedia,
                 'stok_minimum' => $this->stok_minimum,
-                'deskripsi' => $this->deskripsi,
                 'is_active' => $this->is_active,
             ];
 
             if ($this->productId) {
                 $product = Product::find($this->productId);
                 $product->update($data);
-                
+
                 if ($this->foto_produk) {
-                    $product->clearMediaCollection('product_images');
-                    $product->addMediaFromRequest('foto_produk')->toMediaCollection('product_images');
+                    // Store as file path string
+                    $path = $this->foto_produk->store('products', 'public');
+                    $product->update(['foto_produk' => $path]);
                 }
-                
+
                 session()->flash('success', 'Produk berhasil diupdate!');
             } else {
                 $product = Product::create($data);
-                
+
                 if ($this->foto_produk) {
-                    $product->addMediaFromRequest('foto_produk')->toMediaCollection('product_images');
+                    // Store as file path string
+                    $path = $this->foto_produk->store('products', 'public');
+                    $product->update(['foto_produk' => $path]);
                 }
-                
+
                 session()->flash('success', 'Produk berhasil ditambahkan!');
             }
 
             $this->showProductModal = false;
             $this->resetProductForm();
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menyimpan produk: ' . $e->getMessage());
         }
@@ -163,7 +158,7 @@ class ProductManagement extends Component
         try {
             $product = Product::find($productId);
             $product->update(['is_active' => !$product->is_active]);
-            
+
             $status = $product->is_active ? 'diaktifkan' : 'dinonaktifkan';
             session()->flash('success', "Produk berhasil {$status}!");
         } catch (\Exception $e) {
@@ -175,25 +170,28 @@ class ProductManagement extends Component
     {
         try {
             $product = Product::find($productId);
-            $newStock = $product->stok_tersedia + $adjustment;
-            
+            $stockBefore = $product->stok_tersedia;
+            $newStock = $stockBefore + $adjustment;
+
             if ($newStock < 0) {
                 session()->flash('error', 'Stok tidak boleh negatif!');
                 return;
             }
-            
+
             $product->update(['stok_tersedia' => $newStock]);
-            
+
             // Log inventory change
             \App\Models\InventoryLog::create([
                 'product_id' => $product->id,
+                'user_id' => auth()->id(),
                 'type' => $adjustment > 0 ? 'in' : 'out',
                 'quantity' => abs($adjustment),
-                'reason' => $reason,
-                'user_id' => auth()->id(),
-                'notes' => "Stock adjustment by admin",
+                'stock_before' => $stockBefore,
+                'stock_after' => $newStock,
+                'reference_type' => 'adjustment',
+                'notes' => "Stock adjustment by admin: {$reason}",
             ]);
-            
+
             session()->flash('success', 'Stok berhasil disesuaikan!');
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menyesuaikan stok: ' . $e->getMessage());
@@ -206,7 +204,7 @@ class ProductManagement extends Component
             ->when($this->search, function ($query) {
                 $query->where('nama_barang', 'like', '%' . $this->search . '%')
                       ->orWhere('kode_item', 'like', '%' . $this->search . '%')
-                      ->orWhere('kategori', 'like', '%' . $this->search . '%');
+                      ->orWhere('jenis', 'like', '%' . $this->search . '%');
             })
             ->when($this->statusFilter !== '', function ($query) {
                 $query->where('is_active', $this->statusFilter);
@@ -225,9 +223,13 @@ class ProductManagement extends Component
         return $query->paginate($this->perPage);
     }
 
-    public function getCategoriesProperty()
+    public function getJenisOptionsProperty()
     {
-        return Product::distinct()->pluck('kategori')->filter()->sort();
+        return [
+            'pack' => 'Pack',
+            'ball' => 'Ball',
+            'dus' => 'Dus'
+        ];
     }
 
     public function render()
@@ -236,11 +238,11 @@ class ProductManagement extends Component
         $activeProducts = Product::where('is_active', true)->count();
         $lowStockProducts = Product::whereRaw('stok_tersedia <= stok_minimum')->count();
         $outOfStockProducts = Product::where('stok_tersedia', 0)->count();
-        $totalValue = Product::selectRaw('SUM(stok_tersedia * harga_beli) as total')->value('total') ?? 0;
+        $totalValue = Product::selectRaw('SUM(stok_tersedia * harga_jual) as total')->value('total') ?? 0;
 
         return view('livewire.admin.product-management', [
             'products' => $this->products,
-            'categories' => $this->categories,
+            'jenisOptions' => $this->jenisOptions,
             'totalProducts' => $totalProducts,
             'activeProducts' => $activeProducts,
             'lowStockProducts' => $lowStockProducts,
