@@ -1,0 +1,498 @@
+<div>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Manajemen Pembayaran</h4>
+            <p class="text-muted mb-0">Monitor dan kelola semua pembayaran</p>
+        </div>
+        <button wire:click="openPaymentModal" class="btn btn-primary">
+            <i class="bx bx-plus"></i> Catat Pembayaran
+        </button>
+    </div>
+
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-md me-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                <i class="bx bx-credit-card"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Total Pembayaran</small>
+                            <h6 class="mb-0">{{ $totalPayments }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-md me-3">
+                            <span class="avatar-initial rounded-circle bg-label-success">
+                                <i class="bx bx-check-circle"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Lunas</small>
+                            <h6 class="mb-0">{{ $paidPayments }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-md me-3">
+                            <span class="avatar-initial rounded-circle bg-label-warning">
+                                <i class="bx bx-time"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Pending</small>
+                            <h6 class="mb-0">{{ $pendingPayments }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-md me-3">
+                            <span class="avatar-initial rounded-circle bg-label-info">
+                                <i class="bx bx-money"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Total Nilai</small>
+                            <h6 class="mb-0">Rp {{ number_format($totalAmount, 0, ',', '.') }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today Stats & Payment Methods -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-md me-3">
+                            <span class="avatar-initial rounded-circle bg-label-success">
+                                <i class="bx bx-calendar-today"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Pembayaran Hari Ini</small>
+                            <h6 class="mb-0">{{ $todayPayments }} (Rp {{ number_format($todayAmount, 0, ',', '.') }})</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-2">Metode Pembayaran</h6>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <small class="text-muted d-block">Cash</small>
+                            <span class="fw-medium">Rp {{ number_format($cashPayments, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Transfer</small>
+                            <span class="fw-medium">Rp {{ number_format($transferPayments, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Credit</small>
+                            <span class="fw-medium">Rp {{ number_format($creditPayments, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Pencarian</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nomor order atau nama toko...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select wire:model.live="statusFilter" class="form-select">
+                        <option value="">Semua Status</option>
+                        <option value="paid">Lunas</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Metode</label>
+                    <select wire:model.live="methodFilter" class="form-select">
+                        <option value="">Semua Metode</option>
+                        <option value="cash">Cash</option>
+                        <option value="transfer">Transfer</option>
+                        <option value="credit">Credit</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Customer</label>
+                    <select wire:model.live="customerFilter" class="form-select">
+                        <option value="">Semua Customer</option>
+                        @foreach($customers as $customer)
+                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" wire:model.live="dateFilter" class="form-control">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Per Page</label>
+                    <select wire:model.live="perPage" class="form-select">
+                        <option value="15">15</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Pembayaran</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Jumlah</th>
+                            <th>Metode</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($payments as $payment)
+                            <tr>
+                                <td>
+                                    <span class="fw-medium">{{ $payment->order->nomor_order }}</span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <span class="fw-medium">{{ $payment->order->customer->nama_toko }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ $payment->order->customer->nama_pemilik }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-medium">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                </td>
+                                <td>
+                                    @php
+                                        $methodColors = [
+                                            'cash' => 'success',
+                                            'transfer' => 'info',
+                                            'credit' => 'warning'
+                                        ];
+                                    @endphp
+                                    <span class="badge bg-label-{{ $methodColors[$payment->payment_method] ?? 'secondary' }}">
+                                        {{ ucfirst($payment->payment_method) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-label-{{ $payment->status === 'paid' ? 'success' : 'warning' }}">
+                                        {{ ucfirst($payment->status) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-medium">{{ $payment->payment_date->format('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ $payment->created_at->format('H:i') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Aksi
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click="viewPayment({{ $payment->id }})">
+                                                    <i class="bx bx-show me-1"></i> Lihat Detail
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click="openPaymentModal({{ $payment->id }})">
+                                                    <i class="bx bx-edit me-1"></i> Edit
+                                                </a>
+                                            </li>
+                                            @if($payment->status === 'pending')
+                                                <li>
+                                                    <a class="dropdown-item" href="#" wire:click="updatePaymentStatus({{ $payment->id }}, 'paid')">
+                                                        <i class="bx bx-check me-1"></i> Tandai Lunas
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#"
+                                                   wire:click="deletePayment({{ $payment->id }})"
+                                                   onclick="return confirm('Yakin ingin menghapus pembayaran ini?')">
+                                                    <i class="bx bx-trash me-1"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-credit-card text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-0">Tidak ada pembayaran ditemukan</p>
+                                        <small class="text-muted">Catat pembayaran baru atau ubah filter pencarian</small>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if($payments->hasPages())
+            <div class="card-footer">
+                {{ $payments->links() }}
+            </div>
+        @endif
+    </div>
+
+    <!-- Payment Modal -->
+    @if($showPaymentModal)
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ $paymentId ? 'Edit Pembayaran' : 'Catat Pembayaran' }}</h5>
+                        <button type="button" class="btn-close" wire:click="$set('showPaymentModal', false)"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form wire:submit="savePayment">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Order <span class="text-danger">*</span></label>
+                                    <select wire:model="order_id" class="form-select @error('order_id') is-invalid @enderror">
+                                        <option value="">Pilih Order</option>
+                                        @foreach($orders as $order)
+                                            <option value="{{ $order->id }}">
+                                                {{ $order->nomor_order }} - {{ $order->customer->nama_toko }}
+                                                (Rp {{ number_format($order->total_amount, 0, ',', '.') }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('order_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jumlah Pembayaran <span class="text-danger">*</span></label>
+                                    <input type="number" wire:model="amount" class="form-control @error('amount') is-invalid @enderror" min="1">
+                                    @error('amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
+                                    <select wire:model="payment_method" class="form-select @error('payment_method') is-invalid @enderror">
+                                        <option value="cash">Cash</option>
+                                        <option value="transfer">Transfer</option>
+                                        <option value="credit">Credit</option>
+                                    </select>
+                                    @error('payment_method') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tanggal Pembayaran <span class="text-danger">*</span></label>
+                                    <input type="date" wire:model="payment_date" class="form-control @error('payment_date') is-invalid @enderror">
+                                    @error('payment_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Bukti Transfer</label>
+                                    <input type="file" wire:model="bukti_transfer" class="form-control @error('bukti_transfer') is-invalid @enderror" accept="image/*">
+                                    @error('bukti_transfer') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @if($bukti_transfer)
+                                        <div class="mt-2">
+                                            <img src="{{ $bukti_transfer->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-height: 150px;">
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Catatan</label>
+                                    <textarea wire:model="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="$set('showPaymentModal', false)">Batal</button>
+                        <button type="button" wire:click="savePayment" class="btn btn-primary">
+                            <i class="bx bx-save"></i> {{ $paymentId ? 'Update' : 'Simpan' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    @endif
+
+    <!-- Payment Detail Modal -->
+    @if($showViewModal && $viewPayment)
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detail Pembayaran</h5>
+                        <button type="button" class="btn-close" wire:click="$set('showViewModal', false)"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-4">
+                            <!-- Payment Info -->
+                            <div class="col-md-6">
+                                <h6>Informasi Pembayaran</h6>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Order:</td>
+                                        <td><strong>{{ $viewPayment->order->nomor_order }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jumlah:</td>
+                                        <td><strong>Rp {{ number_format($viewPayment->amount, 0, ',', '.') }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Metode:</td>
+                                        <td>
+                                            @php
+                                                $methodColors = [
+                                                    'cash' => 'success',
+                                                    'transfer' => 'info',
+                                                    'credit' => 'warning'
+                                                ];
+                                            @endphp
+                                            <span class="badge bg-label-{{ $methodColors[$viewPayment->payment_method] ?? 'secondary' }}">
+                                                {{ ucfirst($viewPayment->payment_method) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Status:</td>
+                                        <td>
+                                            <span class="badge bg-label-{{ $viewPayment->status === 'paid' ? 'success' : 'warning' }}">
+                                                {{ ucfirst($viewPayment->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tanggal Bayar:</td>
+                                        <td>{{ $viewPayment->payment_date->format('d/m/Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dicatat Oleh:</td>
+                                        <td>{{ $viewPayment->recordedBy->name ?? 'System' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dicatat Pada:</td>
+                                        <td>{{ $viewPayment->created_at->format('d/m/Y H:i') }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Customer & Order Info -->
+                            <div class="col-md-6">
+                                <h6>Informasi Customer & Order</h6>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Nama Toko:</td>
+                                        <td><strong>{{ $viewPayment->order->customer->nama_toko }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pemilik:</td>
+                                        <td>{{ $viewPayment->order->customer->nama_pemilik }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Telepon:</td>
+                                        <td>{{ $viewPayment->order->customer->telepon }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Order:</td>
+                                        <td><strong>Rp {{ number_format($viewPayment->order->total_amount, 0, ',', '.') }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Status Order:</td>
+                                        <td>
+                                            <span class="badge bg-label-info">
+                                                {{ ucfirst($viewPayment->order->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Notes -->
+                            @if($viewPayment->notes)
+                                <div class="col-12">
+                                    <h6>Catatan</h6>
+                                    <p class="text-muted">{{ $viewPayment->notes }}</p>
+                                </div>
+                            @endif
+
+                            <!-- Bukti Transfer -->
+                            @if($viewPayment->getFirstMediaUrl('payment_proofs'))
+                                <div class="col-12">
+                                    <h6>Bukti Transfer</h6>
+                                    <img src="{{ $viewPayment->getFirstMediaUrl('payment_proofs') }}" alt="Bukti Transfer" class="img-fluid rounded" style="max-height: 300px;">
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="$set('showViewModal', false)">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    @endif
+</div>
