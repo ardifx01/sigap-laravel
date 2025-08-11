@@ -14,30 +14,24 @@ class Payment extends Model implements HasMedia
     use HasFactory, LogsActivity, InteractsWithMedia;
 
     protected $fillable = [
+        'nomor_nota',
         'order_id',
-        'customer_id',
         'sales_id',
-        'nomor_invoice',
         'jumlah_tagihan',
-        'jumlah_dibayar',
-        'sisa_tagihan',
-        'metode_pembayaran',
-        'tanggal_jatuh_tempo',
-        'tanggal_pembayaran',
-        'status',
-        'catatan',
-        'verified_by',
-        'verified_at',
+        'jumlah_bayar',
+        'jenis_pembayaran',
         'bukti_transfer',
+        'status',
+        'tanggal_jatuh_tempo',
+        'tanggal_bayar',
+        'catatan',
     ];
 
     protected $casts = [
         'jumlah_tagihan' => 'decimal:2',
-        'jumlah_dibayar' => 'decimal:2',
-        'sisa_tagihan' => 'decimal:2',
+        'jumlah_bayar' => 'decimal:2',
         'tanggal_jatuh_tempo' => 'date',
-        'tanggal_pembayaran' => 'datetime',
-        'verified_at' => 'datetime',
+        'tanggal_bayar' => 'datetime',
     ];
 
     /**
@@ -46,7 +40,7 @@ class Payment extends Model implements HasMedia
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['status', 'jumlah_dibayar', 'tanggal_pembayaran', 'verified_by', 'verified_at'])
+            ->logOnly(['status', 'jumlah_bayar', 'tanggal_bayar', 'jenis_pembayaran'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -59,19 +53,9 @@ class Payment extends Model implements HasMedia
         return $this->belongsTo(Order::class);
     }
 
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
     public function sales()
     {
         return $this->belongsTo(User::class, 'sales_id');
-    }
-
-    public function verifiedBy()
-    {
-        return $this->belongsTo(User::class, 'verified_by');
     }
 
     /**
@@ -80,11 +64,6 @@ class Payment extends Model implements HasMedia
     public function scopeBySales($query, $salesId)
     {
         return $query->where('sales_id', $salesId);
-    }
-
-    public function scopeByCustomer($query, $customerId)
-    {
-        return $query->where('customer_id', $customerId);
     }
 
     public function scopePending($query)
@@ -99,23 +78,22 @@ class Payment extends Model implements HasMedia
 
     public function scopeOverdue($query)
     {
-        return $query->where('status', 'belum_lunas')
-                    ->where('tanggal_jatuh_tempo', '<', now());
+        return $query->where('status', 'overdue');
     }
 
     /**
      * Helper methods
      */
-    public function generateInvoiceNumber()
+    public function generateNotaNumber()
     {
         $date = now()->format('Ymd');
         $count = static::whereDate('created_at', now())->count() + 1;
-        return 'INV-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        return 'NOTA-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 
     public function isOverdue()
     {
-        return $this->status === 'belum_lunas' && $this->tanggal_jatuh_tempo < now();
+        return $this->status === 'overdue';
     }
 
     public function getDaysOverdue()
@@ -134,22 +112,20 @@ class Payment extends Model implements HasMedia
 
     public function isPartiallyPaid()
     {
-        return $this->jumlah_dibayar > 0 && $this->jumlah_dibayar < $this->jumlah_tagihan;
+        return $this->jumlah_bayar > 0 && $this->jumlah_bayar < $this->jumlah_tagihan;
     }
 
     public function calculateSisaTagihan()
     {
-        return $this->jumlah_tagihan - $this->jumlah_dibayar;
+        return $this->jumlah_tagihan - $this->jumlah_bayar;
     }
 
     public function updatePaymentStatus()
     {
-        $this->sisa_tagihan = $this->calculateSisaTagihan();
-
-        if ($this->sisa_tagihan <= 0) {
+        if ($this->jumlah_bayar >= $this->jumlah_tagihan) {
             $this->status = 'lunas';
-        } elseif ($this->jumlah_dibayar > 0) {
-            $this->status = 'sebagian';
+        } elseif ($this->jumlah_bayar > 0) {
+            $this->status = 'belum_lunas';
         } else {
             $this->status = 'belum_lunas';
         }

@@ -25,10 +25,11 @@ class PaymentManagement extends Component
     public $showPaymentModal = false;
     public $paymentId;
     public $order_id;
-    public $amount;
-    public $payment_method = 'cash';
-    public $payment_date;
-    public $notes;
+    public $jumlah_tagihan;
+    public $jumlah_bayar;
+    public $jenis_pembayaran = 'tunai';
+    public $tanggal_bayar;
+    public $catatan;
     public $bukti_transfer;
 
     // View payment modal
@@ -49,10 +50,11 @@ class PaymentManagement extends Component
     {
         return [
             'order_id' => 'required|exists:orders,id',
-            'amount' => 'required|numeric|min:1',
-            'payment_method' => 'required|in:cash,transfer,credit',
-            'payment_date' => 'required|date',
-            'notes' => 'nullable|string|max:500',
+            'jumlah_tagihan' => 'required|numeric|min:1',
+            'jumlah_bayar' => 'required|numeric|min:0',
+            'jenis_pembayaran' => 'required|in:tunai,transfer,giro',
+            'tanggal_bayar' => 'required|date',
+            'catatan' => 'nullable|string|max:500',
             'bukti_transfer' => 'nullable|image|max:2048',
         ];
     }
@@ -85,29 +87,30 @@ class PaymentManagement extends Component
     public function openPaymentModal($paymentId = null)
     {
         $this->resetPaymentForm();
-        
+
         if ($paymentId) {
             $payment = Payment::find($paymentId);
             $this->paymentId = $payment->id;
             $this->order_id = $payment->order_id;
-            $this->amount = $payment->amount;
-            $this->payment_method = $payment->payment_method;
-            $this->payment_date = $payment->payment_date->format('Y-m-d');
-            $this->notes = $payment->notes;
+            $this->jumlah_tagihan = $payment->jumlah_tagihan;
+            $this->jumlah_bayar = $payment->jumlah_bayar;
+            $this->jenis_pembayaran = $payment->jenis_pembayaran;
+            $this->tanggal_bayar = $payment->tanggal_bayar ? $payment->tanggal_bayar->format('Y-m-d') : null;
+            $this->catatan = $payment->catatan;
         } else {
-            $this->payment_date = now()->format('Y-m-d');
+            $this->tanggal_bayar = now()->format('Y-m-d');
         }
-        
+
         $this->showPaymentModal = true;
     }
 
     public function resetPaymentForm()
     {
         $this->reset([
-            'paymentId', 'order_id', 'amount', 'notes', 'bukti_transfer'
+            'paymentId', 'order_id', 'jumlah_tagihan', 'jumlah_bayar', 'catatan', 'bukti_transfer'
         ]);
-        $this->payment_method = 'cash';
-        $this->payment_date = now()->format('Y-m-d');
+        $this->jenis_pembayaran = 'tunai';
+        $this->tanggal_bayar = now()->format('Y-m-d');
     }
 
     public function savePayment()
@@ -115,39 +118,53 @@ class PaymentManagement extends Component
         $this->validate();
 
         try {
+            // Calculate status based on payment
+            $status = 'belum_lunas';
+            if ($this->jumlah_bayar >= $this->jumlah_tagihan) {
+                $status = 'lunas';
+            } elseif ($this->jumlah_bayar > 0) {
+                $status = 'belum_lunas';
+            }
+
             $data = [
                 'order_id' => $this->order_id,
-                'amount' => $this->amount,
-                'payment_method' => $this->payment_method,
-                'payment_date' => $this->payment_date,
-                'notes' => $this->notes,
-                'status' => 'paid',
-                'recorded_by' => auth()->id(),
+                'jumlah_tagihan' => $this->jumlah_tagihan,
+                'jumlah_bayar' => $this->jumlah_bayar,
+                'jenis_pembayaran' => $this->jenis_pembayaran,
+                'tanggal_bayar' => $this->tanggal_bayar,
+                'catatan' => $this->catatan,
+                'status' => $status,
             ];
 
             if ($this->paymentId) {
                 $payment = Payment::find($this->paymentId);
                 $payment->update($data);
-                
+
                 if ($this->bukti_transfer) {
-                    $payment->clearMediaCollection('payment_proofs');
-                    $payment->addMediaFromRequest('bukti_transfer')->toMediaCollection('payment_proofs');
+                    // Store as file path string
+                    $path = $this->bukti_transfer->store('payments', 'public');
+                    $payment->update(['bukti_transfer' => $path]);
                 }
-                
+
                 session()->flash('success', 'Pembayaran berhasil diupdate!');
             } else {
+                // Generate nomor nota
+                $data['nomor_nota'] = $this->generateNotaNumber();
+
                 $payment = Payment::create($data);
-                
+
                 if ($this->bukti_transfer) {
-                    $payment->addMediaFromRequest('bukti_transfer')->toMediaCollection('payment_proofs');
+                    // Store as file path string
+                    $path = $this->bukti_transfer->store('payments', 'public');
+                    $payment->update(['bukti_transfer' => $path]);
                 }
-                
+
                 session()->flash('success', 'Pembayaran berhasil dicatat!');
             }
 
             $this->showPaymentModal = false;
             $this->resetPaymentForm();
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
         }
@@ -155,7 +172,7 @@ class PaymentManagement extends Component
 
     public function viewPayment($paymentId)
     {
-        $this->viewPayment = Payment::with(['order.customer', 'recordedBy'])->find($paymentId);
+        $this->viewPayment = Payment::with(['order.customer'])->find($paymentId);
         $this->showViewModal = true;
     }
 
@@ -164,9 +181,9 @@ class PaymentManagement extends Component
         try {
             $payment = Payment::find($paymentId);
             $payment->update(['status' => $status]);
-            
+
             session()->flash('success', "Status pembayaran berhasil diubah ke {$status}!");
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal mengubah status pembayaran: ' . $e->getMessage());
         }
@@ -197,7 +214,7 @@ class PaymentManagement extends Component
                 $query->where('status', $this->statusFilter);
             })
             ->when($this->methodFilter, function ($query) {
-                $query->where('payment_method', $this->methodFilter);
+                $query->where('jenis_pembayaran', $this->methodFilter);
             })
             ->when($this->customerFilter, function ($query) {
                 $query->whereHas('order', function ($q) {
@@ -205,7 +222,7 @@ class PaymentManagement extends Component
                 });
             })
             ->when($this->dateFilter, function ($query) {
-                $query->whereDate('payment_date', $this->dateFilter);
+                $query->whereDate('tanggal_bayar', $this->dateFilter);
             })
             ->latest();
 
@@ -230,38 +247,45 @@ class PaymentManagement extends Component
     public function render()
     {
         $totalPayments = Payment::count();
-        $paidPayments = Payment::where('status', 'paid')->count();
-        $pendingPayments = Payment::where('status', 'pending')->count();
-        $totalAmount = Payment::where('status', 'paid')->sum('amount');
-        
-        $todayPayments = Payment::whereDate('payment_date', today())->count();
-        $todayAmount = Payment::whereDate('payment_date', today())
-                             ->where('status', 'paid')
-                             ->sum('amount');
-        
-        $cashPayments = Payment::where('payment_method', 'cash')
-                              ->where('status', 'paid')
-                              ->sum('amount');
-        $transferPayments = Payment::where('payment_method', 'transfer')
-                                  ->where('status', 'paid')
-                                  ->sum('amount');
-        $creditPayments = Payment::where('payment_method', 'credit')
-                                ->where('status', 'paid')
-                                ->sum('amount');
+        $lunasPayments = Payment::where('status', 'lunas')->count();
+        $belumLunasPayments = Payment::where('status', 'belum_lunas')->count();
+        $overduePayments = Payment::where('status', 'overdue')->count();
+        $totalTagihan = Payment::sum('jumlah_tagihan');
+        $totalBayar = Payment::sum('jumlah_bayar');
+
+        $todayPayments = Payment::whereDate('tanggal_bayar', today())->count();
+        $todayAmount = Payment::whereDate('tanggal_bayar', today())
+                             ->sum('jumlah_bayar');
+
+        $tunaiPayments = Payment::where('jenis_pembayaran', 'tunai')
+                              ->sum('jumlah_bayar');
+        $transferPayments = Payment::where('jenis_pembayaran', 'transfer')
+                                  ->sum('jumlah_bayar');
+        $giroPayments = Payment::where('jenis_pembayaran', 'giro')
+                                ->sum('jumlah_bayar');
 
         return view('livewire.admin.payment-management', [
             'payments' => $this->payments,
             'orders' => $this->orders,
             'customers' => $this->customers,
             'totalPayments' => $totalPayments,
-            'paidPayments' => $paidPayments,
-            'pendingPayments' => $pendingPayments,
-            'totalAmount' => $totalAmount,
+            'lunasPayments' => $lunasPayments,
+            'belumLunasPayments' => $belumLunasPayments,
+            'overduePayments' => $overduePayments,
+            'totalTagihan' => $totalTagihan,
+            'totalBayar' => $totalBayar,
             'todayPayments' => $todayPayments,
             'todayAmount' => $todayAmount,
-            'cashPayments' => $cashPayments,
+            'tunaiPayments' => $tunaiPayments,
             'transferPayments' => $transferPayments,
-            'creditPayments' => $creditPayments,
+            'giroPayments' => $giroPayments,
         ]);
+    }
+
+    private function generateNotaNumber()
+    {
+        $date = now()->format('Ymd');
+        $count = Payment::whereDate('created_at', now())->count() + 1;
+        return 'NOTA-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }

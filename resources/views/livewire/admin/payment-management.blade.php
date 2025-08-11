@@ -27,7 +27,7 @@
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2.4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2.4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -55,13 +55,13 @@
                         </div>
                         <div>
                             <small class="text-muted d-block">Lunas</small>
-                            <h6 class="mb-0">{{ $paidPayments }}</h6>
+                            <h6 class="mb-0">{{ $lunasPayments }}</h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2.4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -71,14 +71,31 @@
                             </span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Pending</small>
-                            <h6 class="mb-0">{{ $pendingPayments }}</h6>
+                            <small class="text-muted d-block">Belum Lunas</small>
+                            <h6 class="mb-0">{{ $belumLunasPayments }}</h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2.4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-md me-3">
+                            <span class="avatar-initial rounded-circle bg-label-danger">
+                                <i class="bx bx-x-circle"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Overdue</small>
+                            <h6 class="mb-0">{{ $overduePayments }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2.4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -88,8 +105,8 @@
                             </span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Total Nilai</small>
-                            <h6 class="mb-0">Rp {{ number_format($totalAmount, 0, ',', '.') }}</h6>
+                            <small class="text-muted d-block">Total Bayar</small>
+                            <h6 class="mb-0">Rp {{ number_format($totalBayar, 0, ',', '.') }}</h6>
                         </div>
                     </div>
                 </div>
@@ -122,16 +139,16 @@
                     <h6 class="mb-2">Metode Pembayaran</h6>
                     <div class="row g-2">
                         <div class="col-4">
-                            <small class="text-muted d-block">Cash</small>
-                            <span class="fw-medium">Rp {{ number_format($cashPayments, 0, ',', '.') }}</span>
+                            <small class="text-muted d-block">Tunai</small>
+                            <span class="fw-medium">Rp {{ number_format($tunaiPayments, 0, ',', '.') }}</span>
                         </div>
                         <div class="col-4">
                             <small class="text-muted d-block">Transfer</small>
                             <span class="fw-medium">Rp {{ number_format($transferPayments, 0, ',', '.') }}</span>
                         </div>
                         <div class="col-4">
-                            <small class="text-muted d-block">Credit</small>
-                            <span class="fw-medium">Rp {{ number_format($creditPayments, 0, ',', '.') }}</span>
+                            <small class="text-muted d-block">Giro</small>
+                            <span class="fw-medium">Rp {{ number_format($giroPayments, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -151,17 +168,18 @@
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
-                        <option value="paid">Lunas</option>
-                        <option value="pending">Pending</option>
+                        <option value="lunas">Lunas</option>
+                        <option value="belum_lunas">Belum Lunas</option>
+                        <option value="overdue">Overdue</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Metode</label>
                     <select wire:model.live="methodFilter" class="form-select">
                         <option value="">Semua Metode</option>
-                        <option value="cash">Cash</option>
+                        <option value="tunai">Tunai</option>
                         <option value="transfer">Transfer</option>
-                        <option value="credit">Credit</option>
+                        <option value="giro">Giro</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -217,34 +235,52 @@
                                 <td>
                                     <div>
                                         <span class="fw-medium">{{ $payment->order->customer->nama_toko }}</span>
-                                        <br>
-                                        <small class="text-muted">{{ $payment->order->customer->nama_pemilik }}</small>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="fw-medium">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                    <div>
+                                        <span class="fw-medium">Rp {{ number_format($payment->jumlah_tagihan, 0, ',', '.') }}</span>
+                                        <br>
+                                        <small class="text-muted">Bayar: Rp {{ number_format($payment->jumlah_bayar, 0, ',', '.') }}</small>
+                                    </div>
                                 </td>
                                 <td>
                                     @php
                                         $methodColors = [
-                                            'cash' => 'success',
+                                            'tunai' => 'success',
                                             'transfer' => 'info',
-                                            'credit' => 'warning'
+                                            'giro' => 'warning'
                                         ];
                                     @endphp
-                                    <span class="badge bg-label-{{ $methodColors[$payment->payment_method] ?? 'secondary' }}">
-                                        {{ ucfirst($payment->payment_method) }}
+                                    <span class="badge bg-label-{{ $methodColors[$payment->jenis_pembayaran] ?? 'secondary' }}">
+                                        {{ ucfirst($payment->jenis_pembayaran) }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-{{ $payment->status === 'paid' ? 'success' : 'warning' }}">
-                                        {{ ucfirst($payment->status) }}
+                                    @php
+                                        $statusColors = [
+                                            'lunas' => 'success',
+                                            'belum_lunas' => 'warning',
+                                            'overdue' => 'danger'
+                                        ];
+                                        $statusLabels = [
+                                            'lunas' => 'Lunas',
+                                            'belum_lunas' => 'Belum Lunas',
+                                            'overdue' => 'Overdue'
+                                        ];
+                                    @endphp
+                                    <span class="badge bg-label-{{ $statusColors[$payment->status] ?? 'secondary' }}">
+                                        {{ $statusLabels[$payment->status] ?? ucfirst($payment->status) }}
                                     </span>
                                 </td>
                                 <td>
                                     <div>
-                                        <div class="fw-medium">{{ $payment->payment_date->format('d/m/Y') }}</div>
-                                        <small class="text-muted">{{ $payment->created_at->format('H:i') }}</small>
+                                        @if($payment->tanggal_bayar)
+                                            <div class="fw-medium">{{ $payment->tanggal_bayar->format('d/m/Y') }}</div>
+                                            <small class="text-muted">{{ $payment->tanggal_bayar->format('H:i') }}</small>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -330,23 +366,28 @@
                                     @error('order_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Jumlah Pembayaran <span class="text-danger">*</span></label>
-                                    <input type="number" wire:model="amount" class="form-control @error('amount') is-invalid @enderror" min="1">
-                                    @error('amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <label class="form-label">Jumlah Tagihan <span class="text-danger">*</span></label>
+                                    <input type="number" wire:model="jumlah_tagihan" class="form-control @error('jumlah_tagihan') is-invalid @enderror" min="1">
+                                    @error('jumlah_tagihan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
-                                    <select wire:model="payment_method" class="form-select @error('payment_method') is-invalid @enderror">
-                                        <option value="cash">Cash</option>
+                                    <label class="form-label">Jumlah Bayar <span class="text-danger">*</span></label>
+                                    <input type="number" wire:model="jumlah_bayar" class="form-control @error('jumlah_bayar') is-invalid @enderror" min="0">
+                                    @error('jumlah_bayar') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Jenis Pembayaran <span class="text-danger">*</span></label>
+                                    <select wire:model="jenis_pembayaran" class="form-select @error('jenis_pembayaran') is-invalid @enderror">
+                                        <option value="tunai">Tunai</option>
                                         <option value="transfer">Transfer</option>
-                                        <option value="credit">Credit</option>
+                                        <option value="giro">Giro</option>
                                     </select>
-                                    @error('payment_method') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('jenis_pembayaran') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Tanggal Pembayaran <span class="text-danger">*</span></label>
-                                    <input type="date" wire:model="payment_date" class="form-control @error('payment_date') is-invalid @enderror">
-                                    @error('payment_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <label class="form-label">Tanggal Bayar <span class="text-danger">*</span></label>
+                                    <input type="date" wire:model="tanggal_bayar" class="form-control @error('tanggal_bayar') is-invalid @enderror">
+                                    @error('tanggal_bayar') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Bukti Transfer</label>
@@ -360,8 +401,8 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Catatan</label>
-                                    <textarea wire:model="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
-                                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <textarea wire:model="catatan" class="form-control @error('catatan') is-invalid @enderror" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                                    @error('catatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                         </form>
