@@ -25,9 +25,10 @@
         </div>
     @endif
 
-    <!-- Stats Cards -->
+    <!-- Payment Statistics -->
     <div class="row g-3 mb-4">
-        <div class="col-md-2.4">
+        <!-- First Row: 4 main stats -->
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -44,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -61,7 +62,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -78,7 +79,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -95,7 +96,11 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+    </div>
+
+    <!-- Second Row: 2 additional stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -112,43 +117,67 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Today Stats & Payment Methods -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
                             <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-list-ol"></i>
+                                <i class="bx bx-calendar-check"></i>
                             </span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Pembayaran Hari Ini</small>
-                            <h6 class="mb-0">{{ $todayPayments }} (Rp {{ number_format($todayAmount, 0, ',', '.') }})</h6>
+                            <small class="text-muted d-block">Hari Ini</small>
+                            <h6 class="mb-0">{{ $todayPayments }}</h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+    </div>
+
+    <!-- Payment Methods - Full Width -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="mb-2">Metode Pembayaran</h6>
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <small class="text-muted d-block">Tunai</small>
-                            <span class="fw-medium">Rp {{ number_format($tunaiPayments, 0, ',', '.') }}</span>
+                    <h6 class="mb-4">
+                        <i class="bx bx-credit-card me-2"></i>
+                        Metode Pembayaran
+                    </h6>
+                    <div class="row g-4">
+                        <div class="col-lg-4 col-md-4">
+                            <div class="text-center">
+                                <div class="avatar avatar-lg mx-auto mb-3">
+                                    <span class="avatar-initial rounded-circle bg-label-primary">
+                                        <i class="bx bx-money fs-4"></i>
+                                    </span>
+                                </div>
+                                <h6 class="mb-1">Tunai</h6>
+                                <p class="text-muted mb-0">Rp {{ number_format($tunaiPayments, 0, ',', '.') }}</p>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <small class="text-muted d-block">Transfer</small>
-                            <span class="fw-medium">Rp {{ number_format($transferPayments, 0, ',', '.') }}</span>
+                        <div class="col-lg-4 col-md-4">
+                            <div class="text-center">
+                                <div class="avatar avatar-lg mx-auto mb-3">
+                                    <span class="avatar-initial rounded-circle bg-label-info">
+                                        <i class="bx bx-transfer fs-4"></i>
+                                    </span>
+                                </div>
+                                <h6 class="mb-1">Transfer</h6>
+                                <p class="text-muted mb-0">Rp {{ number_format($transferPayments, 0, ',', '.') }}</p>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <small class="text-muted d-block">Giro</small>
-                            <span class="fw-medium">Rp {{ number_format($giroPayments, 0, ',', '.') }}</span>
+                        <div class="col-lg-4 col-md-4">
+                            <div class="text-center">
+                                <div class="avatar avatar-lg mx-auto mb-3">
+                                    <span class="avatar-initial rounded-circle bg-label-warning">
+                                        <i class="bx bx-receipt fs-4"></i>
+                                    </span>
+                                </div>
+                                <h6 class="mb-1">Giro</h6>
+                                <p class="text-muted mb-0">Rp {{ number_format($giroPayments, 0, ',', '.') }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
