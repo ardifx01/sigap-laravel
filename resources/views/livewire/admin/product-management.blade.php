@@ -27,7 +27,8 @@
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-2.4">
+        <!-- First Row: 3 cards -->
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -44,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -61,7 +62,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -78,7 +79,11 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+    </div>
+
+    <!-- Second Row: 2 cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -95,7 +100,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
