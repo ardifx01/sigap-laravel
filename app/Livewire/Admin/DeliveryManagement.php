@@ -21,12 +21,12 @@ class DeliveryManagement extends Component
 
     // Assign driver modal
     public $showAssignModal = false;
-    public $selectedDelivery;
+    public $assignDelivery;
     public $selectedDriver;
 
     // View delivery modal
     public $showDeliveryModal = false;
-    public $viewDelivery;
+    public $viewDeliveryData;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -59,8 +59,8 @@ class DeliveryManagement extends Component
 
     public function openAssignModal($deliveryId)
     {
-        $this->selectedDelivery = Delivery::with(['order.customer'])->find($deliveryId);
-        $this->selectedDriver = $this->selectedDelivery->driver_id;
+        $this->assignDelivery = Delivery::with(['order.customer'])->find($deliveryId);
+        $this->selectedDriver = $this->assignDelivery->driver_id;
         $this->showAssignModal = true;
     }
 
@@ -72,15 +72,15 @@ class DeliveryManagement extends Component
         }
 
         try {
-            $this->selectedDelivery->update([
+            $this->assignDelivery->update([
                 'driver_id' => $this->selectedDriver,
                 'assigned_at' => now(),
             ]);
 
             session()->flash('success', 'Driver berhasil ditugaskan!');
             $this->showAssignModal = false;
-            $this->reset(['selectedDelivery', 'selectedDriver']);
-            
+            $this->reset(['assignDelivery', 'selectedDriver']);
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menugaskan driver: ' . $e->getMessage());
         }
@@ -88,13 +88,28 @@ class DeliveryManagement extends Component
 
     public function viewDelivery($deliveryId)
     {
-        $this->viewDelivery = Delivery::with([
-            'order.customer', 
-            'order.orderItems.product', 
-            'driver',
-            'trackingHistory'
-        ])->find($deliveryId);
-        $this->showDeliveryModal = true;
+        try {
+            $this->viewDeliveryData = Delivery::with([
+                'order.customer',
+                'order.orderItems.product',
+                'driver',
+                'trackingHistory'
+            ])->find($deliveryId);
+
+            if ($this->viewDeliveryData) {
+                $this->showDeliveryModal = true;
+            } else {
+                session()->flash('error', 'Delivery tidak ditemukan!');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function closeDeliveryModal()
+    {
+        $this->showDeliveryModal = false;
+        $this->viewDeliveryData = null;
     }
 
     public function updateDeliveryStatus($deliveryId, $status)
@@ -102,9 +117,9 @@ class DeliveryManagement extends Component
         try {
             $delivery = Delivery::find($deliveryId);
             $oldStatus = $delivery->status;
-            
+
             $delivery->update(['status' => $status]);
-            
+
             // Update timestamps and order status based on delivery status
             switch ($status) {
                 case 'assigned':
@@ -125,9 +140,9 @@ class DeliveryManagement extends Component
                     $delivery->update(['failed_at' => now()]);
                     break;
             }
-            
+
             session()->flash('success', "Status pengiriman berhasil diubah dari {$oldStatus} ke {$status}!");
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal mengubah status pengiriman: ' . $e->getMessage());
         }
@@ -137,26 +152,26 @@ class DeliveryManagement extends Component
     {
         try {
             $order = Order::find($orderId);
-            
+
             if ($order->status !== 'confirmed') {
                 session()->flash('error', 'Order harus dikonfirmasi terlebih dahulu!');
                 return;
             }
-            
+
             if ($order->delivery) {
                 session()->flash('error', 'Order sudah memiliki pengiriman!');
                 return;
             }
-            
+
             Delivery::create([
                 'order_id' => $order->id,
                 'status' => 'pending',
                 'estimated_distance' => 0, // Could be calculated based on customer location
                 'created_at' => now(),
             ]);
-            
+
             session()->flash('success', 'Pengiriman berhasil dibuat untuk order ' . $order->nomor_order);
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal membuat pengiriman: ' . $e->getMessage());
         }
@@ -213,7 +228,7 @@ class DeliveryManagement extends Component
         $inProgressDeliveries = Delivery::where('status', 'in_progress')->count();
         $deliveredDeliveries = Delivery::where('status', 'delivered')->count();
         $failedDeliveries = Delivery::where('status', 'failed')->count();
-        
+
         $todayDeliveries = Delivery::whereDate('created_at', today())->count();
         $todayDelivered = Delivery::whereDate('delivered_at', today())->count();
 

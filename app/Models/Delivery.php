@@ -75,6 +75,11 @@ class Delivery extends Model implements HasMedia
         return $this->hasMany(DeliveryTracking::class);
     }
 
+    public function trackingHistory()
+    {
+        return $this->hasMany(DeliveryTracking::class);
+    }
+
     public function k3Checklist()
     {
         return $this->hasOne(K3Checklist::class);

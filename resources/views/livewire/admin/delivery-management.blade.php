@@ -303,7 +303,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="#" wire:click="viewDelivery({{ $delivery->id }})">
+                                                <a class="dropdown-item" href="#" wire:click.prevent="viewDelivery({{ $delivery->id }})">
                                                     <i class="bx bx-show me-1"></i> Lihat Detail
                                                 </a>
                                             </li>
@@ -405,13 +405,13 @@
     @endif
 
     <!-- Delivery Detail Modal -->
-    @if($showDeliveryModal && $viewDelivery)
-        <div class="modal fade show" style="display: block;" tabindex="-1">
+    @if($showDeliveryModal && $viewDeliveryData)
+        <div class="modal fade show" style="display: block;" tabindex="-1" wire:click.self="closeDeliveryModal">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Detail Pengiriman - {{ $viewDelivery->order->nomor_order }}</h5>
-                        <button type="button" class="btn-close" wire:click="$set('showDeliveryModal', false)"></button>
+                        <h5 class="modal-title">Detail Pengiriman - {{ $viewDeliveryData->order->nomor_order }}</h5>
+                        <button type="button" class="btn-close" wire:click="closeDeliveryModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-4">
@@ -421,7 +421,7 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Order:</td>
-                                        <td><strong>{{ $viewDelivery->order->nomor_order }}</strong></td>
+                                        <td><strong>{{ $viewDeliveryData->order->nomor_order }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Status:</td>
@@ -436,29 +436,29 @@
                                                     'failed' => 'danger'
                                                 ];
                                             @endphp
-                                            <span class="badge bg-label-{{ $statusColors[$viewDelivery->status] ?? 'secondary' }}">
-                                                {{ ucfirst(str_replace('_', ' ', $viewDelivery->status)) }}
+                                            <span class="badge bg-label-{{ $statusColors[$viewDeliveryData->status] ?? 'secondary' }}">
+                                                {{ ucfirst(str_replace('_', ' ', $viewDeliveryData->status)) }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Driver:</td>
-                                        <td>{{ $viewDelivery->driver->name ?? 'Belum ditugaskan' }}</td>
+                                        <td>{{ $viewDeliveryData->driver->name ?? 'Belum ditugaskan' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Tanggal Dibuat:</td>
-                                        <td>{{ $viewDelivery->created_at->format('d/m/Y H:i') }}</td>
+                                        <td>{{ $viewDeliveryData->created_at->format('d/m/Y H:i') }}</td>
                                     </tr>
-                                    @if($viewDelivery->assigned_at)
+                                    @if($viewDeliveryData->assigned_at)
                                         <tr>
                                             <td>Ditugaskan:</td>
-                                            <td>{{ $viewDelivery->assigned_at->format('d/m/Y H:i') }}</td>
+                                            <td>{{ $viewDeliveryData->assigned_at->format('d/m/Y H:i') }}</td>
                                         </tr>
                                     @endif
-                                    @if($viewDelivery->delivered_at)
+                                    @if($viewDeliveryData->delivered_at)
                                         <tr>
                                             <td>Selesai:</td>
-                                            <td>{{ $viewDelivery->delivered_at->format('d/m/Y H:i') }}</td>
+                                            <td>{{ $viewDeliveryData->delivered_at->format('d/m/Y H:i') }}</td>
                                         </tr>
                                     @endif
                                 </table>
@@ -470,25 +470,25 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Nama Toko:</td>
-                                        <td><strong>{{ $viewDelivery->order->customer->nama_toko }}</strong></td>
+                                        <td><strong>{{ $viewDeliveryData->order->customer->nama_toko }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Pemilik:</td>
-                                        <td>{{ $viewDelivery->order->customer->nama_pemilik }}</td>
+                                        <td>{{ $viewDeliveryData->order->customer->nama_pemilik ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Alamat:</td>
-                                        <td>{{ $viewDelivery->order->customer->alamat }}</td>
+                                        <td>{{ $viewDeliveryData->order->customer->alamat }}</td>
                                     </tr>
                                     <tr>
                                         <td>Telepon:</td>
-                                        <td>{{ $viewDelivery->order->customer->telepon }}</td>
+                                        <td>{{ $viewDeliveryData->order->customer->phone }}</td>
                                     </tr>
-                                    @if($viewDelivery->order->customer->latitude && $viewDelivery->order->customer->longitude)
+                                    @if($viewDeliveryData->order->customer->latitude && $viewDeliveryData->order->customer->longitude)
                                         <tr>
                                             <td>Lokasi:</td>
                                             <td>
-                                                <a href="https://maps.google.com/?q={{ $viewDelivery->order->customer->latitude }},{{ $viewDelivery->order->customer->longitude }}"
+                                                <a href="https://maps.google.com/?q={{ $viewDeliveryData->order->customer->latitude }},{{ $viewDeliveryData->order->customer->longitude }}"
                                                    target="_blank" class="btn btn-sm btn-outline-primary">
                                                     <i class="bx bx-map"></i> Lihat di Maps
                                                 </a>
@@ -512,7 +512,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($viewDelivery->order->orderItems as $item)
+                                            @foreach($viewDeliveryData->order->orderItems as $item)
                                                 <tr>
                                                     <td>
                                                         <div>
@@ -521,16 +521,16 @@
                                                             <small class="text-muted">{{ $item->product->kode_item }}</small>
                                                         </div>
                                                     </td>
-                                                    <td>{{ $item->jumlah }} {{ $item->product->satuan }}</td>
+                                                    <td>{{ $item->jumlah_pesan }} {{ $item->product->jenis }}</td>
                                                     <td>Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
-                                                    <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                                    <td>Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
                                         <tfoot class="table-light">
                                             <tr>
                                                 <th colspan="3">Total</th>
-                                                <th>Rp {{ number_format($viewDelivery->order->total_amount, 0, ',', '.') }}</th>
+                                                <th>Rp {{ number_format($viewDeliveryData->order->total_amount, 0, ',', '.') }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -538,7 +538,7 @@
                             </div>
 
                             <!-- Tracking History -->
-                            @if($viewDelivery->trackingHistory && $viewDelivery->trackingHistory->count() > 0)
+                            @if($viewDeliveryData->trackingHistory && $viewDeliveryData->trackingHistory->count() > 0)
                                 <div class="col-12">
                                     <h6>Riwayat Tracking</h6>
                                     <div class="table-responsive">
@@ -552,7 +552,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach($viewDelivery->trackingHistory->take(5) as $track)
+                                                @foreach($viewDeliveryData->trackingHistory->take(5) as $track)
                                                     <tr>
                                                         <td>{{ $track->recorded_at->format('d/m/Y H:i:s') }}</td>
                                                         <td>
@@ -575,7 +575,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showDeliveryModal', false)">Tutup</button>
+                        <button type="button" class="btn btn-secondary" wire:click="closeDeliveryModal">Tutup</button>
                     </div>
                 </div>
             </div>
