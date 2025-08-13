@@ -239,7 +239,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="#" wire:click="viewBackorder({{ $backorder->id }})">
+                                                <a class="dropdown-item" href="#" wire:click.prevent="viewBackorder({{ $backorder->id }})">
                                                     <i class="bx bx-show me-1"></i> Lihat Detail
                                                 </a>
                                             </li>
@@ -370,13 +370,13 @@
     @endif
 
     <!-- Backorder Detail Modal -->
-    @if($showViewModal && $viewBackorder)
-        <div class="modal fade show" style="display: block;" tabindex="-1">
+    @if($showViewModal && $selectedBackorder)
+        <div class="modal fade show" style="display: block;" tabindex="-1" wire:click.self="closeViewModal">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Detail Backorder</h5>
-                        <button type="button" class="btn-close" wire:click="$set('showViewModal', false)"></button>
+                        <button type="button" class="btn-close" wire:click="closeViewModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-4">
@@ -395,56 +395,42 @@
                                                     'cancelled' => 'danger'
                                                 ];
                                             @endphp
-                                            <span class="badge bg-label-{{ $statusColors[$viewBackorder->status] ?? 'secondary' }}">
-                                                {{ ucfirst($viewBackorder->status) }}
+                                            <span class="badge bg-label-{{ $statusColors[$selectedBackorder->status] ?? 'secondary' }}">
+                                                {{ ucfirst($selectedBackorder->status) }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>Prioritas:</td>
-                                        <td>
-                                            @php
-                                                $priorityColors = [
-                                                    'low' => 'secondary',
-                                                    'medium' => 'info',
-                                                    'high' => 'warning',
-                                                    'urgent' => 'danger'
-                                                ];
-                                            @endphp
-                                            <span class="badge bg-label-{{ $priorityColors[$viewBackorder->priority] ?? 'secondary' }}">
-                                                {{ ucfirst($viewBackorder->priority) }}
-                                            </span>
-                                        </td>
+                                        <td>Jumlah Backorder:</td>
+                                        <td><strong>{{ $selectedBackorder->jumlah_backorder }} {{ $selectedBackorder->product->jenis }}</strong></td>
                                     </tr>
-                                    <tr>
-                                        <td>Jumlah Diminta:</td>
-                                        <td><strong>{{ $viewBackorder->quantity_requested }} {{ $viewBackorder->product->satuan }}</strong></td>
-                                    </tr>
-                                    @if($viewBackorder->quantity_fulfilled)
+                                    @if($selectedBackorder->jumlah_terpenuhi > 0)
                                         <tr>
-                                            <td>Jumlah Dipenuhi:</td>
-                                            <td><strong>{{ $viewBackorder->quantity_fulfilled }} {{ $viewBackorder->product->satuan }}</strong></td>
+                                            <td>Jumlah Terpenuhi:</td>
+                                            <td><strong>{{ $selectedBackorder->jumlah_terpenuhi }} {{ $selectedBackorder->product->jenis }}</strong></td>
                                         </tr>
                                     @endif
                                     <tr>
                                         <td>Tanggal Dibuat:</td>
-                                        <td>{{ $viewBackorder->created_at->format('d/m/Y H:i') }}</td>
+                                        <td>{{ $selectedBackorder->created_at->format('d/m/Y H:i') }}</td>
                                     </tr>
-                                    @if($viewBackorder->expected_date)
+                                    @if($selectedBackorder->expected_date)
                                         <tr>
                                             <td>Tanggal Diharapkan:</td>
-                                            <td class="{{ $viewBackorder->expected_date->isPast() ? 'text-danger' : '' }}">
-                                                {{ $viewBackorder->expected_date->format('d/m/Y') }}
-                                                @if($viewBackorder->expected_date->isPast())
+                                            <td class="{{ $selectedBackorder->expected_date->isPast() ? 'text-danger' : '' }}">
+                                                {{ $selectedBackorder->expected_date->format('d/m/Y') }}
+                                                @if($selectedBackorder->expected_date->isPast())
                                                     <small>(Terlambat)</small>
                                                 @endif
                                             </td>
                                         </tr>
                                     @endif
-                                    <tr>
-                                        <td>Dibuat Oleh:</td>
-                                        <td>{{ $viewBackorder->createdBy->name ?? 'System' }}</td>
-                                    </tr>
+                                    @if($selectedBackorder->fulfilled_at)
+                                        <tr>
+                                            <td>Tanggal Dipenuhi:</td>
+                                            <td>{{ $selectedBackorder->fulfilled_at->format('d/m/Y H:i') }}</td>
+                                        </tr>
+                                    @endif
                                 </table>
                             </div>
 
@@ -454,48 +440,48 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Produk:</td>
-                                        <td><strong>{{ $viewBackorder->product->nama_barang }}</strong></td>
+                                        <td><strong>{{ $selectedBackorder->product->nama_barang }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Kode Item:</td>
-                                        <td>{{ $viewBackorder->product->kode_item }}</td>
+                                        <td>{{ $selectedBackorder->product->kode_item }}</td>
                                     </tr>
                                     <tr>
                                         <td>Stok Tersedia:</td>
                                         <td>
-                                            <span class="{{ $viewBackorder->product->stok_tersedia <= $viewBackorder->product->stok_minimum ? 'text-danger' : 'text-success' }}">
-                                                {{ $viewBackorder->product->stok_tersedia }} {{ $viewBackorder->product->satuan }}
+                                            <span class="{{ $selectedBackorder->product->stok_tersedia <= $selectedBackorder->product->stok_minimum ? 'text-danger' : 'text-success' }}">
+                                                {{ $selectedBackorder->product->stok_tersedia }} {{ $selectedBackorder->product->jenis }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Customer:</td>
-                                        <td><strong>{{ $viewBackorder->customer->nama_toko }}</strong></td>
+                                        <td><strong>{{ $selectedBackorder->orderItem->order->customer->nama_toko }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Pemilik:</td>
-                                        <td>{{ $viewBackorder->customer->nama_pemilik }}</td>
+                                        <td>{{ $selectedBackorder->orderItem->order->customer->nama_pemilik ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Telepon:</td>
-                                        <td>{{ $viewBackorder->customer->telepon }}</td>
+                                        <td>{{ $selectedBackorder->orderItem->order->customer->phone }}</td>
                                     </tr>
                                 </table>
                             </div>
 
                             <!-- Notes -->
-                            @if($viewBackorder->notes)
+                            @if($selectedBackorder->catatan)
                                 <div class="col-12">
                                     <h6>Catatan</h6>
-                                    <p class="text-muted">{{ $viewBackorder->notes }}</p>
+                                    <p class="text-muted">{{ $selectedBackorder->catatan }}</p>
                                 </div>
                             @endif
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showViewModal', false)">Tutup</button>
-                        @if(in_array($viewBackorder->status, ['pending', 'processing']) && $viewBackorder->product->stok_tersedia >= $viewBackorder->quantity_requested)
-                            <button type="button" wire:click="fulfillBackorder({{ $viewBackorder->id }})" class="btn btn-success">
+                        <button type="button" class="btn btn-secondary" wire:click="closeViewModal">Tutup</button>
+                        @if(in_array($selectedBackorder->status, ['pending', 'partial']) && $selectedBackorder->product->stok_tersedia >= $selectedBackorder->jumlah_backorder)
+                            <button type="button" wire:click="fulfillBackorder({{ $selectedBackorder->id }})" class="btn btn-success">
                                 <i class="bx bx-check"></i> Penuhi Backorder
                             </button>
                         @endif

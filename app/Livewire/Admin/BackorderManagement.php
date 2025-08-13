@@ -32,7 +32,7 @@ class BackorderManagement extends Component
 
     // View backorder modal
     public $showViewModal = false;
-    public $viewBackorder;
+    public $selectedBackorder;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -131,8 +131,23 @@ class BackorderManagement extends Component
 
     public function viewBackorder($backorderId)
     {
-        $this->viewBackorder = Backorder::with(['product', 'customer', 'createdBy'])->find($backorderId);
-        $this->showViewModal = true;
+        try {
+            $this->selectedBackorder = Backorder::with(['product', 'orderItem.order.customer', 'orderItem.order.sales'])->find($backorderId);
+
+            if ($this->selectedBackorder) {
+                $this->showViewModal = true;
+            } else {
+                session()->flash('error', 'Backorder tidak ditemukan!');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->selectedBackorder = null;
     }
 
     public function updateBackorderStatus($backorderId, $status)
