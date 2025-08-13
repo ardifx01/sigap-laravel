@@ -22,7 +22,7 @@ class OrderManagement extends Component
 
     // View order modal
     public $showOrderModal = false;
-    public $viewOrder;
+    public $selectedOrder;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -61,9 +61,25 @@ class OrderManagement extends Component
 
     public function viewOrder($orderId)
     {
-        $this->viewOrder = Order::with(['customer', 'sales', 'orderItems.product', 'delivery', 'payments'])
-                                ->find($orderId);
-        $this->showOrderModal = true;
+        try {
+            $this->selectedOrder = Order::with(['customer', 'sales', 'orderItems.product', 'delivery', 'payments'])
+                                    ->find($orderId);
+
+            if ($this->selectedOrder) {
+                $this->showOrderModal = true;
+                $this->dispatch('modal-opened'); // Dispatch event for debugging
+            } else {
+                session()->flash('error', 'Order tidak ditemukan!');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function closeOrderModal()
+    {
+        $this->showOrderModal = false;
+        $this->selectedOrder = null;
     }
 
     public function updateOrderStatus($orderId, $status)
@@ -71,9 +87,9 @@ class OrderManagement extends Component
         try {
             $order = Order::find($orderId);
             $oldStatus = $order->status;
-            
+
             $order->update(['status' => $status]);
-            
+
             // Update timestamps based on status
             switch ($status) {
                 case 'confirmed':
@@ -89,9 +105,9 @@ class OrderManagement extends Component
                     $order->update(['cancelled_at' => now()]);
                     break;
             }
-            
+
             session()->flash('success', "Status order berhasil diubah dari {$oldStatus} ke {$status}!");
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal mengubah status order: ' . $e->getMessage());
         }
@@ -101,25 +117,25 @@ class OrderManagement extends Component
     {
         try {
             $order = Order::find($orderId);
-            
+
             if (!in_array($order->status, ['pending', 'confirmed'])) {
                 session()->flash('error', 'Order tidak dapat dibatalkan karena sudah dalam proses pengiriman!');
                 return;
             }
-            
+
             $order->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
                 'cancel_reason' => $reason,
             ]);
-            
+
             // Restore product stock
             foreach ($order->orderItems as $item) {
                 $item->product->increment('stok_tersedia', $item->jumlah);
             }
-            
+
             session()->flash('success', 'Order berhasil dibatalkan dan stok dikembalikan!');
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal membatalkan order: ' . $e->getMessage());
         }
@@ -174,10 +190,10 @@ class OrderManagement extends Component
         $shippedOrders = Order::where('status', 'shipped')->count();
         $deliveredOrders = Order::where('status', 'delivered')->count();
         $cancelledOrders = Order::where('status', 'cancelled')->count();
-        
+
         $totalValue = Order::whereIn('status', ['confirmed', 'shipped', 'delivered'])
                           ->sum('total_amount');
-        
+
         $todayOrders = Order::whereDate('created_at', today())->count();
         $todayValue = Order::whereDate('created_at', today())
                           ->whereIn('status', ['confirmed', 'shipped', 'delivered'])

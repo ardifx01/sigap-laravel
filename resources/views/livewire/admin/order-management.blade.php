@@ -34,7 +34,7 @@
                             </span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Total Order</small>
+                            <small class="text-muted d-block">Total</small>
                             <h6 class="mb-0">{{ $totalOrders }}</h6>
                         </div>
                     </div>
@@ -282,7 +282,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="#" wire:click="viewOrder({{ $order->id }})">
+                                                <a class="dropdown-item" href="#" wire:click.prevent="viewOrder({{ $order->id }})">
                                                     <i class="bx bx-show me-1"></i> Lihat Detail
                                                 </a>
                                             </li>
@@ -344,13 +344,13 @@
     </div>
 
     <!-- Order Detail Modal -->
-    @if($showOrderModal && $viewOrder)
-        <div class="modal fade show" style="display: block;" tabindex="-1">
+    @if($showOrderModal && $selectedOrder)
+        <div class="modal fade show" style="display: block;" tabindex="-1" wire:click.self="closeOrderModal">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Detail Order - {{ $viewOrder->nomor_order }}</h5>
-                        <button type="button" class="btn-close" wire:click="$set('showOrderModal', false)"></button>
+                        <h5 class="modal-title">Detail Order - {{ $selectedOrder->nomor_order }}</h5>
+                        <button type="button" class="btn-close" wire:click="closeOrderModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-4">
@@ -360,11 +360,11 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Nomor Order:</td>
-                                        <td><strong>{{ $viewOrder->nomor_order }}</strong></td>
+                                        <td><strong>{{ $selectedOrder->nomor_order }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Tanggal:</td>
-                                        <td>{{ $viewOrder->created_at->format('d/m/Y H:i') }}</td>
+                                        <td>{{ $selectedOrder->created_at->format('d/m/Y H:i') }}</td>
                                     </tr>
                                     <tr>
                                         <td>Status:</td>
@@ -378,14 +378,14 @@
                                                     'cancelled' => 'danger'
                                                 ];
                                             @endphp
-                                            <span class="badge bg-label-{{ $statusColors[$viewOrder->status] ?? 'secondary' }}">
-                                                {{ ucfirst($viewOrder->status) }}
+                                            <span class="badge bg-label-{{ $statusColors[$selectedOrder->status] ?? 'secondary' }}">
+                                                {{ ucfirst($selectedOrder->status) }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Total Amount:</td>
-                                        <td><strong>Rp {{ number_format($viewOrder->total_amount, 0, ',', '.') }}</strong></td>
+                                        <td><strong>Rp {{ number_format($selectedOrder->total_amount, 0, ',', '.') }}</strong></td>
                                     </tr>
                                 </table>
                             </div>
@@ -396,23 +396,23 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Nama Toko:</td>
-                                        <td><strong>{{ $viewOrder->customer->nama_toko }}</strong></td>
+                                        <td><strong>{{ $selectedOrder->customer->nama_toko }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Pemilik:</td>
-                                        <td>{{ $viewOrder->customer->nama_pemilik }}</td>
+                                        <td>{{ $selectedOrder->customer->nama_pemilik ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Alamat:</td>
-                                        <td>{{ $viewOrder->customer->alamat }}</td>
+                                        <td>{{ $selectedOrder->customer->alamat }}</td>
                                     </tr>
                                     <tr>
                                         <td>Telepon:</td>
-                                        <td>{{ $viewOrder->customer->telepon }}</td>
+                                        <td>{{ $selectedOrder->customer->phone }}</td>
                                     </tr>
                                     <tr>
                                         <td>Sales:</td>
-                                        <td>{{ $viewOrder->sales->name }}</td>
+                                        <td>{{ $selectedOrder->sales->name }}</td>
                                     </tr>
                                 </table>
                             </div>
@@ -431,7 +431,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($viewOrder->orderItems as $item)
+                                            @foreach($selectedOrder->orderItems as $item)
                                                 <tr>
                                                     <td>
                                                         <div>
@@ -449,7 +449,7 @@
                                         <tfoot class="table-light">
                                             <tr>
                                                 <th colspan="3">Total</th>
-                                                <th>Rp {{ number_format($viewOrder->total_amount, 0, ',', '.') }}</th>
+                                                <th>Rp {{ number_format($selectedOrder->total_amount, 0, ',', '.') }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -457,32 +457,32 @@
                             </div>
 
                             <!-- Delivery Info -->
-                            @if($viewOrder->delivery)
+                            @if($selectedOrder->delivery)
                                 <div class="col-12">
                                     <h6>Informasi Pengiriman</h6>
                                     <table class="table table-sm">
                                         <tr>
                                             <td>Driver:</td>
-                                            <td>{{ $viewOrder->delivery->driver->name ?? '-' }}</td>
+                                            <td>{{ $selectedOrder->delivery->driver->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td>Status Pengiriman:</td>
                                             <td>
                                                 <span class="badge bg-label-info">
-                                                    {{ ucfirst($viewOrder->delivery->status) }}
+                                                    {{ ucfirst($selectedOrder->delivery->status) }}
                                                 </span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Tanggal Kirim:</td>
-                                            <td>{{ $viewOrder->delivery->created_at->format('d/m/Y H:i') }}</td>
+                                            <td>{{ $selectedOrder->delivery->created_at->format('d/m/Y H:i') }}</td>
                                         </tr>
                                     </table>
                                 </div>
                             @endif
 
                             <!-- Payment Info -->
-                            @if($viewOrder->payments->count() > 0)
+                            @if($selectedOrder->payments->count() > 0)
                                 <div class="col-12">
                                     <h6>Informasi Pembayaran</h6>
                                     <div class="table-responsive">
@@ -496,7 +496,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach($viewOrder->payments as $payment)
+                                                @foreach($selectedOrder->payments as $payment)
                                                     <tr>
                                                         <td>{{ $payment->created_at->format('d/m/Y H:i') }}</td>
                                                         <td>Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
@@ -516,11 +516,25 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showOrderModal', false)">Tutup</button>
+                        <button type="button" class="btn btn-secondary" wire:click="closeOrderModal">Tutup</button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="modal-backdrop fade show"></div>
     @endif
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('modal-opened', () => {
+                console.log('Order modal opened successfully');
+            });
+        });
+
+        // Debug function to test modal opening
+        function testModal() {
+            console.log('Testing modal...');
+            @this.call('viewOrder', 1);
+        }
+    </script>
 </div>
