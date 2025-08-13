@@ -142,7 +142,7 @@
                             </div>
                         </div>
                         <div class="list-group-item d-flex align-items-center">
-                            <i class="bx bx-truck text-secondary me-3"></i>
+                            <i class="bx bx-car text-secondary me-3"></i>
                             <div>
                                 <h6 class="mb-1">Deliveries Report</h6>
                                 <small class="text-muted">Delivery status, GPS tracking, completion times</small>
