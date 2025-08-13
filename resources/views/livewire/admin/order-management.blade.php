@@ -441,8 +441,8 @@
                                                         </div>
                                                     </td>
                                                     <td>Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
-                                                    <td>{{ $item->jumlah }} {{ $item->product->satuan }}</td>
-                                                    <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                                    <td>{{ $item->jumlah_pesan }} {{ $item->product->jenis }}</td>
+                                                    <td>Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
