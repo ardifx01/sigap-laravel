@@ -296,7 +296,7 @@
                                             @if($order->status === 'confirmed')
                                                 <li>
                                                     <a class="dropdown-item" href="#" wire:click="updateOrderStatus({{ $order->id }}, 'shipped')">
-                                                        <i class="bx bx-truck me-1"></i> Kirim
+                                                        <i class="bx bx-car me-1"></i> Kirim
                                                     </a>
                                                 </li>
                                             @endif
