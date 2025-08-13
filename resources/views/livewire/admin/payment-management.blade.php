@@ -319,7 +319,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="#" wire:click="viewPayment({{ $payment->id }})">
+                                                <a class="dropdown-item" href="#" wire:click.prevent="viewPayment({{ $payment->id }})">
                                                     <i class="bx bx-show me-1"></i> Lihat Detail
                                                 </a>
                                             </li>
@@ -449,13 +449,13 @@
     @endif
 
     <!-- Payment Detail Modal -->
-    @if($showViewModal && $viewPayment)
-        <div class="modal fade show" style="display: block;" tabindex="-1">
+    @if($showViewModal && $selectedPayment)
+        <div class="modal fade show" style="display: block;" tabindex="-1" wire:click.self="closeViewModal">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Detail Pembayaran</h5>
-                        <button type="button" class="btn-close" wire:click="$set('showViewModal', false)"></button>
+                        <button type="button" class="btn-close" wire:click="closeViewModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-4">
@@ -465,46 +465,46 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Order:</td>
-                                        <td><strong>{{ $viewPayment->order->nomor_order }}</strong></td>
+                                        <td><strong>{{ $selectedPayment->order->nomor_order }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Jumlah:</td>
-                                        <td><strong>Rp {{ number_format($viewPayment->amount, 0, ',', '.') }}</strong></td>
+                                        <td><strong>Rp {{ number_format($selectedPayment->jumlah_bayar, 0, ',', '.') }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Metode:</td>
                                         <td>
                                             @php
                                                 $methodColors = [
-                                                    'cash' => 'success',
+                                                    'tunai' => 'success',
                                                     'transfer' => 'info',
-                                                    'credit' => 'warning'
+                                                    'giro' => 'warning'
                                                 ];
                                             @endphp
-                                            <span class="badge bg-label-{{ $methodColors[$viewPayment->payment_method] ?? 'secondary' }}">
-                                                {{ ucfirst($viewPayment->payment_method) }}
+                                            <span class="badge bg-label-{{ $methodColors[$selectedPayment->jenis_pembayaran] ?? 'secondary' }}">
+                                                {{ ucfirst($selectedPayment->jenis_pembayaran) }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Status:</td>
                                         <td>
-                                            <span class="badge bg-label-{{ $viewPayment->status === 'paid' ? 'success' : 'warning' }}">
-                                                {{ ucfirst($viewPayment->status) }}
+                                            <span class="badge bg-label-{{ $selectedPayment->status === 'lunas' ? 'success' : 'warning' }}">
+                                                {{ ucfirst($selectedPayment->status) }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Tanggal Bayar:</td>
-                                        <td>{{ $viewPayment->payment_date->format('d/m/Y') }}</td>
+                                        <td>{{ $selectedPayment->tanggal_bayar ? $selectedPayment->tanggal_bayar->format('d/m/Y') : '-' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Dicatat Oleh:</td>
-                                        <td>{{ $viewPayment->recordedBy->name ?? 'System' }}</td>
+                                        <td>{{ $selectedPayment->order->sales->name ?? 'System' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Dicatat Pada:</td>
-                                        <td>{{ $viewPayment->created_at->format('d/m/Y H:i') }}</td>
+                                        <td>{{ $selectedPayment->created_at->format('d/m/Y H:i') }}</td>
                                     </tr>
                                 </table>
                             </div>
@@ -515,25 +515,25 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Nama Toko:</td>
-                                        <td><strong>{{ $viewPayment->order->customer->nama_toko }}</strong></td>
+                                        <td><strong>{{ $selectedPayment->order->customer->nama_toko }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Pemilik:</td>
-                                        <td>{{ $viewPayment->order->customer->nama_pemilik }}</td>
+                                        <td>{{ $selectedPayment->order->customer->nama_pemilik ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <td>Telepon:</td>
-                                        <td>{{ $viewPayment->order->customer->telepon }}</td>
+                                        <td>{{ $selectedPayment->order->customer->phone }}</td>
                                     </tr>
                                     <tr>
                                         <td>Total Order:</td>
-                                        <td><strong>Rp {{ number_format($viewPayment->order->total_amount, 0, ',', '.') }}</strong></td>
+                                        <td><strong>Rp {{ number_format($selectedPayment->order->total_amount, 0, ',', '.') }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Status Order:</td>
                                         <td>
                                             <span class="badge bg-label-info">
-                                                {{ ucfirst($viewPayment->order->status) }}
+                                                {{ ucfirst($selectedPayment->order->status) }}
                                             </span>
                                         </td>
                                     </tr>
@@ -541,24 +541,24 @@
                             </div>
 
                             <!-- Notes -->
-                            @if($viewPayment->notes)
+                            @if($selectedPayment->catatan)
                                 <div class="col-12">
                                     <h6>Catatan</h6>
-                                    <p class="text-muted">{{ $viewPayment->notes }}</p>
+                                    <p class="text-muted">{{ $selectedPayment->catatan }}</p>
                                 </div>
                             @endif
 
                             <!-- Bukti Transfer -->
-                            @if($viewPayment->getFirstMediaUrl('payment_proofs'))
+                            @if($selectedPayment->bukti_transfer)
                                 <div class="col-12">
                                     <h6>Bukti Transfer</h6>
-                                    <img src="{{ $viewPayment->getFirstMediaUrl('payment_proofs') }}" alt="Bukti Transfer" class="img-fluid rounded" style="max-height: 300px;">
+                                    <img src="{{ asset('storage/' . $selectedPayment->bukti_transfer) }}" alt="Bukti Transfer" class="img-fluid rounded" style="max-height: 300px;">
                                 </div>
                             @endif
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showViewModal', false)">Tutup</button>
+                        <button type="button" class="btn btn-secondary" wire:click="closeViewModal">Tutup</button>
                     </div>
                 </div>
             </div>

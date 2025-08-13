@@ -34,7 +34,7 @@ class PaymentManagement extends Component
 
     // View payment modal
     public $showViewModal = false;
-    public $viewPayment;
+    public $selectedPayment;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -172,8 +172,23 @@ class PaymentManagement extends Component
 
     public function viewPayment($paymentId)
     {
-        $this->viewPayment = Payment::with(['order.customer'])->find($paymentId);
-        $this->showViewModal = true;
+        try {
+            $this->selectedPayment = Payment::with(['order.customer', 'order.sales'])->find($paymentId);
+
+            if ($this->selectedPayment) {
+                $this->showViewModal = true;
+            } else {
+                session()->flash('error', 'Payment tidak ditemukan!');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->selectedPayment = null;
     }
 
     public function updatePaymentStatus($paymentId, $status)
