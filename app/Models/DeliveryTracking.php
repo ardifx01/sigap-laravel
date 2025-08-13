@@ -11,25 +11,18 @@ class DeliveryTracking extends Model
 
     protected $fillable = [
         'delivery_id',
+        'driver_id',
         'latitude',
         'longitude',
-        'accuracy',
-        'speed',
-        'heading',
+        'status',
+        'notes',
         'tracked_at',
-        'battery_level',
-        'is_online',
     ];
 
     protected $casts = [
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
-        'accuracy' => 'decimal:2',
-        'speed' => 'decimal:2',
-        'heading' => 'decimal:2',
         'tracked_at' => 'datetime',
-        'battery_level' => 'integer',
-        'is_online' => 'boolean',
     ];
 
     /**
@@ -38,6 +31,11 @@ class DeliveryTracking extends Model
     public function delivery()
     {
         return $this->belongsTo(Delivery::class);
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(User::class, 'driver_id');
     }
 
     /**

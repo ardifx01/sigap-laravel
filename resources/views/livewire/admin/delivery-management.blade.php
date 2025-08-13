@@ -461,6 +461,12 @@
                                             <td>{{ $viewDeliveryData->delivered_at->format('d/m/Y H:i') }}</td>
                                         </tr>
                                     @endif
+                                    @if($viewDeliveryData->delivery_notes)
+                                        <tr>
+                                            <td>Catatan:</td>
+                                            <td>{{ $viewDeliveryData->delivery_notes }}</td>
+                                        </tr>
+                                    @endif
                                 </table>
                             </div>
 
@@ -547,18 +553,27 @@
                                                 <tr>
                                                     <th>Waktu</th>
                                                     <th>Koordinat</th>
-                                                    <th>Catatan</th>
+                                                    <th>Status</th>
                                                     <th>Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($viewDeliveryData->trackingHistory->take(5) as $track)
                                                     <tr>
-                                                        <td>{{ $track->recorded_at->format('d/m/Y H:i:s') }}</td>
+                                                        <td>{{ $track->tracked_at ? $track->tracked_at->format('d/m/Y H:i:s') : '-' }}</td>
                                                         <td>
                                                             <small>{{ number_format($track->latitude, 6) }}, {{ number_format($track->longitude, 6) }}</small>
                                                         </td>
-                                                        <td>{{ $track->notes ?? '-' }}</td>
+                                                        <td>
+                                                            <span class="badge bg-label-{{
+                                                                $track->status === 'started' ? 'info' :
+                                                                ($track->status === 'in_transit' ? 'primary' :
+                                                                ($track->status === 'arrived' ? 'warning' :
+                                                                ($track->status === 'delivered' ? 'success' : 'secondary')))
+                                                            }}">
+                                                                {{ ucfirst(str_replace('_', ' ', $track->status)) }}
+                                                            </span>
+                                                        </td>
                                                         <td>
                                                             <a href="https://maps.google.com/?q={{ $track->latitude }},{{ $track->longitude }}"
                                                                target="_blank" class="btn btn-sm btn-outline-primary">
