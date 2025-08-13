@@ -27,6 +27,15 @@
         <small class="text-muted">Last updated: {{ $lastUpdated }}</small>
     </div>
 
+    <!-- Loading State -->
+    @if($isLoading)
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading analytics data...</p>
+        </div>
+    @else
     <!-- Key Metrics Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -303,6 +312,8 @@
         </div>
     </div>
 
+    @endif
+
     <!-- Flash Messages -->
     @if (session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
@@ -318,7 +329,10 @@
         let autoRefreshInterval;
 
         document.addEventListener('livewire:init', () => {
-            initializeCharts();
+            // Wait for DOM to be fully loaded before initializing charts
+            setTimeout(() => {
+                initializeCharts();
+            }, 100);
 
             // Listen for chart updates
             Livewire.on('updateCharts', () => {
@@ -340,9 +354,36 @@
             @endif
         });
 
+        // Also initialize charts when Livewire finishes loading
+        document.addEventListener('livewire:navigated', () => {
+            setTimeout(() => {
+                initializeCharts();
+            }, 200);
+        });
+
         function initializeCharts() {
+            // Check if elements exist before initializing
+            const salesCanvas = document.getElementById('salesTrendChart');
+            const statusCanvas = document.getElementById('orderStatusChart');
+
+            if (!salesCanvas || !statusCanvas) {
+                console.log('Canvas elements not found, retrying...');
+                setTimeout(initializeCharts, 500);
+                return;
+            }
+
+            // Destroy existing charts if they exist
+            if (salesChart) {
+                salesChart.destroy();
+                salesChart = null;
+            }
+            if (statusChart) {
+                statusChart.destroy();
+                statusChart = null;
+            }
+
             // Sales Trend Chart
-            const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+            const salesCtx = salesCanvas.getContext('2d');
             salesChart = new Chart(salesCtx, {
                 type: 'line',
                 data: {
@@ -378,7 +419,7 @@
             });
 
             // Order Status Chart
-            const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
+            const statusCtx = statusCanvas.getContext('2d');
             statusChart = new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
@@ -411,14 +452,8 @@
             // This will be called when data updates
             // Charts will be updated with new data from Livewire
             setTimeout(() => {
-                if (salesChart) {
-                    salesChart.destroy();
-                }
-                if (statusChart) {
-                    statusChart.destroy();
-                }
                 initializeCharts();
-            }, 100);
+            }, 200);
         }
 
         function startAutoRefresh() {

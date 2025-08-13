@@ -22,10 +22,12 @@ class AnalyticsDashboard extends Component
     // Real-time refresh
     public $autoRefresh = true;
     public $lastUpdated;
+    public $isLoading = true;
 
     public function mount()
     {
         $this->lastUpdated = now()->format('H:i:s');
+        $this->isLoading = false;
     }
 
     public function updatedDateRange()
@@ -40,7 +42,9 @@ class AnalyticsDashboard extends Component
 
     public function refreshData()
     {
+        $this->isLoading = true;
         $this->lastUpdated = now()->format('H:i:s');
+        $this->isLoading = false;
         $this->dispatch('updateCharts');
         session()->flash('success', 'Data berhasil direfresh!');
     }
