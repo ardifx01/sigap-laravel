@@ -45,10 +45,7 @@
                             <small class="text-muted d-block">Total Penjualan</small>
                             <div class="d-flex align-items-center">
                                 <h6 class="mb-0 me-1">Rp {{ number_format($totalSales, 0, ',', '.') }}</h6>
-                                <small class="text-success fw-semibold">
-                                    <i class="bx bx-chevron-up"></i>
-                                    {{ $totalSales > 0 ? '+' : '' }}{{ number_format(($totalSales / max(1, $totalSales)) * 100, 1) }}%
-                                </small>
+                                <small class="text-success fw-semibold">delivered</small>
                             </div>
                         </div>
                     </div>
