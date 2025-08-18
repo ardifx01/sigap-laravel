@@ -364,7 +364,7 @@
     @endif
 
     <!-- View Checklist Modal -->
-    @if($showViewModal && $viewChecklist)
+    @if($showViewModal && $selectedChecklist)
         <div class="modal fade show" style="display: block;" tabindex="-1">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
@@ -380,17 +380,17 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Tanggal:</td>
-                                        <td><strong>{{ $viewChecklist->checked_at->format('d/m/Y H:i') }}</strong></td>
+                                        <td><strong>{{ $selectedChecklist->checked_at->format('d/m/Y H:i') }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>Completion:</td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                                                    <div class="progress-bar bg-{{ $viewChecklist->getCompletionPercentage() >= 80 ? 'success' : ($viewChecklist->getCompletionPercentage() >= 60 ? 'warning' : 'danger') }}"
-                                                         style="width: {{ $viewChecklist->getCompletionPercentage() }}%"></div>
+                                                    <div class="progress-bar bg-{{ $selectedChecklist->getCompletionPercentage() >= 80 ? 'success' : ($selectedChecklist->getCompletionPercentage() >= 60 ? 'warning' : 'danger') }}"
+                                                         style="width: {{ $selectedChecklist->getCompletionPercentage() }}%"></div>
                                                 </div>
-                                                <small>{{ $viewChecklist->getCompletionPercentage() }}%</small>
+                                                <small>{{ $selectedChecklist->getCompletionPercentage() }}%</small>
                                             </div>
                                         </td>
                                     </tr>
@@ -399,20 +399,20 @@
 
                             <!-- Delivery Info -->
                             <div class="col-md-6">
-                                @if($viewChecklist->delivery)
+                                @if($selectedChecklist->delivery)
                                     <h6>Informasi Pengiriman</h6>
                                     <table class="table table-sm">
                                         <tr>
                                             <td>Order:</td>
-                                            <td><strong>{{ $viewChecklist->delivery->order->nomor_order }}</strong></td>
+                                            <td><strong>{{ $selectedChecklist->delivery->order->nomor_order }}</strong></td>
                                         </tr>
                                         <tr>
                                             <td>Customer:</td>
-                                            <td>{{ $viewChecklist->delivery->order->customer->nama_toko }}</td>
+                                            <td>{{ $selectedChecklist->delivery->order->customer->nama_toko }}</td>
                                         </tr>
                                         <tr>
                                             <td>Alamat:</td>
-                                            <td>{{ $viewChecklist->delivery->order->customer->alamat }}</td>
+                                            <td>{{ $selectedChecklist->delivery->order->customer->alamat }}</td>
                                         </tr>
                                     </table>
                                 @else
@@ -426,11 +426,11 @@
                                 <hr>
                                 <h6>Detail Checklist Items</h6>
                                 <div class="row g-3">
-                                    @foreach($viewChecklist->getChecklistItems() as $key => $label)
+                                    @foreach($selectedChecklist->getChecklistItems() as $key => $label)
                                         <div class="col-md-6">
                                             <div class="d-flex align-items-center">
-                                                <i class="bx bx-{{ $viewChecklist->$key ? 'check-circle text-success' : 'x-circle text-danger' }} me-2"></i>
-                                                <span class="{{ $viewChecklist->$key ? 'text-success' : 'text-danger' }}">{{ $label }}</span>
+                                                <i class="bx bx-{{ $selectedChecklist->$key ? 'check-circle text-success' : 'x-circle text-danger' }} me-2"></i>
+                                                <span class="{{ $selectedChecklist->$key ? 'text-success' : 'text-danger' }}">{{ $label }}</span>
                                             </div>
                                         </div>
                                     @endforeach
@@ -438,11 +438,11 @@
                             </div>
 
                             <!-- Additional Notes -->
-                            @if($viewChecklist->catatan)
+                            @if($selectedChecklist->catatan)
                                 <div class="col-12">
                                     <hr>
                                     <h6>Catatan</h6>
-                                    <p class="text-muted">{{ $viewChecklist->catatan }}</p>
+                                    <p class="text-muted">{{ $selectedChecklist->catatan }}</p>
                                 </div>
                             @endif
                         </div>

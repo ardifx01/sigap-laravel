@@ -30,7 +30,7 @@ class K3ChecklistSystem extends Component
 
     // View checklist modal
     public $showViewModal = false;
-    public $viewChecklist;
+    public $selectedChecklist;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -131,16 +131,16 @@ class K3ChecklistSystem extends Component
 
     public function viewChecklist($checklistId)
     {
-        $this->viewChecklist = K3Checklist::with(['driver', 'delivery'])
-                                         ->where('driver_id', auth()->id())
-                                         ->findOrFail($checklistId);
+        $this->selectedChecklist = K3Checklist::with(['driver', 'delivery'])
+                                             ->where('driver_id', auth()->id())
+                                             ->findOrFail($checklistId);
         $this->showViewModal = true;
     }
 
     public function closeViewModal()
     {
         $this->showViewModal = false;
-        $this->viewChecklist = null;
+        $this->selectedChecklist = null;
     }
 
     public function deleteChecklist($checklistId)
