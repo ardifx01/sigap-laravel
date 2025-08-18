@@ -1,17 +1,31 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">GPS Tracking & Delivery</h4>
             <p class="text-muted mb-0">Kelola pengiriman dengan real-time GPS tracking</p>
         </div>
         @if($isTrackingActive && $currentDelivery)
-            <div class="badge bg-success fs-6">
+            <div class="badge bg-success fs-6 align-self-md-auto align-self-start">
                 <i class="bx bx-current-location me-1"></i>
                 GPS Tracking Aktif
             </div>
         @endif
     </div>
+
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <!-- Active Delivery Alert -->
     @if($currentDelivery)
@@ -101,11 +115,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Cari Delivery</label>
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="Nomor order atau nama toko...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Nomor order atau nama toko...">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Filter Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -120,10 +134,54 @@
 
     <!-- Deliveries Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Pengiriman</h5>
+        </div>
+        <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .delivery-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .delivery-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Pelanggan</th>
@@ -136,22 +194,24 @@
                     <tbody>
                         @forelse($deliveries as $delivery)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="delivery-info-cell">
                                     <div>
-                                        <h6 class="mb-0">{{ $delivery->order->nomor_order }}</h6>
+                                        <span class="fw-medium">{{ $delivery->order->nomor_order }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $delivery->order->orderItems->count() }} item</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Pelanggan">
                                     <div>
-                                        <div class="fw-medium">{{ $delivery->order->customer->nama_toko }}</div>
+                                        <span class="fw-medium">{{ $delivery->order->customer->nama_toko }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $delivery->order->customer->phone }}</small>
                                         @if($delivery->order->customer->latitude && $delivery->order->customer->longitude)
                                             <br><small class="text-success"><i class="bx bx-map-pin"></i> GPS tersedia</small>
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{
                                         $delivery->status === 'assigned' ? 'warning' :
                                         ($delivery->status === 'in_progress' ? 'info' : 'success')
@@ -159,7 +219,7 @@
                                         {{ ucfirst(str_replace('_', ' ', $delivery->status)) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="K3 Checklist">
                                     @if($delivery->k3Checklist)
                                         <div>
                                             <span class="badge bg-label-{{
@@ -174,7 +234,7 @@
                                         <span class="badge bg-label-secondary">Belum ada</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Waktu">
                                     <div>
                                         <small class="text-muted d-block">Ditugaskan: {{ $delivery->assigned_at->format('d/m H:i') }}</small>
                                         @if($delivery->started_at)
@@ -185,7 +245,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     @if($delivery->status === 'assigned')
                                         @if($delivery->canBeStarted())
                                             <button wire:click="openStartModal({{ $delivery->id }})" class="btn btn-sm btn-primary">
@@ -201,41 +261,48 @@
                                     @else
                                         <div class="dropdown">
                                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                                Detail
+                                                <i class="bx bx-dots-vertical-rounded"></i>
                                             </button>
-                                            <div class="dropdown-menu">
+                                            <ul class="dropdown-menu">
                                                 @if($delivery->getFirstMediaUrl('delivery_proofs'))
-                                                    <a class="dropdown-item" href="{{ $delivery->getFirstMediaUrl('delivery_proofs') }}" target="_blank">
-                                                        <i class="bx bx-image me-1"></i> Bukti Delivery
-                                                    </a>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ $delivery->getFirstMediaUrl('delivery_proofs') }}" target="_blank">
+                                                            <i class="bx bx-image me-1"></i> Bukti Delivery
+                                                        </a>
+                                                    </li>
                                                 @endif
                                                 @if($delivery->delivery_latitude && $delivery->delivery_longitude)
-                                                    <a class="dropdown-item" href="https://maps.google.com/?q={{ $delivery->delivery_latitude }},{{ $delivery->delivery_longitude }}" target="_blank">
-                                                        <i class="bx bx-map me-1"></i> Lokasi Delivery
-                                                    </a>
+                                                    <li>
+                                                        <a class="dropdown-item" href="https://maps.google.com/?q={{ $delivery->delivery_latitude }},{{ $delivery->delivery_longitude }}" target="_blank">
+                                                            <i class="bx bx-map me-1"></i> Lokasi Delivery
+                                                        </a>
+                                                    </li>
                                                 @endif
-                                            </div>
+                                            </ul>
                                         </div>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <i class="bx bx-car text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">Belum ada delivery</p>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-car text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-1">Belum ada delivery</p>
+                                        <small class="text-muted">Delivery akan muncul setelah ditugaskan oleh gudang.</small>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-3">
+        </div>
+        @if($deliveries->hasPages())
+            <div class="card-footer">
                 {{ $deliveries->links() }}
             </div>
-        </div>
+        @endif
     </div>
 
     <!-- Start Delivery Modal -->

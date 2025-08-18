@@ -1,19 +1,33 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">K3 Checklist System</h4>
             <p class="text-muted mb-0">Checklist Keselamatan dan Kesehatan Kerja sebelum pengiriman</p>
         </div>
-        <button wire:click="openChecklistModal" class="btn btn-primary">
+        <button wire:click="openChecklistModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-shield me-1"></i>
             Buat Checklist
         </button>
     </div>
 
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -33,7 +47,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -70,7 +84,7 @@
                             <small class="fw-medium">{{ $delivery->order->customer->nama_toko }}</small>
                             <small class="text-muted">{{ $delivery->order->nomor_order }}</small>
                             <button wire:click="openChecklistModal({{ $delivery->id }})" class="btn btn-sm btn-primary mt-1">
-                                <i class="bx bx-shield-check me-1"></i> Checklist
+                                <i class="bx bx-shield me-1"></i> Checklist
                             </button>
                         </div>
                     </div>
@@ -83,11 +97,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Cari Checklist</label>
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="Cari catatan...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari catatan...">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Filter Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
@@ -97,10 +111,54 @@
 
     <!-- Checklists Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <h5 class="mb-0">Riwayat K3 Checklist</h5>
+        </div>
+        <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .checklist-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .checklist-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Tanggal</th>
                             <th>Pengiriman</th>
@@ -111,23 +169,25 @@
                     <tbody>
                         @forelse($checklists as $checklist)
                             <tr>
-                                <td>
+                                <td data-label="Tanggal" class="checklist-info-cell">
                                     <div>
-                                        <div class="fw-medium">{{ $checklist->checked_at->format('d/m/Y') }}</div>
+                                        <span class="fw-medium">{{ $checklist->checked_at->format('d/m/Y') }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $checklist->checked_at->format('H:i') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Pengiriman">
                                     @if($checklist->delivery)
                                         <div>
-                                            <div class="fw-medium">{{ $checklist->delivery->order->customer->nama_toko }}</div>
+                                            <span class="fw-medium">{{ $checklist->delivery->order->customer->nama_toko }}</span>
+                                            <br>
                                             <small class="text-muted">{{ $checklist->delivery->order->nomor_order }}</small>
                                         </div>
                                     @else
                                         <span class="text-muted">General Checklist</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Completion">
                                     <div>
                                         <div class="d-flex align-items-center mb-1">
                                             <div class="progress flex-grow-1 me-2" style="height: 6px;">
@@ -140,52 +200,58 @@
                                     </div>
                                 </td>
 
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                            Aksi
+                                            <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#" wire:click.prevent="viewChecklist({{ $checklist->id }})">
-                                                <i class="bx bx-show me-1"></i> Detail
-                                            </a>
-                                            @if($checklist->getFirstMediaUrl('vehicle_photos'))
-                                                <a class="dropdown-item" href="{{ $checklist->getFirstMediaUrl('vehicle_photos') }}" target="_blank">
-                                                    <i class="bx bx-image me-1"></i> Lihat Foto
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click.prevent="viewChecklist({{ $checklist->id }})">
+                                                    <i class="bx bx-show me-1"></i> Detail
                                                 </a>
+                                            </li>
+                                            @if($checklist->getFirstMediaUrl('vehicle_photos'))
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ $checklist->getFirstMediaUrl('vehicle_photos') }}" target="_blank">
+                                                        <i class="bx bx-image me-1"></i> Lihat Foto
+                                                    </a>
+                                                </li>
                                             @endif
                                             @if($checklist->checked_at->isToday())
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item text-danger" href="#"
-                                                   wire:click.prevent="deleteChecklist({{ $checklist->id }})"
-                                                   onclick="return confirm('Yakin ingin menghapus checklist ini?')">
-                                                    <i class="bx bx-trash me-1"></i> Hapus
-                                                </a>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#"
+                                                       wire:click.prevent="deleteChecklist({{ $checklist->id }})"
+                                                       onclick="return confirm('Yakin ingin menghapus checklist ini?')">
+                                                        <i class="bx bx-trash me-1"></i> Hapus
+                                                    </a>
+                                                </li>
                                             @endif
-                                        </div>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <i class="bx bx-shield text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">Belum ada K3 checklist</p>
-                                    <button wire:click="openChecklistModal" class="btn btn-primary btn-sm">
-                                        <i class="bx bx-shield-check me-1"></i> Buat Checklist Pertama
-                                    </button>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-shield text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-1">Belum ada K3 checklist</p>
+                                        <small class="text-muted">Buat checklist keselamatan sebelum pengiriman.</small>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-3">
+        </div>
+        @if($checklists->hasPages())
+            <div class="card-footer">
                 {{ $checklists->links() }}
             </div>
-        </div>
+        @endif
     </div>
 
     <!-- Create Checklist Modal -->

@@ -1,21 +1,21 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">GPS Tracking</h4>
             <p class="text-muted mb-0">Monitor lokasi real-time selama pengiriman</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 align-self-md-auto align-self-stretch">
             @if($currentDelivery && !$isTracking)
-                <button wire:click="startTracking" class="btn btn-success">
+                <button wire:click="startTracking" class="btn btn-success flex-fill flex-md-grow-0">
                     <i class="bx bx-play"></i> Mulai Tracking
                 </button>
             @elseif($isTracking)
-                <button wire:click="stopTracking" class="btn btn-danger">
+                <button wire:click="stopTracking" class="btn btn-danger flex-fill flex-md-grow-0">
                     <i class="bx bx-stop"></i> Stop Tracking
                 </button>
             @endif
-            <button wire:click="refreshLocation" class="btn btn-outline-primary">
+            <button wire:click="refreshLocation" class="btn btn-outline-primary flex-fill flex-md-grow-0">
                 <i class="bx bx-refresh"></i> Refresh
             </button>
         </div>
@@ -55,7 +55,7 @@
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="d-flex align-items-center">
                             <div class="avatar avatar-sm me-3">
                                 <span class="avatar-initial rounded-circle bg-label-primary">
@@ -68,7 +68,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="d-flex align-items-center">
                             <div class="avatar avatar-sm me-3">
                                 <span class="avatar-initial rounded-circle bg-label-info">
@@ -227,9 +227,50 @@
             </div>
             <div class="card-body p-0">
                 @if(count($trackingHistory) > 0)
+                    <style>
+                        @media (max-width: 767.98px) {
+                            .mobile-cards tbody tr {
+                                display: block;
+                                border: 1px solid #ddd;
+                                border-radius: 0.5rem;
+                                margin-bottom: 1rem;
+                                padding: 1rem;
+                            }
+                            .mobile-cards thead {
+                                display: none;
+                            }
+                            .mobile-cards tbody td {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                border: none;
+                                padding: 0.5rem 0;
+                            }
+                            .mobile-cards tbody td:before {
+                                content: attr(data-label);
+                                font-weight: 600;
+                                margin-right: 1rem;
+                            }
+                            .mobile-cards .tracking-info-cell {
+                                display: block;
+                                padding-bottom: 1rem;
+                                margin-bottom: 1rem;
+                                border-bottom: 1px solid #eee;
+                            }
+                            .mobile-cards .tracking-info-cell:before {
+                                display: none;
+                            }
+                            .mobile-cards .actions-cell {
+                                justify-content: flex-end;
+                            }
+                            .mobile-cards .actions-cell:before {
+                                display: none;
+                            }
+                        }
+                    </style>
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
+                        <table class="table table-hover mb-0 mobile-cards">
+                            <thead class="table-light d-none d-md-table-header-group">
                                 <tr>
                                     <th>Waktu</th>
                                     <th>Koordinat</th>
@@ -241,19 +282,20 @@
                             <tbody>
                                 @foreach($trackingHistory as $track)
                                     <tr>
-                                        <td>
+                                        <td data-label="Waktu" class="tracking-info-cell">
                                             <div>
-                                                <div class="fw-medium">{{ \Carbon\Carbon::parse($track['recorded_at'])->format('H:i:s') }}</div>
+                                                <span class="fw-medium">{{ \Carbon\Carbon::parse($track['recorded_at'])->format('H:i:s') }}</span>
+                                                <br>
                                                 <small class="text-muted">{{ \Carbon\Carbon::parse($track['recorded_at'])->format('d/m/Y') }}</small>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td data-label="Koordinat">
                                             <small class="text-muted">
                                                 {{ number_format($track['latitude'], 6) }},<br>
                                                 {{ number_format($track['longitude'], 6) }}
                                             </small>
                                         </td>
-                                        <td>
+                                        <td data-label="Akurasi">
                                             @if($track['accuracy'])
                                                 <span class="badge bg-label-{{ $track['accuracy'] < 10 ? 'success' : ($track['accuracy'] < 50 ? 'warning' : 'danger') }}">
                                                     {{ $track['accuracy'] }}m
@@ -262,13 +304,13 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td data-label="Catatan">
                                             <small class="text-muted">{{ $track['notes'] ?? '-' }}</small>
                                         </td>
-                                        <td>
+                                        <td data-label="Aksi" class="actions-cell">
                                             <a href="https://maps.google.com/?q={{ $track['latitude'] }},{{ $track['longitude'] }}"
                                                target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="bx bx-map"></i>
+                                                <i class="bx bx-map"></i> Lihat
                                             </a>
                                         </td>
                                     </tr>
