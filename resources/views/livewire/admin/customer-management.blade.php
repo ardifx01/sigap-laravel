@@ -1,11 +1,11 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Pelanggan</h4>
             <p class="text-muted mb-0">Kelola data pelanggan dan informasi toko</p>
         </div>
-        <button wire:click="openCustomerModal" class="btn btn-primary">
+        <button wire:click="openCustomerModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus"></i> Tambah Customer
         </button>
     </div>
@@ -27,7 +27,7 @@
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -61,7 +61,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -78,7 +78,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -101,11 +101,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama toko atau telepon...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -113,7 +113,7 @@
                         <option value="0">Nonaktif</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Sales</label>
                     <select wire:model.live="salesFilter" class="form-select">
                         <option value="">Semua Sales</option>
@@ -122,7 +122,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Per Halaman</label>
                     <select wire:model.live="perPage" class="form-select">
                         <option value="15">15</option>
@@ -140,9 +140,50 @@
             <h5 class="mb-0">Daftar Customer</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .customer-info-cell {
+                        display: block; /* Override the flex for the main user info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .customer-info-cell:before {
+                        display: none; /* No "User:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Toko</th>
                             <th>Kontak</th>
@@ -155,20 +196,20 @@
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td>
+                                <td data-label="Toko" class="customer-info-cell">
                                     <div>
                                         <span class="fw-medium">{{ $customer->nama_toko }}</span>
                                         <br>
                                         <small class="text-muted">{{ Str::limit($customer->alamat, 30) }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Kontak">
                                     <div>
                                         <span class="fw-medium">{{ $customer->phone }}</span>
                                     </div>
                                 </td>
-                                <td>{{ $customer->sales->name ?? '-' }}</td>
-                                <td>
+                                <td data-label="Sales">{{ $customer->sales->name ?? '-' }}</td>
+                                <td data-label="Limit Piutang">
                                     @if($customer->limit_amount_piutang)
                                         <div>
                                             <span class="fw-medium">Rp {{ number_format($customer->limit_amount_piutang, 0, ',', '.') }}</span>
@@ -179,12 +220,12 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{ $customer->is_active ? 'success' : 'danger' }}">
                                         {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Aksi

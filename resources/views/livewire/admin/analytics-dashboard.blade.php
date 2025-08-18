@@ -1,11 +1,11 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Advanced Analytics Dashboard</h4>
             <p class="text-muted mb-0">Real-time business intelligence dan insights</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <select wire:model.live="dateRange" class="form-select" style="width: auto;">
                 <option value="7">7 Hari</option>
                 <option value="30">30 Hari</option>
@@ -38,7 +38,7 @@
     @else
     <!-- Key Metrics Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -56,7 +56,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -74,7 +74,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -92,7 +92,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -115,7 +115,7 @@
     <!-- Charts Row 1 -->
     <div class="row g-4 mb-4">
         <!-- Sales Trend Chart -->
-        <div class="col-md-8">
+        <div class="col-12 col-lg-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h6 class="card-title mb-0">Sales Trend</h6>
@@ -136,7 +136,7 @@
         </div>
 
         <!-- Order Status Pie Chart -->
-        <div class="col-md-4">
+        <div class="col-12 col-lg-4">
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title mb-0">Order Status Distribution</h6>
@@ -151,7 +151,7 @@
     <!-- Charts Row 2 -->
     <div class="row g-4 mb-4">
         <!-- Top Products -->
-        <div class="col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title mb-0">Top Selling Products</h6>
@@ -182,7 +182,7 @@
         </div>
 
         <!-- Top Customers -->
-        <div class="col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title mb-0">Top Customers</h6>
@@ -216,7 +216,7 @@
     <!-- Performance Metrics Row -->
     <div class="row g-4 mb-4">
         <!-- Sales Performance -->
-        <div class="col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title mb-0">Sales Team Performance</h6>
@@ -247,7 +247,7 @@
         </div>
 
         <!-- Activity Metrics -->
-        <div class="col-md-6">
+        <div class="col-12 col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title mb-0">Activity Overview</h6>

@@ -41,5 +41,20 @@
     <!-- Include Scripts -->
     @include('partials.scripts')
     <!-- / Include Scripts -->
+
+    <script>
+        function initializeHamburgerToggle() {
+            const hamburger = document.getElementById('hamburger-menu-toggle');
+            if (hamburger) {
+                hamburger.onclick = function (e) {
+                    e.preventDefault();
+                    document.documentElement.classList.toggle('layout-menu-expanded');
+                };
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeHamburgerToggle);
+        document.addEventListener('livewire:navigated', initializeHamburgerToggle);
+    </script>
   </body>
 </html>

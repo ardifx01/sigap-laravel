@@ -163,8 +163,8 @@
                     <div class="d-flex align-items-center justify-content-center h-100">
                         <div class="text-center">
                             <i class="bx bx-map text-muted" style="font-size: 3rem;"></i>
-                            <p class="text-muted mt-2">Live Map akan ditampilkan di sini</p>
-                            <small class="text-muted">Fitur akan aktif setelah implementasi GPS tracking</small>
+                            <p class="text-muted mt-2">Live Map</p>
+                            <small class="text-muted">Fitur untuk saat ini belum di implementasikan</small>
                         </div>
                     </div>
                 </div>

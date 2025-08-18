@@ -1,11 +1,11 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Pembayaran</h4>
             <p class="text-muted mb-0">Monitor dan kelola semua pembayaran</p>
         </div>
-        <button wire:click="openPaymentModal" class="btn btn-primary">
+        <button wire:click="openPaymentModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus"></i> Catat Pembayaran
         </button>
     </div>
@@ -27,32 +27,27 @@
 
     <!-- Payment Statistics -->
     <div class="row g-3 mb-4">
-        <!-- First Row: 4 main stats -->
-        <div class="col-lg-3 col-md-6">
+        <div class="col-6 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-credit-card"></i>
-                            </span>
+                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-credit-card"></i></span>
                         </div>
                         <div>
-                            <small class="text-muted d-block">Total Pembayaran</small>
+                            <small class="text-muted d-block">Total</small>
                             <h6 class="mb-0">{{ $totalPayments }}</h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
+        <div class="col-6 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-check-circle"></i>
-                            </span>
+                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-check-circle"></i></span>
                         </div>
                         <div>
                             <small class="text-muted d-block">Lunas</small>
@@ -62,14 +57,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
+        <div class="col-6 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-warning">
-                                <i class="bx bx-time"></i>
-                            </span>
+                            <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-time"></i></span>
                         </div>
                         <div>
                             <small class="text-muted d-block">Belum Lunas</small>
@@ -79,14 +72,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
+        <div class="col-6 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-danger">
-                                <i class="bx bx-x-circle"></i>
-                            </span>
+                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-x-circle"></i></span>
                         </div>
                         <div>
                             <small class="text-muted d-block">Overdue</small>
@@ -96,18 +87,12 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Second Row: 2 additional stats -->
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-money"></i>
-                            </span>
+                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-money"></i></span>
                         </div>
                         <div>
                             <small class="text-muted d-block">Total Bayar</small>
@@ -117,14 +102,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-calendar-check"></i>
-                            </span>
+                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-calendar-check"></i></span>
                         </div>
                         <div>
                             <small class="text-muted d-block">Hari Ini</small>
@@ -136,49 +119,36 @@
         </div>
     </div>
 
-    <!-- Payment Methods - Full Width -->
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="mb-4">
-                        <i class="bx bx-credit-card me-2"></i>
-                        Metode Pembayaran
-                    </h6>
-                    <div class="row g-4">
-                        <div class="col-lg-4 col-md-4">
-                            <div class="text-center">
-                                <div class="avatar avatar-lg mx-auto mb-3">
-                                    <span class="avatar-initial rounded-circle bg-label-primary">
-                                        <i class="bx bx-money fs-4"></i>
-                                    </span>
-                                </div>
-                                <h6 class="mb-1">Tunai</h6>
-                                <p class="text-muted mb-0">Rp {{ number_format($tunaiPayments, 0, ',', '.') }}</p>
-                            </div>
+    <!-- Payment Methods -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="mb-4"><i class="bx bx-credit-card me-2"></i>Metode Pembayaran</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <div class="text-center">
+                        <div class="avatar avatar-lg mx-auto mb-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-money fs-4"></i></span>
                         </div>
-                        <div class="col-lg-4 col-md-4">
-                            <div class="text-center">
-                                <div class="avatar avatar-lg mx-auto mb-3">
-                                    <span class="avatar-initial rounded-circle bg-label-info">
-                                        <i class="bx bx-transfer fs-4"></i>
-                                    </span>
-                                </div>
-                                <h6 class="mb-1">Transfer</h6>
-                                <p class="text-muted mb-0">Rp {{ number_format($transferPayments, 0, ',', '.') }}</p>
-                            </div>
+                        <h6 class="mb-1">Tunai</h6>
+                        <p class="text-muted mb-0">Rp {{ number_format($tunaiPayments, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="text-center">
+                        <div class="avatar avatar-lg mx-auto mb-3">
+                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-transfer fs-4"></i></span>
                         </div>
-                        <div class="col-lg-4 col-md-4">
-                            <div class="text-center">
-                                <div class="avatar avatar-lg mx-auto mb-3">
-                                    <span class="avatar-initial rounded-circle bg-label-warning">
-                                        <i class="bx bx-receipt fs-4"></i>
-                                    </span>
-                                </div>
-                                <h6 class="mb-1">Giro</h6>
-                                <p class="text-muted mb-0">Rp {{ number_format($giroPayments, 0, ',', '.') }}</p>
-                            </div>
+                        <h6 class="mb-1">Transfer</h6>
+                        <p class="text-muted mb-0">Rp {{ number_format($transferPayments, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="text-center">
+                        <div class="avatar avatar-lg mx-auto mb-3">
+                            <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-receipt fs-4"></i></span>
                         </div>
+                        <h6 class="mb-1">Giro</h6>
+                        <p class="text-muted mb-0">Rp {{ number_format($giroPayments, 0, ',', '.') }}</p>
                     </div>
                 </div>
             </div>
@@ -189,11 +159,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nomor order atau nama toko...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -202,7 +172,7 @@
                         <option value="overdue">Overdue</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Metode</label>
                     <select wire:model.live="methodFilter" class="form-select">
                         <option value="">Semua Metode</option>
@@ -211,7 +181,7 @@
                         <option value="giro">Giro</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Customer</label>
                     <select wire:model.live="customerFilter" class="form-select">
                         <option value="">Semua Customer</option>
@@ -220,11 +190,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
-                <div class="col-md-1">
+                <div class="col-12 col-md-1">
                     <label class="form-label">Per Page</label>
                     <select wire:model.live="perPage" class="form-select">
                         <option value="15">15</option>
@@ -242,9 +212,50 @@
             <h5 class="mb-0">Daftar Pembayaran</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .payment-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .payment-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Customer</th>
@@ -258,22 +269,22 @@
                     <tbody>
                         @forelse($payments as $payment)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="payment-info-cell">
                                     <span class="fw-medium">{{ $payment->order->nomor_order }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <div>
                                         <span class="fw-medium">{{ $payment->order->customer->nama_toko }}</span>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Jumlah">
                                     <div>
                                         <span class="fw-medium">Rp {{ number_format($payment->jumlah_tagihan, 0, ',', '.') }}</span>
                                         <br>
                                         <small class="text-muted">Bayar: Rp {{ number_format($payment->jumlah_bayar, 0, ',', '.') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Metode">
                                     @php
                                         $methodColors = [
                                             'tunai' => 'success',
@@ -285,7 +296,7 @@
                                         {{ ucfirst($payment->jenis_pembayaran) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     @php
                                         $statusColors = [
                                             'lunas' => 'success',
@@ -302,7 +313,7 @@
                                         {{ $statusLabels[$payment->status] ?? ucfirst($payment->status) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Tanggal">
                                     <div>
                                         @if($payment->tanggal_bayar)
                                             <div class="fw-medium">{{ $payment->tanggal_bayar->format('d/m/Y') }}</div>
@@ -312,7 +323,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Aksi
@@ -394,17 +405,17 @@
                                     </select>
                                     @error('order_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Jumlah Tagihan <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="jumlah_tagihan" class="form-control @error('jumlah_tagihan') is-invalid @enderror" min="1">
                                     @error('jumlah_tagihan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Jumlah Bayar <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="jumlah_bayar" class="form-control @error('jumlah_bayar') is-invalid @enderror" min="0">
                                     @error('jumlah_bayar') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Jenis Pembayaran <span class="text-danger">*</span></label>
                                     <select wire:model="jenis_pembayaran" class="form-select @error('jenis_pembayaran') is-invalid @enderror">
                                         <option value="tunai">Tunai</option>
@@ -413,12 +424,12 @@
                                     </select>
                                     @error('jenis_pembayaran') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Tanggal Bayar <span class="text-danger">*</span></label>
                                     <input type="date" wire:model="tanggal_bayar" class="form-control @error('tanggal_bayar') is-invalid @enderror">
                                     @error('tanggal_bayar') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Bukti Transfer</label>
                                     <input type="file" wire:model="bukti_transfer" class="form-control @error('bukti_transfer') is-invalid @enderror" accept="image/*">
                                     @error('bukti_transfer') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -460,7 +471,7 @@
                     <div class="modal-body">
                         <div class="row g-4">
                             <!-- Payment Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Pembayaran</h6>
                                 <table class="table table-sm">
                                     <tr>
@@ -510,7 +521,7 @@
                             </div>
 
                             <!-- Customer & Order Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Customer & Order</h6>
                                 <table class="table table-sm">
                                     <tr>

@@ -1,6 +1,6 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Pengiriman</h4>
             <p class="text-muted mb-0">Monitor dan kelola semua pengiriman</p>
@@ -24,105 +24,69 @@
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-list-ol"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Total Pengiriman</small>
-                            <h6 class="mb-0">{{ $totalDeliveries }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-list-ol"></i></span>
                     </div>
+                    <small class="text-muted d-block">Total</small>
+                    <h6 class="mb-0">{{ $totalDeliveries }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-warning">
-                                <i class="bx bx-time"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Pending</small>
-                            <h6 class="mb-0">{{ $pendingDeliveries }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-time"></i></span>
                     </div>
+                    <small class="text-muted d-block">Pending</small>
+                    <h6 class="mb-0">{{ $pendingDeliveries }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-user-check"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Assigned</small>
-                            <h6 class="mb-0">{{ $assignedDeliveries }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-user-check"></i></span>
                     </div>
+                    <small class="text-muted d-block">Assigned</small>
+                    <h6 class="mb-0">{{ $assignedDeliveries }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-trip"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">In Progress</small>
-                            <h6 class="mb-0">{{ $inProgressDeliveries }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-trip"></i></span>
                     </div>
+                    <small class="text-muted d-block">In Progress</small>
+                    <h6 class="mb-0">{{ $inProgressDeliveries }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-check-circle"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Delivered</small>
-                            <h6 class="mb-0">{{ $deliveredDeliveries }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-check-circle"></i></span>
                     </div>
+                    <small class="text-muted d-block">Delivered</small>
+                    <h6 class="mb-0">{{ $deliveredDeliveries }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-danger">
-                                <i class="bx bx-x-circle"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Failed</small>
-                            <h6 class="mb-0">{{ $failedDeliveries }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-x-circle"></i></span>
                     </div>
+                    <small class="text-muted d-block">Failed</small>
+                    <h6 class="mb-0">{{ $failedDeliveries }}</h6>
                 </div>
             </div>
         </div>
@@ -130,7 +94,7 @@
 
     <!-- Today Stats -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -147,7 +111,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -169,16 +133,16 @@
     <!-- Confirmed Orders Alert -->
     @if($confirmedOrders->count() > 0)
         <div class="alert alert-info mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="text-center text-md-start">
                     <i class="bx bx-info-circle me-1"></i>
                     <strong>{{ $confirmedOrders->count() }} order terkonfirmasi</strong> menunggu untuk dibuat pengiriman.
                 </div>
-                <div class="dropdown">
+                <div class="dropdown align-self-center align-self-md-auto">
                     <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         Buat Pengiriman
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         @foreach($confirmedOrders as $order)
                             <li>
                                 <a class="dropdown-item" href="#" wire:click="createDeliveryFromOrder({{ $order->id }})">
@@ -196,11 +160,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nomor order atau nama toko...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -212,7 +176,7 @@
                         <option value="failed">Failed</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Driver</label>
                     <select wire:model.live="driverFilter" class="form-select">
                         <option value="">Semua Driver</option>
@@ -221,11 +185,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Per Halaman</label>
                     <select wire:model.live="perPage" class="form-select">
                         <option value="15">15</option>
@@ -243,9 +207,50 @@
             <h5 class="mb-0">Daftar Pengiriman</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .delivery-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .delivery-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Customer</th>
@@ -258,24 +263,24 @@
                     <tbody>
                         @forelse($deliveries as $delivery)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="delivery-info-cell">
                                     <span class="fw-medium">{{ $delivery->order->nomor_order }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <div>
                                         <span class="fw-medium">{{ $delivery->order->customer->nama_toko }}</span>
                                         <br>
                                         <small class="text-muted">{{ Str::limit($delivery->order->customer->alamat, 30) }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Driver">
                                     @if($delivery->driver)
                                         <span class="fw-medium">{{ $delivery->driver->name }}</span>
                                     @else
                                         <span class="text-muted">Belum ditugaskan</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     @php
                                         $statusColors = [
                                             'pending' => 'warning',
@@ -290,13 +295,13 @@
                                         {{ ucfirst(str_replace('_', ' ', $delivery->status)) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Tanggal">
                                     <div>
                                         <div class="fw-medium">{{ $delivery->created_at->format('d/m/Y') }}</div>
                                         <small class="text-muted">{{ $delivery->created_at->format('H:i') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Aksi
@@ -416,7 +421,7 @@
                     <div class="modal-body">
                         <div class="row g-4">
                             <!-- Delivery Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Pengiriman</h6>
                                 <table class="table table-sm">
                                     <tr>
@@ -471,7 +476,7 @@
                             </div>
 
                             <!-- Customer Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Customer</h6>
                                 <table class="table table-sm">
                                     <tr>

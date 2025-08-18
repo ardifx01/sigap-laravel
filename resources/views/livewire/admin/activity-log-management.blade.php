@@ -1,11 +1,11 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Activity Logs</h4>
             <p class="text-muted mb-0">Monitor semua aktivitas sistem dan perubahan data</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-grid d-md-flex gap-2">
             <button wire:click="clearFilters" class="btn btn-outline-secondary">
                 <i class="bx bx-refresh"></i> Reset Filter
             </button>
@@ -16,11 +16,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari aktivitas...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Log Name</label>
                     <select wire:model.live="logName" class="form-select">
                         <option value="">Semua</option>
@@ -29,7 +29,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">User Type</label>
                     <select wire:model.live="causerType" class="form-select">
                         <option value="">Semua</option>
@@ -38,7 +38,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Subject Type</label>
                     <select wire:model.live="subjectType" class="form-select">
                         <option value="">Semua</option>
@@ -47,13 +47,12 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-1.5">
-                    <label class="form-label">Dari Tanggal</label>
-                    <input type="date" wire:model.live="dateFrom" class="form-control">
-                </div>
-                <div class="col-md-1.5">
-                    <label class="form-label">Sampai Tanggal</label>
-                    <input type="date" wire:model.live="dateTo" class="form-control">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Rentang Tanggal</label>
+                    <div class="d-flex gap-2">
+                        <input type="date" wire:model.live="dateFrom" class="form-control">
+                        <input type="date" wire:model.live="dateTo" class="form-control">
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,22 +60,54 @@
 
     <!-- Activity Logs Table -->
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
             <h5 class="mb-0">Daftar Activity Logs</h5>
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-muted">Per halaman:</span>
-                <select wire:model.live="perPage" class="form-select form-select-sm" style="width: auto;">
-                    <option value="15">15</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
-            </div>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .log-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .log-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Waktu</th>
                             <th>User</th>
@@ -89,13 +120,13 @@
                     <tbody>
                         @forelse($activityLogs as $log)
                             <tr>
-                                <td>
+                                <td data-label="Waktu" class="log-info-cell">
                                     <div class="d-flex flex-column">
                                         <span class="fw-medium">{{ $log->created_at->format('d/m/Y') }}</span>
                                         <small class="text-muted">{{ $log->created_at->format('H:i:s') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="User">
                                     @if($log->causer)
                                         <div class="d-flex align-items-center">
                                             <div class="avatar avatar-sm me-2">
@@ -113,10 +144,10 @@
                                         <span class="text-muted">System</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Aktivitas">
                                     <span class="badge bg-label-info">{{ $log->description }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Subject">
                                     @if($log->subject)
                                         <div>
                                             <span class="fw-medium">{{ class_basename($log->subject_type) }}</span>
@@ -127,14 +158,14 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Log Name">
                                     @if($log->log_name)
                                         <span class="badge bg-label-secondary">{{ $log->log_name }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Properties" class="actions-cell">
                                     @if($log->properties && count($log->properties) > 0)
                                         <button class="btn btn-sm btn-outline-primary" 
                                                 data-bs-toggle="modal" 
@@ -162,8 +193,8 @@
             </div>
         </div>
         @if($activityLogs->hasPages())
-            <div class="card-footer">
-                {{ $activityLogs->links() }}
+            <div class="card-footer d-flex justify-content-center">
+                {{ $activityLogs->links('pagination::simple-bootstrap-5') }}
             </div>
         @endif
     </div>
@@ -179,8 +210,8 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="row">
-                                <div class="col-md-6">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
                                     <h6>Old Values</h6>
                                     @if(isset($log->properties['old']) && count($log->properties['old']) > 0)
                                         <div class="table-responsive">
@@ -197,7 +228,7 @@
                                         <p class="text-muted">No old values</p>
                                     @endif
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <h6>New Values</h6>
                                     @if(isset($log->properties['attributes']) && count($log->properties['attributes']) > 0)
                                         <div class="table-responsive">

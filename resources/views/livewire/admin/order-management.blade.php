@@ -1,6 +1,6 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Order</h4>
             <p class="text-muted mb-0">Monitor dan kelola semua pesanan pelanggan</p>
@@ -24,105 +24,69 @@
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-cart"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Total</small>
-                            <h6 class="mb-0">{{ $totalOrders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-cart"></i></span>
                     </div>
+                    <small class="text-muted d-block">Total</small>
+                    <h6 class="mb-0">{{ $totalOrders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-warning">
-                                <i class="bx bx-time"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Pending</small>
-                            <h6 class="mb-0">{{ $pendingOrders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-time"></i></span>
                     </div>
+                    <small class="text-muted d-block">Pending</small>
+                    <h6 class="mb-0">{{ $pendingOrders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-check"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Confirmed</small>
-                            <h6 class="mb-0">{{ $confirmedOrders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-check"></i></span>
                     </div>
+                    <small class="text-muted d-block">Confirmed</small>
+                    <h6 class="mb-0">{{ $confirmedOrders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-car"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Shipped</small>
-                            <h6 class="mb-0">{{ $shippedOrders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-car"></i></span>
                     </div>
+                    <small class="text-muted d-block">Shipped</small>
+                    <h6 class="mb-0">{{ $shippedOrders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-check-circle"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Delivered</small>
-                            <h6 class="mb-0">{{ $deliveredOrders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-check-circle"></i></span>
                     </div>
+                    <small class="text-muted d-block">Delivered</small>
+                    <h6 class="mb-0">{{ $deliveredOrders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-danger">
-                                <i class="bx bx-x"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Cancelled</small>
-                            <h6 class="mb-0">{{ $cancelledOrders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-x"></i></span>
                     </div>
+                    <small class="text-muted d-block">Cancelled</small>
+                    <h6 class="mb-0">{{ $cancelledOrders }}</h6>
                 </div>
             </div>
         </div>
@@ -130,7 +94,7 @@
 
     <!-- Today Stats -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -147,7 +111,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -170,11 +134,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nomor order atau nama toko...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -185,7 +149,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Sales</label>
                     <select wire:model.live="salesFilter" class="form-select">
                         <option value="">Semua Sales</option>
@@ -194,7 +158,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Customer</label>
                     <select wire:model.live="customerFilter" class="form-select">
                         <option value="">Semua Customer</option>
@@ -203,11 +167,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
-                <div class="col-md-1">
+                <div class="col-12 col-md-1">
                     <label class="form-label">Per Page</label>
                     <select wire:model.live="perPage" class="form-select">
                         <option value="15">15</option>
@@ -225,9 +189,50 @@
             <h5 class="mb-0">Daftar Order</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .order-info-cell {
+                        display: block; /* Override the flex for the main user info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .order-info-cell:before {
+                        display: none; /* No "User:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Customer</th>
@@ -241,21 +246,21 @@
                     <tbody>
                         @forelse($orders as $order)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="order-info-cell">
                                     <span class="fw-medium">{{ $order->nomor_order }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <div>
                                         <span class="fw-medium">{{ $order->customer->nama_toko }}</span>
                                         <br>
                                         <small class="text-muted">{{ $order->customer->nama_pemilik }}</small>
                                     </div>
                                 </td>
-                                <td>{{ $order->sales->name }}</td>
-                                <td>
+                                <td data-label="Sales">{{ $order->sales->name }}</td>
+                                <td data-label="Total">
                                     <span class="fw-medium">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     @php
                                         $statusColors = [
                                             'pending' => 'warning',
@@ -269,13 +274,13 @@
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Tanggal">
                                     <div>
                                         <div class="fw-medium">{{ $order->created_at->format('d/m/Y') }}</div>
                                         <small class="text-muted">{{ $order->created_at->format('H:i') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Aksi
@@ -355,7 +360,7 @@
                     <div class="modal-body">
                         <div class="row g-4">
                             <!-- Order Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Order</h6>
                                 <table class="table table-sm">
                                     <tr>
@@ -391,7 +396,7 @@
                             </div>
 
                             <!-- Customer Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Customer</h6>
                                 <table class="table table-sm">
                                     <tr>

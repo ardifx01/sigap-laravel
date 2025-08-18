@@ -1,11 +1,11 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Backorder</h4>
             <p class="text-muted mb-0">Kelola pesanan yang tertunda karena stok habis</p>
         </div>
-        <button wire:click="openBackorderModal" class="btn btn-primary">
+        <button wire:click="openBackorderModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus"></i> Tambah Backorder
         </button>
     </div>
@@ -27,100 +27,66 @@
 
     <!-- Alert Cards -->
     @if($overdueBackorders > 0)
-        <div class="row g-3 mb-4">
-            <div class="col-md-12">
-                <div class="alert alert-danger">
-                    <i class="bx bx-time me-1"></i>
-                    <strong>{{ $overdueBackorders }} backorder terlambat</strong> dari tanggal yang diharapkan!
-                </div>
-            </div>
+        <div class="alert alert-danger mb-4">
+            <i class="bx bx-time me-1"></i>
+            <strong>{{ $overdueBackorders }} backorder terlambat</strong> dari tanggal yang diharapkan!
         </div>
     @endif
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-md-2.4">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                <i class="bx bx-time"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Total Backorder</small>
-                            <h6 class="mb-0">{{ $totalBackorders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-list-check"></i></span>
                     </div>
+                    <small class="text-muted d-block">Total</small>
+                    <h6 class="mb-0">{{ $totalBackorders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-warning">
-                                <i class="bx bx-time"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Pending</small>
-                            <h6 class="mb-0">{{ $pendingBackorders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-time-five"></i></span>
                     </div>
+                    <small class="text-muted d-block">Pending</small>
+                    <h6 class="mb-0">{{ $pendingBackorders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-6 col-sm-4 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-info">
-                                <i class="bx bx-loader"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Partial</small>
-                            <h6 class="mb-0">{{ $partialBackorders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-loader-circle"></i></span>
                     </div>
+                    <small class="text-muted d-block">Partial</small>
+                    <h6 class="mb-0">{{ $partialBackorders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-6 col-sm-6 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-success">
-                                <i class="bx bx-check-circle"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Fulfilled</small>
-                            <h6 class="mb-0">{{ $fulfilledBackorders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-check-circle"></i></span>
                     </div>
+                    <small class="text-muted d-block">Fulfilled</small>
+                    <h6 class="mb-0">{{ $fulfilledBackorders }}</h6>
                 </div>
             </div>
         </div>
-        <div class="col-md-2.4">
+        <div class="col-6 col-sm-6 col-md-2">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-md me-3">
-                            <span class="avatar-initial rounded-circle bg-label-danger">
-                                <i class="bx bx-x-circle"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Cancelled</small>
-                            <h6 class="mb-0">{{ $cancelledBackorders }}</h6>
-                        </div>
+                <div class="card-body text-center">
+                    <div class="avatar avatar-md mx-auto mb-2">
+                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-x-circle"></i></span>
                     </div>
+                    <small class="text-muted d-block">Cancelled</small>
+                    <h6 class="mb-0">{{ $cancelledBackorders }}</h6>
                 </div>
             </div>
         </div>
@@ -130,11 +96,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-2">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari produk atau customer...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -144,7 +110,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Produk</label>
                     <select wire:model.live="productFilter" class="form-select">
                         <option value="">Semua Produk</option>
@@ -153,7 +119,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Tanggal Expected</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
@@ -167,9 +133,50 @@
             <h5 class="mb-0">Daftar Backorder</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .backorder-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .backorder-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Produk</th>
                             <th>Customer</th>
@@ -182,28 +189,28 @@
                     <tbody>
                         @forelse($backorders as $backorder)
                             <tr class="{{ $backorder->expected_date && $backorder->expected_date->isPast() && in_array($backorder->status, ['pending', 'partial']) ? 'table-danger' : '' }}">
-                                <td>
+                                <td data-label="Produk" class="backorder-info-cell">
                                     <div>
                                         <span class="fw-medium">{{ $backorder->product->nama_barang }}</span>
                                         <br>
                                         <small class="text-muted">{{ $backorder->product->kode_item }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <div>
                                         <span class="fw-medium">{{ $backorder->orderItem->order->customer->nama_toko }}</span>
                                         <br>
                                         <small class="text-muted">Order: {{ $backorder->orderItem->order->nomor_order }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Jumlah">
                                     <span class="fw-medium">{{ $backorder->jumlah_backorder }} {{ $backorder->product->jenis }}</span>
                                     @if($backorder->jumlah_terpenuhi > 0)
                                         <br>
                                         <small class="text-success">Dipenuhi: {{ $backorder->jumlah_terpenuhi }}</small>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     @php
                                         $statusColors = [
                                             'pending' => 'warning',
@@ -216,7 +223,7 @@
                                         {{ ucfirst($backorder->status) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Target">
                                     @if($backorder->expected_date)
                                         <div>
                                             <div class="fw-medium {{ $backorder->expected_date->isPast() ? 'text-danger' : '' }}">
@@ -232,7 +239,7 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Aksi
@@ -313,7 +320,7 @@
                     <div class="modal-body">
                         <form wire:submit="saveBackorder">
                             <div class="row g-3">
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Produk <span class="text-danger">*</span></label>
                                     <select wire:model="product_id" class="form-select @error('product_id') is-invalid @enderror">
                                         <option value="">Pilih Produk</option>
@@ -326,7 +333,7 @@
                                     </select>
                                     @error('product_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Order Item <span class="text-danger">*</span></label>
                                     <select wire:model="order_item_id" class="form-select @error('order_item_id') is-invalid @enderror">
                                         <option value="">Pilih Order Item</option>
@@ -339,12 +346,12 @@
                                     </select>
                                     @error('order_item_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Jumlah Backorder <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="jumlah_backorder" class="form-control @error('jumlah_backorder') is-invalid @enderror" min="1">
                                     @error('jumlah_backorder') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Tanggal Diharapkan</label>
                                     <input type="date" wire:model="expected_date" class="form-control @error('expected_date') is-invalid @enderror">
                                     @error('expected_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -381,7 +388,7 @@
                     <div class="modal-body">
                         <div class="row g-4">
                             <!-- Backorder Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Backorder</h6>
                                 <table class="table table-sm">
                                     <tr>
@@ -435,7 +442,7 @@
                             </div>
 
                             <!-- Product & Customer Info -->
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <h6>Informasi Produk & Customer</h6>
                                 <table class="table table-sm">
                                     <tr>

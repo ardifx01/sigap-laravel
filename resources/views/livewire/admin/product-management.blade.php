@@ -1,11 +1,11 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Produk</h4>
             <p class="text-muted mb-0">Kelola katalog produk dan inventory</p>
         </div>
-        <button wire:click="openProductModal" class="btn btn-primary">
+        <button wire:click="openProductModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus"></i> Tambah Produk
         </button>
     </div>
@@ -27,8 +27,7 @@
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <!-- First Row: 3 cards -->
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -45,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -62,7 +61,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -79,11 +78,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Second Row: 2 cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -100,7 +95,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -123,11 +118,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari nama produk, kode, atau jenis...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -135,7 +130,7 @@
                         <option value="0">Nonaktif</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Stok</label>
                     <select wire:model.live="stockFilter" class="form-select">
                         <option value="">Semua Stok</option>
@@ -144,7 +139,7 @@
                         <option value="out">Habis</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Per Halaman</label>
                     <select wire:model.live="perPage" class="form-select">
                         <option value="15">15</option>
@@ -162,9 +157,50 @@
             <h5 class="mb-0">Daftar Produk</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .product-info-cell {
+                        display: block; /* Override the flex for the main user info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .product-info-cell:before {
+                        display: none; /* No "User:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Produk</th>
                             <th>Jenis</th>
@@ -177,7 +213,7 @@
                     <tbody>
                         @forelse($products as $product)
                             <tr>
-                                <td>
+                                <td data-label="Produk" class="product-info-cell">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
                                             @if($product->foto_produk)
@@ -195,15 +231,15 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Jenis">
                                     <span class="badge bg-label-info">{{ ucfirst($product->jenis) }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Harga">
                                     <div>
                                         <span class="fw-medium">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</span>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Stok">
                                     <div>
                                         <span class="fw-medium {{ $product->stok_tersedia <= $product->stok_minimum ? 'text-danger' : ($product->stok_tersedia == 0 ? 'text-danger' : 'text-success') }}">
                                             {{ $product->stok_tersedia }} {{ $product->jenis }}
@@ -212,12 +248,12 @@
                                         <small class="text-muted">Min: {{ $product->stok_minimum }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{ $product->is_active ? 'success' : 'danger' }}">
                                         {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                             Aksi
@@ -291,17 +327,17 @@
                     <div class="modal-body">
                         <form wire:submit="saveProduct">
                             <div class="row g-3">
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Kode Item <span class="text-danger">*</span></label>
                                     <input type="text" wire:model="kode_item" class="form-control @error('kode_item') is-invalid @enderror">
                                     @error('kode_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Nama Barang <span class="text-danger">*</span></label>
                                     <input type="text" wire:model="nama_barang" class="form-control @error('nama_barang') is-invalid @enderror">
                                     @error('nama_barang') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Jenis <span class="text-danger">*</span></label>
                                     <select wire:model="jenis" class="form-select @error('jenis') is-invalid @enderror">
                                         @foreach($jenisOptions as $value => $label)
@@ -310,17 +346,17 @@
                                     </select>
                                     @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Harga Jual <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="harga_jual" class="form-control @error('harga_jual') is-invalid @enderror" min="0">
                                     @error('harga_jual') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Stok Tersedia <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="stok_tersedia" class="form-control @error('stok_tersedia') is-invalid @enderror" min="0">
                                     @error('stok_tersedia') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label">Stok Minimum <span class="text-danger">*</span></label>
                                     <input type="number" wire:model="stok_minimum" class="form-control @error('stok_minimum') is-invalid @enderror" min="0">
                                     @error('stok_minimum') <div class="invalid-feedback">{{ $message }}</div> @enderror
