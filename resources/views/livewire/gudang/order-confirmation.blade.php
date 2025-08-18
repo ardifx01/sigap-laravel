@@ -1,21 +1,35 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Konfirmasi Order</h4>
             <p class="text-muted mb-0">Konfirmasi ketersediaan stok untuk order masuk</p>
         </div>
     </div>
 
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Cari Order</label>
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="Nomor order, toko, atau sales...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Nomor order, toko, atau sales...">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label">Filter Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -31,10 +45,54 @@
 
     <!-- Orders Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Order</h5>
+        </div>
+        <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .order-info-cell {
+                        display: block; /* Override the flex for the main order info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .order-info-cell:before {
+                        display: none; /* No "Order:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Sales</th>
@@ -48,39 +106,42 @@
                     <tbody>
                         @forelse($orders as $order)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="order-info-cell">
                                     <div>
-                                        <h6 class="mb-0">{{ $order->nomor_order }}</h6>
+                                        <span class="fw-medium">{{ $order->nomor_order }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $order->created_at->format('d/m/Y H:i') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Sales">
                                     <div>
-                                        <div class="fw-medium">{{ $order->sales->name }}</div>
+                                        <span class="fw-medium">{{ $order->sales->name }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $order->sales->phone }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Pelanggan">
                                     <div>
-                                        <div class="fw-medium">{{ $order->customer->nama_toko }}</div>
+                                        <span class="fw-medium">{{ $order->customer->nama_toko }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $order->customer->phone }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Items">
                                     <div>
-                                        <div class="fw-medium">{{ $order->orderItems->count() }} item</div>
+                                        <span class="fw-medium">{{ $order->orderItems->count() }} item</span>
                                         @foreach($order->orderItems->take(2) as $item)
-                                            <small class="text-muted d-block">{{ $item->product->nama_barang }} ({{ $item->jumlah_pesan }})</small>
+                                            <br><small class="text-muted">{{ $item->product->nama_barang }} ({{ $item->jumlah_pesan }})</small>
                                         @endforeach
                                         @if($order->orderItems->count() > 2)
-                                            <small class="text-muted">+{{ $order->orderItems->count() - 2 }} lainnya</small>
+                                            <br><small class="text-muted">+{{ $order->orderItems->count() - 2 }} lainnya</small>
                                         @endif
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="fw-medium">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
+                                <td data-label="Total">
+                                    <span class="fw-medium">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{
                                         $order->status === 'pending' ? 'warning' :
                                         ($order->status === 'confirmed' ? 'info' :
@@ -90,7 +151,7 @@
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     @if($order->status === 'pending')
                                         <div class="btn-group">
                                             <button wire:click="openConfirmModal({{ $order->id }})" class="btn btn-sm btn-primary">
@@ -109,21 +170,24 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">
-                                    <i class="bx bx-package text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">Tidak ada order untuk dikonfirmasi</p>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-package text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-1">Tidak ada order untuk dikonfirmasi</p>
+                                        <small class="text-muted">Order akan muncul di sini setelah sales membuat pesanan.</small>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-3">
+        </div>
+        @if($orders->hasPages())
+            <div class="card-footer">
                 {{ $orders->links() }}
             </div>
-        </div>
+        @endif
     </div>
 
     <!-- Confirmation Modal -->

@@ -127,7 +127,7 @@
                         </div>
                         <div class="col-6">
                             <a href="{{ route('gudang.deliveries') }}" class="btn btn-outline-info w-100">
-                                <i class="bx bx-truck me-1"></i>
+                                <i class="bx bx-car me-1"></i>
                                 Atur Pengiriman
                             </a>
                         </div>

@@ -1,6 +1,6 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Pengiriman</h4>
             <p class="text-muted mb-0">Kelola assignment pengiriman ke supir dan monitor status delivery</p>
@@ -101,9 +101,50 @@
                 <h5 class="mb-0">Order Menunggu Assignment ({{ $confirmedOrders->count() }})</h5>
             </div>
             <div class="card-body p-0">
+                <style>
+                    @media (max-width: 767.98px) {
+                        .mobile-cards tbody tr {
+                            display: block;
+                            border: 1px solid #ddd;
+                            border-radius: 0.5rem;
+                            margin-bottom: 1rem;
+                            padding: 1rem;
+                        }
+                        .mobile-cards thead {
+                            display: none;
+                        }
+                        .mobile-cards tbody td {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border: none;
+                            padding: 0.5rem 0;
+                        }
+                        .mobile-cards tbody td:before {
+                            content: attr(data-label);
+                            font-weight: 600;
+                            margin-right: 1rem;
+                        }
+                        .mobile-cards .order-info-cell {
+                            display: block;
+                            padding-bottom: 1rem;
+                            margin-bottom: 1rem;
+                            border-bottom: 1px solid #eee;
+                        }
+                        .mobile-cards .order-info-cell:before {
+                            display: none;
+                        }
+                        .mobile-cards .actions-cell {
+                            justify-content: flex-end;
+                        }
+                        .mobile-cards .actions-cell:before {
+                            display: none;
+                        }
+                    }
+                </style>
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
+                    <table class="table table-hover mb-0 mobile-cards">
+                        <thead class="table-light d-none d-md-table-header-group">
                             <tr>
                                 <th>Order</th>
                                 <th>Customer</th>
@@ -116,22 +157,22 @@
                         <tbody>
                             @foreach($confirmedOrders as $order)
                                 <tr>
-                                    <td>
+                                    <td data-label="Order" class="order-info-cell">
                                         <span class="fw-medium">{{ $order->nomor_order }}</span>
                                     </td>
-                                    <td>
+                                    <td data-label="Customer">
                                         <div>
                                             <span class="fw-medium">{{ $order->customer->nama_toko }}</span>
                                             <br>
                                             <small class="text-muted">{{ $order->customer->alamat }}</small>
                                         </div>
                                     </td>
-                                    <td>{{ $order->sales->name }}</td>
-                                    <td>
+                                    <td data-label="Sales">{{ $order->sales->name }}</td>
+                                    <td data-label="Total">
                                         <span class="fw-medium">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                                     </td>
-                                    <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td data-label="Tanggal">{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                                    <td data-label="Aksi" class="actions-cell">
                                         <button wire:click="openAssignModal({{ $order->id }})"
                                                 class="btn btn-sm btn-primary">
                                             <i class="bx bx-user-plus"></i> Assign Supir
@@ -150,11 +191,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari customer, supir, atau rute...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -165,7 +206,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Supir</label>
                     <select wire:model.live="supirFilter" class="form-select">
                         <option value="">Semua Supir</option>
@@ -174,7 +215,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
@@ -197,8 +238,8 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Customer</th>
@@ -213,17 +254,17 @@
                     <tbody>
                         @forelse($deliveries as $delivery)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="order-info-cell">
                                     <span class="fw-medium">{{ $delivery->order->nomor_order }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <div>
                                         <span class="fw-medium">{{ $delivery->order->customer->nama_toko }}</span>
                                         <br>
                                         <small class="text-muted">{{ Str::limit($delivery->order->customer->alamat, 30) }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Supir">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-2">
                                             <span class="avatar-initial rounded-circle bg-label-primary">
@@ -233,8 +274,8 @@
                                         <span>{{ $delivery->supir->name }}</span>
                                     </div>
                                 </td>
-                                <td>{{ $delivery->rute_kota }}</td>
-                                <td>
+                                <td data-label="Rute">{{ $delivery->rute_kota }}</td>
+                                <td data-label="Status">
                                     @php
                                         $statusColors = [
                                             'assigned' => 'info',
@@ -255,18 +296,18 @@
                                         {{ $statusLabels[$delivery->status] ?? $delivery->status }}
                                     </span>
                                 </td>
-                                <td>{{ $delivery->assigned_at->format('d/m/Y H:i') }}</td>
-                                <td>
+                                <td data-label="Assigned">{{ $delivery->assigned_at->format('d/m/Y H:i') }}</td>
+                                <td data-label="ETA">
                                     @if($delivery->estimated_arrival)
                                         {{ \Carbon\Carbon::parse($delivery->estimated_arrival)->format('d/m/Y H:i') }}
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            Aksi
+                                            <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
                                         <ul class="dropdown-menu">
                                             <li>

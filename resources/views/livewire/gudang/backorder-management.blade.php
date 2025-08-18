@@ -1,6 +1,6 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Manajemen Backorder</h4>
             <p class="text-muted mb-0">Kelola item yang belum tersedia dan monitor pemenuhan backorder</p>
@@ -98,11 +98,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Pencarian</label>
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Cari produk atau customer...">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -112,7 +112,7 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Produk</label>
                     <select wire:model.live="productFilter" class="form-select">
                         <option value="">Semua Produk</option>
@@ -121,11 +121,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Tanggal</label>
                     <input type="date" wire:model.live="dateFilter" class="form-control">
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Per Halaman</label>
                     <select wire:model.live="perPage" class="form-select">
                         <option value="15">15</option>
@@ -143,9 +143,50 @@
             <h5 class="mb-0">Daftar Backorder</h5>
         </div>
         <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .backorder-info-cell {
+                        display: block;
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .backorder-info-cell:before {
+                        display: none;
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end;
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none;
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Produk</th>
                             <th>Order</th>
@@ -161,30 +202,30 @@
                     <tbody>
                         @forelse($backorders as $backorder)
                             <tr>
-                                <td>
+                                <td data-label="Produk" class="backorder-info-cell">
                                     <div>
                                         <span class="fw-medium">{{ $backorder->product->nama_barang }}</span>
                                         <br>
                                         <small class="text-muted">{{ $backorder->product->kode_item }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Order">
                                     <span class="fw-medium">{{ $backorder->orderItem->order->nomor_order }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Customer">
                                     <div>
                                         <span class="fw-medium">{{ $backorder->orderItem->order->customer->nama_toko }}</span>
                                         <br>
                                         <small class="text-muted">Sales: {{ $backorder->orderItem->order->sales->name }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Qty Backorder">
                                     <span class="badge bg-label-warning">{{ $backorder->jumlah_backorder }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Qty Terpenuhi">
                                     <span class="badge bg-label-success">{{ $backorder->jumlah_terpenuhi }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     @php
                                         $statusColors = [
                                             'pending' => 'warning',
@@ -203,18 +244,18 @@
                                         {{ $statusLabels[$backorder->status] ?? $backorder->status }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Expected Date">
                                     @if($backorder->expected_date)
                                         {{ \Carbon\Carbon::parse($backorder->expected_date)->format('d/m/Y') }}
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td>{{ $backorder->created_at->format('d/m/Y') }}</td>
-                                <td>
+                                <td data-label="Created">{{ $backorder->created_at->format('d/m/Y') }}</td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            Aksi
+                                            <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
                                         <ul class="dropdown-menu">
                                             @if($backorder->status === 'pending' || $backorder->status === 'partial')

@@ -1,25 +1,39 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Data Master Barang</h4>
             <p class="text-muted mb-0">Kelola data produk dan inventory</p>
         </div>
-        <button wire:click="openCreateModal" class="btn btn-primary">
+        <button wire:click="openCreateModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus me-1"></i>
             Tambah Produk
         </button>
     </div>
 
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Cari Produk</label>
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="Kode, nama, atau keterangan...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Kode, nama, atau keterangan...">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Filter Jenis</label>
                     <select wire:model.live="jenisFilter" class="form-select">
                         <option value="">Semua Jenis</option>
@@ -28,7 +42,7 @@
                         <option value="dus">Dus</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Filter Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -42,10 +56,54 @@
 
     <!-- Products Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Produk</h5>
+        </div>
+        <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .product-info-cell {
+                        display: block; /* Override the flex for the main product info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .product-info-cell:before {
+                        display: none; /* No "Produk:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Produk</th>
                             <th>Jenis</th>
@@ -58,7 +116,7 @@
                     <tbody>
                         @forelse($products as $product)
                             <tr class="{{ $product->stok_tersedia <= $product->stok_minimum ? 'table-warning' : '' }}">
-                                <td>
+                                <td data-label="Produk" class="product-info-cell">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
                                             @if($product->getFirstMediaUrl('product_photos'))
@@ -70,86 +128,98 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <h6 class="mb-0">{{ $product->nama_barang }}</h6>
+                                            <span class="fw-medium">{{ $product->nama_barang }}</span>
+                                            <br>
                                             <small class="text-muted">{{ $product->kode_item }}</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Jenis">
                                     <span class="badge bg-label-{{ $product->jenis === 'pack' ? 'primary' : ($product->jenis === 'ball' ? 'success' : 'info') }}">
                                         {{ ucfirst($product->jenis) }}
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="fw-medium">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</div>
+                                <td data-label="Harga">
+                                    <span class="fw-medium">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Stok">
                                     <div>
-                                        <div class="fw-medium {{ $product->stok_tersedia <= $product->stok_minimum ? 'text-warning' : 'text-success' }}">
+                                        <span class="fw-medium {{ $product->stok_tersedia <= $product->stok_minimum ? 'text-warning' : 'text-success' }}">
                                             {{ number_format($product->stok_tersedia) }}
-                                        </div>
+                                        </span>
+                                        <br>
                                         <small class="text-muted">Min: {{ number_format($product->stok_minimum) }}</small>
                                         @if($product->stok_tersedia <= $product->stok_minimum)
                                             <br><small class="text-warning"><i class="bx bx-error-circle"></i> Stok Kritis</small>
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{ $product->is_active ? 'success' : 'secondary' }}">
                                         {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                            Aksi
+                                            <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#" wire:click.prevent="openEditModal({{ $product->id }})">
-                                                <i class="bx bx-edit me-1"></i> Edit
-                                            </a>
-                                            <a class="dropdown-item" href="#" wire:click.prevent="openStockModal({{ $product->id }})">
-                                                <i class="bx bx-package me-1"></i> Atur Stok
-                                            </a>
-                                            @if($product->getFirstMediaUrl('product_photos'))
-                                                <a class="dropdown-item" href="{{ $product->getFirstMediaUrl('product_photos') }}" target="_blank">
-                                                    <i class="bx bx-image me-1"></i> Lihat Foto
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click.prevent="openEditModal({{ $product->id }})">
+                                                    <i class="bx bx-edit me-1"></i> Edit
                                                 </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click.prevent="openStockModal({{ $product->id }})">
+                                                    <i class="bx bx-package me-1"></i> Atur Stok
+                                                </a>
+                                            </li>
+                                            @if($product->getFirstMediaUrl('product_photos'))
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ $product->getFirstMediaUrl('product_photos') }}" target="_blank">
+                                                        <i class="bx bx-image me-1"></i> Lihat Foto
+                                                    </a>
+                                                </li>
                                             @endif
-                                            <a class="dropdown-item" href="#" wire:click.prevent="toggleStatus({{ $product->id }})">
-                                                <i class="bx bx-{{ $product->is_active ? 'x' : 'check' }}-circle me-1"></i>
-                                                {{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                                            </a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item text-danger" href="#"
-                                               wire:click.prevent="deleteProduct({{ $product->id }})"
-                                               onclick="return confirm('Yakin ingin menghapus produk ini?')">
-                                                <i class="bx bx-trash me-1"></i> Hapus
-                                            </a>
-                                        </div>
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click.prevent="toggleStatus({{ $product->id }})">
+                                                    <i class="bx bx-{{ $product->is_active ? 'x' : 'check' }}-circle me-1"></i>
+                                                    {{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#"
+                                                   wire:click.prevent="deleteProduct({{ $product->id }})"
+                                                   onclick="return confirm('Yakin ingin menghapus produk ini?')">
+                                                    <i class="bx bx-trash me-1"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <i class="bx bx-package text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">Belum ada data produk</p>
-                                    <button wire:click="openCreateModal" class="btn btn-primary btn-sm">
-                                        <i class="bx bx-plus me-1"></i> Tambah Produk Pertama
-                                    </button>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-package text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-1">Belum ada data produk</p>
+                                        <small class="text-muted">Tambah produk pertama Anda.</small>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-3">
+        </div>
+        @if($products->hasPages())
+            <div class="card-footer">
                 {{ $products->links() }}
             </div>
-        </div>
+        @endif
     </div>
 
     <!-- Product Modal -->
