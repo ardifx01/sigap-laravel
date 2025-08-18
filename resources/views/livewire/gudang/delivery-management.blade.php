@@ -431,13 +431,13 @@
     @endif
 
     <!-- View Delivery Modal -->
-    @if($showViewModal && $viewDelivery)
+    @if($showViewModal && $selectedDelivery)
         <div class="modal fade show" style="display: block;" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Detail Pengiriman</h5>
-                        <button type="button" class="btn-close" wire:click="$set('showViewModal', false)"></button>
+                        <button type="button" class="btn-close" wire:click="closeViewModal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -446,19 +446,19 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Nomor Order</td>
-                                        <td>{{ $viewDelivery->order->nomor_order }}</td>
+                                        <td>{{ $selectedDelivery->order->nomor_order }}</td>
                                     </tr>
                                     <tr>
                                         <td>Customer</td>
-                                        <td>{{ $viewDelivery->order->customer->nama_toko }}</td>
+                                        <td>{{ $selectedDelivery->order->customer->nama_toko }}</td>
                                     </tr>
                                     <tr>
                                         <td>Sales</td>
-                                        <td>{{ $viewDelivery->order->sales->name }}</td>
+                                        <td>{{ $selectedDelivery->order->sales->name }}</td>
                                     </tr>
                                     <tr>
                                         <td>Total Amount</td>
-                                        <td>Rp {{ number_format($viewDelivery->order->total_amount, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($selectedDelivery->order->total_amount, 0, ',', '.') }}</td>
                                     </tr>
                                 </table>
                             </div>
@@ -467,39 +467,39 @@
                                 <table class="table table-sm">
                                     <tr>
                                         <td>Supir</td>
-                                        <td>{{ $viewDelivery->supir->name }}</td>
+                                        <td>{{ $selectedDelivery->supir->name }}</td>
                                     </tr>
                                     <tr>
                                         <td>Rute</td>
-                                        <td>{{ $viewDelivery->rute_kota }}</td>
+                                        <td>{{ $selectedDelivery->rute_kota }}</td>
                                     </tr>
                                     <tr>
                                         <td>Status</td>
                                         <td>
-                                            <span class="badge bg-label-{{ $statusColors[$viewDelivery->status] ?? 'secondary' }}">
-                                                {{ $statusLabels[$viewDelivery->status] ?? $viewDelivery->status }}
+                                            <span class="badge bg-label-{{ $statusColors[$selectedDelivery->status] ?? 'secondary' }}">
+                                                {{ $statusLabels[$selectedDelivery->status] ?? $selectedDelivery->status }}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>Assigned At</td>
-                                        <td>{{ $viewDelivery->assigned_at->format('d/m/Y H:i') }}</td>
+                                        <td>{{ $selectedDelivery->assigned_at->format('d/m/Y H:i') }}</td>
                                     </tr>
-                                    @if($viewDelivery->estimated_arrival)
+                                    @if($selectedDelivery->estimated_arrival)
                                         <tr>
                                             <td>ETA</td>
-                                            <td>{{ \Carbon\Carbon::parse($viewDelivery->estimated_arrival)->format('d/m/Y H:i') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($selectedDelivery->estimated_arrival)->format('d/m/Y H:i') }}</td>
                                         </tr>
                                     @endif
                                 </table>
                             </div>
                         </div>
 
-                        @if($viewDelivery->trackingLogs->count() > 0)
+                        @if($selectedDelivery->trackingLogs->count() > 0)
                             <hr>
                             <h6>Tracking History</h6>
                             <div class="timeline">
-                                @foreach($viewDelivery->trackingLogs->sortByDesc('created_at') as $log)
+                                @foreach($selectedDelivery->trackingLogs->sortByDesc('created_at') as $log)
                                     <div class="timeline-item">
                                         <div class="timeline-marker"></div>
                                         <div class="timeline-content">
@@ -513,7 +513,7 @@
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" wire:click="$set('showViewModal', false)">
+                        <button type="button" class="btn btn-secondary" wire:click="closeViewModal">
                             Tutup
                         </button>
                     </div>

@@ -28,7 +28,7 @@ class DeliveryManagement extends Component
 
     // View delivery modal
     public $showViewModal = false;
-    public $viewDelivery;
+    public $selectedDelivery;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -115,9 +115,15 @@ class DeliveryManagement extends Component
 
     public function viewDelivery($deliveryId)
     {
-        $this->viewDelivery = Delivery::with(['order.customer', 'order.sales', 'supir', 'trackingLogs'])
-                                     ->find($deliveryId);
+        $this->selectedDelivery = Delivery::with(['order.customer', 'order.sales', 'supir', 'trackingLogs'])
+                                         ->find($deliveryId);
         $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->selectedDelivery = null;
     }
 
     public function cancelDelivery($deliveryId)
