@@ -53,6 +53,35 @@
             }
         }
 
+        // Global TomSelect helper function
+        window.initTomSelectWithNavigation = function(elementId, model, componentId = null) {
+            const el = document.getElementById(elementId);
+            if (!el) return null;
+
+            // Check if TomSelect is already initialized on this element
+            if (el.tomselect) {
+                // Destroy existing instance
+                el.tomselect.destroy();
+            }
+
+            const tomSelect = new TomSelect(el, {
+                create: false,
+                sortField: { field: "text", direction: "asc" },
+                placeholder: el.getAttribute('placeholder') || 'Pilih...',
+                onChange: (value) => {
+                    if (window.Livewire && window.Livewire.find) {
+                        const component = componentId ?
+                            window.Livewire.find(componentId) :
+                            window.Livewire.find(document.querySelector('[wire\\:id]').getAttribute('wire:id'));
+                        if (component) {
+                            component.set(model, value);
+                        }
+                    }
+                }
+            });
+            return tomSelect;
+        };
+
         document.addEventListener('DOMContentLoaded', initializeHamburgerToggle);
         document.addEventListener('livewire:navigated', initializeHamburgerToggle);
     </script>

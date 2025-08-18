@@ -333,12 +333,12 @@
     @endif
 
     <!-- View Order Modal -->
-    @if($viewOrder)
+    @if($selectedOrder)
         <div class="modal fade show" style="display: block;" tabindex="-1" wire:ignore.self>
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Detail Order: {{ $viewOrder->nomor_order }}</h5>
+                        <h5 class="modal-title">Detail Order: {{ $selectedOrder->nomor_order }}</h5>
                         <button type="button" class="btn-close" wire:click="closeViewModal"></button>
                     </div>
                     <div class="modal-body">
@@ -346,25 +346,25 @@
                             <div class="col-md-6">
                                 <h6 class="mb-2">Informasi Pelanggan</h6>
                                 <ul class="list-unstyled">
-                                    <li class="mb-1"><span class="fw-medium">Toko:</span> {{ $viewOrder->customer->nama_toko }}</li>
-                                    <li class="mb-1"><span class="fw-medium">Telepon:</span> {{ $viewOrder->customer->phone }}</li>
-                                    <li><span class="fw-medium">Alamat:</span> {{ $viewOrder->customer->alamat }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Toko:</span> {{ $selectedOrder->customer->nama_toko }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Telepon:</span> {{ $selectedOrder->customer->phone }}</li>
+                                    <li><span class="fw-medium">Alamat:</span> {{ $selectedOrder->customer->alamat }}</li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-2">Informasi Order</h6>
                                 <ul class="list-unstyled">
-                                    <li class="mb-1"><span class="fw-medium">Tanggal:</span> {{ $viewOrder->created_at->format('d M Y, H:i') }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Tanggal:</span> {{ $selectedOrder->created_at->format('d M Y, H:i') }}</li>
                                     <li class="mb-1"><span class="fw-medium">Status:</span>
-                                        <span class="badge bg-label-primary">{{ ucfirst($viewOrder->status) }}</span>
+                                        <span class="badge bg-label-primary">{{ ucfirst($selectedOrder->status) }}</span>
                                     </li>
-                                    <li><span class="fw-medium">Total:</span> Rp {{ number_format($viewOrder->total_amount, 0, ',', '.') }}</li>
+                                    <li><span class="fw-medium">Total:</span> Rp {{ number_format($selectedOrder->total_amount, 0, ',', '.') }}</li>
                                 </ul>
                             </div>
-                            @if($viewOrder->catatan)
+                            @if($selectedOrder->catatan)
                             <div class="col-12">
                                 <h6 class="mb-2">Catatan</h6>
-                                <p class="text-muted">{{ $viewOrder->catatan }}</p>
+                                <p class="text-muted">{{ $selectedOrder->catatan }}</p>
                             </div>
                             @endif
                             <div class="col-12">
@@ -379,7 +379,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($viewOrder->orderItems as $item)
+                                            @foreach($selectedOrder->orderItems as $item)
                                                 <tr>
                                                     <td>
                                                         <span class="fw-medium">{{ $item->product->nama_barang }}</span><br>
@@ -393,7 +393,7 @@
                                         <tfoot class="table-light">
                                             <tr>
                                                 <th colspan="2" class="text-end">Total Akhir:</th>
-                                                <th class="text-end">Rp {{ number_format($viewOrder->total_amount, 0, ',', '.') }}</th>
+                                                <th class="text-end">Rp {{ number_format($selectedOrder->total_amount, 0, ',', '.') }}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -413,38 +413,96 @@
 
     <!-- Scripts -->
     <script>
+        // Global variables to store TomSelect instances
+        let customerFilterSelectInstance = null;
+        let modalCustomerSelectInstance = null;
+        let modalProductSelectInstance = null;
+
+        // Use global TomSelect helper function
+        const initTomSelect = (elementId, model) => {
+            return window.initTomSelectWithNavigation(elementId, model, '{{ $this->getId() }}');
+        };
+
+        // Function to initialize page TomSelects
+        const initializePageTomSelects = () => {
+            // Destroy existing instances
+            if (customerFilterSelectInstance) {
+                try {
+                    customerFilterSelectInstance.destroy();
+                } catch (e) {
+                    console.log('Error destroying TomSelect instance:', e);
+                }
+                customerFilterSelectInstance = null;
+            }
+
+            // Initialize customer filter select
+            setTimeout(() => {
+                try {
+                    customerFilterSelectInstance = initTomSelect('customer-filter-select', 'customerFilter');
+                } catch (e) {
+                    console.log('Error initializing TomSelect:', e);
+                }
+            }, 100);
+        };
+
+        // Initialize on page load and navigation
+        document.addEventListener('livewire:init', initializePageTomSelects);
+        document.addEventListener('livewire:navigated', initializePageTomSelects);
+
+        // Handle modal TomSelects
         document.addEventListener('livewire:init', () => {
-            const initTomSelect = (elementId, model) => {
-                const el = document.getElementById(elementId);
-                if (!el) return null;
-
-                const tomSelect = new TomSelect(el, {
-                    create: false,
-                    sortField: { field: "text", direction: "asc" },
-                    placeholder: el.getAttribute('placeholder') || 'Pilih...',
-                    onChange: (value) => {
-                        @this.set(model, value);
-                    }
-                });
-                return tomSelect;
-            };
-
-            const customerFilterSelect = initTomSelect('customer-filter-select', 'customerFilter');
-
             Livewire.on('show-modal', () => {
                 setTimeout(() => {
-                    const customerSelect = initTomSelect('customer-select', 'customer_id');
-                    const productSelect = initTomSelect('product-select', 'selectedProduct');
-
-                    if (customerSelect && @this.get('customer_id')) {
-                        customerSelect.setValue(@this.get('customer_id'), true);
+                    // Destroy existing modal instances
+                    if (modalCustomerSelectInstance) {
+                        try {
+                            modalCustomerSelectInstance.destroy();
+                        } catch (e) {
+                            console.log('Error destroying modal customer select:', e);
+                        }
+                        modalCustomerSelectInstance = null;
+                    }
+                    if (modalProductSelectInstance) {
+                        try {
+                            modalProductSelectInstance.destroy();
+                        } catch (e) {
+                            console.log('Error destroying modal product select:', e);
+                        }
+                        modalProductSelectInstance = null;
                     }
 
-                    window.addEventListener('close-order-modal', () => {
-                        if(customerSelect) customerSelect.destroy();
-                        if(productSelect) productSelect.destroy();
-                    });
+                    // Initialize modal selects
+                    try {
+                        modalCustomerSelectInstance = initTomSelect('customer-select', 'customer_id');
+                        modalProductSelectInstance = initTomSelect('product-select', 'selectedProduct');
+
+                        // Set initial value if exists
+                        if (modalCustomerSelectInstance && @this.get('customer_id')) {
+                            modalCustomerSelectInstance.setValue(@this.get('customer_id'), true);
+                        }
+                    } catch (e) {
+                        console.log('Error initializing modal TomSelects:', e);
+                    }
                 }, 100);
+            });
+
+            Livewire.on('close-order-modal', () => {
+                if (modalCustomerSelectInstance) {
+                    try {
+                        modalCustomerSelectInstance.destroy();
+                    } catch (e) {
+                        console.log('Error destroying modal customer select on close:', e);
+                    }
+                    modalCustomerSelectInstance = null;
+                }
+                if (modalProductSelectInstance) {
+                    try {
+                        modalProductSelectInstance.destroy();
+                    } catch (e) {
+                        console.log('Error destroying modal product select on close:', e);
+                    }
+                    modalProductSelectInstance = null;
+                }
             });
         });
     </script>

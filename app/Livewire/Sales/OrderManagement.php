@@ -24,7 +24,7 @@ class OrderManagement extends Component
     public $customer_id;
     public $catatan;
     public $orderItems = [];
-    public $viewOrder = null;
+    public $selectedOrder = null;
 
     // Order item form
     public $selectedProduct;
@@ -111,14 +111,14 @@ class OrderManagement extends Component
 
     public function viewOrder($orderId)
     {
-        $this->viewOrder = Order::with(['customer', 'orderItems.product'])
-                                ->where('sales_id', auth()->id())
-                                ->findOrFail($orderId);
+        $this->selectedOrder = Order::with(['customer', 'orderItems.product'])
+                                   ->where('sales_id', auth()->id())
+                                   ->findOrFail($orderId);
     }
 
     public function closeViewModal()
     {
-        $this->viewOrder = null;
+        $this->selectedOrder = null;
     }
 
     public function resetForm()

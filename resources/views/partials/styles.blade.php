@@ -7,7 +7,7 @@
 @vite(['resources/assets/vendor/fonts/iconify/iconify.js'])
 
 <!-- Core CSS -->
-@vite(['resources/assets/vendor/scss/core.scss','resources/assets/css/demo.css', 'resources/css/app.css'])
+@vite(['resources/assets/vendor/scss/core.scss','resources/assets/css/demo.css', 'resources/css/app.css', 'resources/assets/vendor/libs/tom-select/tom-select.css'])
 
 <!-- Vendor Styles -->
 @yield('vendor-style')
