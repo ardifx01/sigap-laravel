@@ -25,6 +25,20 @@
         </div>
     @endif
 
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6">
@@ -265,7 +279,7 @@
                                     <input type="file" wire:model="foto_selfie" class="form-control @error('foto_selfie') is-invalid @enderror" accept="image/*" capture="user">
                                     <small class="text-muted">Ambil foto selfie di lokasi toko.</small>
                                     @error('foto_selfie') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                    
+
                                     <div wire:loading wire:target="foto_selfie" class="mt-2">
                                         <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                         <span>Uploading...</span>
@@ -299,7 +313,7 @@
     @endif
 
     <!-- View Check-in Modal -->
-    @if($showViewModal && $viewCheckIn)
+    @if($showViewModal && $selectedCheckIn)
         <div class="modal fade show" style="display: block;" tabindex="-1" wire:ignore.self>
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
                 <div class="modal-content">
@@ -310,24 +324,24 @@
                     <div class="modal-body">
                         <div class="row g-4">
                             <div class="col-12 text-center">
-                                <img src="{{ $viewCheckIn->getFirstMediaUrl('selfie_photos') }}" alt="Selfie" class="img-fluid rounded" style="max-height: 300px;">
+                                <img src="{{ $selectedCheckIn->getFirstMediaUrl('selfie_photos') }}" alt="Selfie" class="img-fluid rounded" style="max-height: 300px;">
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-2">Informasi Toko</h6>
                                 <ul class="list-unstyled">
-                                    <li class="mb-1"><span class="fw-medium">Nama:</span> {{ $viewCheckIn->customer->nama_toko }}</li>
-                                    <li class="mb-1"><span class="fw-medium">Telepon:</span> {{ $viewCheckIn->customer->phone }}</li>
-                                    <li><span class="fw-medium">Alamat:</span> {{ $viewCheckIn->customer->alamat }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Nama:</span> {{ $selectedCheckIn->customer->nama_toko }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Telepon:</span> {{ $selectedCheckIn->customer->phone }}</li>
+                                    <li><span class="fw-medium">Alamat:</span> {{ $selectedCheckIn->customer->alamat }}</li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-2">Informasi Kunjungan</h6>
                                 <ul class="list-unstyled">
-                                    <li class="mb-1"><span class="fw-medium">Waktu:</span> {{ $viewCheckIn->checked_in_at->format('d M Y, H:i') }}</li>
-                                    <li class="mb-1"><span class="fw-medium">Koordinat:</span> {{ number_format($viewCheckIn->latitude, 5) }}, {{ number_format($viewCheckIn->longitude, 5) }}</li>
-                                    @if($viewCheckIn->customer->latitude && $viewCheckIn->customer->longitude)
-                                        <li><span class="fw-medium">Jarak:</span> 
-                                            @php $distance = $viewCheckIn->getDistanceFromCustomer(); @endphp
+                                    <li class="mb-1"><span class="fw-medium">Waktu:</span> {{ $selectedCheckIn->checked_in_at->format('d M Y, H:i') }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Koordinat:</span> {{ number_format($selectedCheckIn->latitude, 5) }}, {{ number_format($selectedCheckIn->longitude, 5) }}</li>
+                                    @if($selectedCheckIn->customer->latitude && $selectedCheckIn->customer->longitude)
+                                        <li><span class="fw-medium">Jarak:</span>
+                                            @php $distance = $selectedCheckIn->getDistanceFromCustomer(); @endphp
                                             @if($distance !== null)
                                                 <span class="badge bg-label-{{ $distance <= 100 ? 'success' : 'warning' }}">~{{ round($distance) }} meter dari toko</span>
                                             @endif
@@ -335,17 +349,17 @@
                                     @endif
                                 </ul>
                             </div>
-                            @if($viewCheckIn->catatan)
+                            @if($selectedCheckIn->catatan)
                                 <div class="col-12">
                                     <h6 class="mb-2">Catatan</h6>
-                                    <p class="text-muted mb-0">{{ $viewCheckIn->catatan }}</p>
+                                    <p class="text-muted mb-0">{{ $selectedCheckIn->catatan }}</p>
                                 </div>
                             @endif
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closeViewModal">Tutup</button>
-                        <a href="https://maps.google.com/?q={{ $viewCheckIn->latitude }},{{ $viewCheckIn->longitude }}" target="_blank" class="btn btn-primary">
+                        <a href="https://maps.google.com/?q={{ $selectedCheckIn->latitude }},{{ $selectedCheckIn->longitude }}" target="_blank" class="btn btn-primary">
                             <i class="bx bx-map-alt me-1"></i> Buka di Peta
                         </a>
                     </div>
@@ -355,21 +369,38 @@
         <div class="modal-backdrop fade show" wire:ignore.self></div>
     @endif
 
+    <!-- TomSelect CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
     <!-- Scripts -->
     <script>
         document.addEventListener('livewire:init', () => {
-            const customerSelect = document.getElementById('customer-select');
-            const tomSelect = new TomSelect(customerSelect, {
-                create: false,
-                sortField: { field: "text", direction: "asc" }
+            let tomSelectInstance = null;
+
+            // Initialize TomSelect when modal opens
+            Livewire.on('show-check-in-modal', () => {
+                setTimeout(() => {
+                    const customerSelect = document.getElementById('customer-select');
+                    if (customerSelect && !tomSelectInstance) {
+                        tomSelectInstance = new TomSelect(customerSelect, {
+                            create: false,
+                            sortField: { field: "text", direction: "asc" },
+                            placeholder: 'Pilih pelanggan...'
+                        });
+
+                        tomSelectInstance.on('change', (value) => {
+                            @this.set('customer_id', value);
+                        });
+                    }
+                }, 100);
             });
 
-            tomSelect.on('change', (value) => {
-                @this.set('customer_id', value);
-            });
-
-            Livewire.on('close-modal', () => {
-                tomSelect.clear();
+            // Clean up TomSelect when modal closes
+            Livewire.on('close-check-in-modal', () => {
+                if (tomSelectInstance) {
+                    tomSelectInstance.destroy();
+                    tomSelectInstance = null;
+                }
             });
 
             Livewire.on('getCurrentLocation', () => {

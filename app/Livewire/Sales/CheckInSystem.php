@@ -27,7 +27,7 @@ class CheckInSystem extends Component
 
     // View check-in modal
     public $showViewModal = false;
-    public $viewCheckIn;
+    public $selectedCheckIn;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -56,12 +56,14 @@ class CheckInSystem extends Component
     {
         $this->resetCheckInForm();
         $this->showCheckInModal = true;
+        $this->dispatch('show-check-in-modal');
     }
 
     public function closeCheckInModal()
     {
         $this->showCheckInModal = false;
         $this->resetCheckInForm();
+        $this->dispatch('close-check-in-modal');
     }
 
     public function resetCheckInForm()
@@ -147,16 +149,16 @@ class CheckInSystem extends Component
 
     public function viewCheckIn($checkInId)
     {
-        $this->viewCheckIn = CheckIn::with(['customer', 'sales'])
-                                  ->where('sales_id', auth()->id())
-                                  ->findOrFail($checkInId);
+        $this->selectedCheckIn = CheckIn::with(['customer', 'sales'])
+                                      ->where('sales_id', auth()->id())
+                                      ->findOrFail($checkInId);
         $this->showViewModal = true;
     }
 
     public function closeViewModal()
     {
         $this->showViewModal = false;
-        $this->viewCheckIn = null;
+        $this->selectedCheckIn = null;
     }
 
     public function deleteCheckIn($checkInId)
