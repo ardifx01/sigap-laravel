@@ -11,14 +11,15 @@
 
 ## 📋 Table of Contents
 
-- [Screenshots](#-screenshots)
-- [Fitur Utama](#-fitur-utama)
 - [Tech Stack](#-tech-stack)
-- [Instalasi](#-instalasi)
+- [Screenshots](#screenshots)
+- [Fitur Utama](#fitur-utama)
+- [Instalasi](#️-instalasi)
 - [Default User Credentials](#default-user-credentials)
 - [Workflow System](#-workflow-system)
 - [Deployment](#-deployment)
 - [Contributing](#-contributing)
+- [License](#license)
 - [Support](#-support)
 
 ## 💻 Tech Stack
