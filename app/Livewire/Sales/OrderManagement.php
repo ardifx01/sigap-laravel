@@ -24,6 +24,7 @@ class OrderManagement extends Component
     public $customer_id;
     public $catatan;
     public $orderItems = [];
+    public $viewOrder = null;
 
     // Order item form
     public $selectedProduct;
@@ -67,6 +68,7 @@ class OrderManagement extends Component
         $this->resetForm();
         $this->showModal = true;
         $this->editMode = false;
+        $this->dispatch('show-modal');
     }
 
     public function openEditModal($orderId)
@@ -97,12 +99,26 @@ class OrderManagement extends Component
 
         $this->showModal = true;
         $this->editMode = true;
+        $this->dispatch('show-modal');
     }
 
     public function closeModal()
     {
         $this->showModal = false;
         $this->resetForm();
+        $this->dispatch('close-order-modal');
+    }
+
+    public function viewOrder($orderId)
+    {
+        $this->viewOrder = Order::with(['customer', 'orderItems.product'])
+                                ->where('sales_id', auth()->id())
+                                ->findOrFail($orderId);
+    }
+
+    public function closeViewModal()
+    {
+        $this->viewOrder = null;
     }
 
     public function resetForm()

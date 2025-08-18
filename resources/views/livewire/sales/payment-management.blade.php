@@ -1,15 +1,29 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h4 class="mb-1">Payment & Billing System</h4>
             <p class="text-muted mb-0">Kelola invoice dan pembayaran pelanggan</p>
         </div>
-        <button wire:click="openCreateModal" class="btn btn-primary">
+        <button wire:click="openCreateModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus me-1"></i>
             Buat Invoice
         </button>
     </div>
+
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
@@ -58,11 +72,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Cari Invoice</label>
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="Nomor invoice, order, atau toko...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Nomor invoice, order, atau toko...">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Filter Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -71,7 +85,7 @@
                         <option value="lunas">Lunas</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Filter Pelanggan</label>
                     <select wire:model.live="customerFilter" class="form-select">
                         <option value="">Semua Pelanggan</option>
@@ -86,10 +100,54 @@
 
     <!-- Payments Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Invoice & Pembayaran</h5>
+        </div>
+        <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .payment-info-cell {
+                        display: block; /* Override the flex for the main payment info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .payment-info-cell:before {
+                        display: none; /* No "Nota:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Nota</th>
                             <th>Pelanggan</th>
@@ -104,33 +162,37 @@
                     <tbody>
                         @forelse($payments as $payment)
                             <tr class="{{ $payment->isOverdue() ? 'table-danger' : '' }}">
-                                <td>
+                                <td data-label="Nota" class="payment-info-cell">
                                     <div>
-                                        <h6 class="mb-0">{{ $payment->nomor_nota }}</h6>
+                                        <span class="fw-medium">{{ $payment->nomor_nota }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $payment->order->nomor_order }}</small>
+                                        <br>
+                                        <small class="text-muted">{{ $payment->created_at->format('d M Y, H:i') }}</small>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Pelanggan">
                                     <div>
-                                        <div class="fw-medium">{{ $payment->customer->nama_toko }}</div>
-                                        <small class="text-muted">{{ $payment->customer->phone }}</small>
+                                        <span class="fw-medium">{{ $payment->order->customer->nama_toko }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ $payment->order->customer->phone }}</small>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="fw-medium">Rp {{ number_format($payment->jumlah_tagihan, 0, ',', '.') }}</div>
+                                <td data-label="Tagihan">
+                                    <span class="fw-medium">Rp {{ number_format($payment->jumlah_tagihan, 0, ',', '.') }}</span>
                                 </td>
-                                <td>
-                                    <div class="fw-medium text-success">Rp {{ number_format($payment->jumlah_bayar, 0, ',', '.') }}</div>
+                                <td data-label="Dibayar">
+                                    <span class="fw-medium text-success">Rp {{ number_format($payment->jumlah_bayar, 0, ',', '.') }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Sisa">
                                     @php
                                         $sisaTagihan = $payment->jumlah_tagihan - $payment->jumlah_bayar;
                                     @endphp
-                                    <div class="fw-medium {{ $sisaTagihan > 0 ? 'text-warning' : 'text-success' }}">
+                                    <span class="fw-medium {{ $sisaTagihan > 0 ? 'text-warning' : 'text-success' }}">
                                         Rp {{ number_format($sisaTagihan, 0, ',', '.') }}
-                                    </div>
+                                    </span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{
                                         $payment->status === 'lunas' ? 'success' :
                                         ($payment->status === 'sebagian' ? 'warning' : 'danger')
@@ -141,65 +203,73 @@
                                         <br><small class="text-danger">{{ $payment->getDaysOverdue() }} hari terlambat</small>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Jatuh Tempo">
                                     <div>
-                                        <div class="fw-medium">{{ $payment->tanggal_jatuh_tempo->format('d/m/Y') }}</div>
+                                        <span class="fw-medium">{{ $payment->tanggal_jatuh_tempo->format('d/m/Y') }}</span>
                                         @if($payment->tanggal_pembayaran)
-                                            <small class="text-success">Dibayar: {{ $payment->tanggal_pembayaran->format('d/m/Y') }}</small>
+                                            <br><small class="text-success">Dibayar: {{ $payment->tanggal_pembayaran->format('d/m/Y') }}</small>
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                            Aksi
+                                            <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
-                                        <div class="dropdown-menu">
+                                        <ul class="dropdown-menu">
                                             @if($payment->status !== 'lunas')
-                                                <a class="dropdown-item" href="#" wire:click.prevent="openProofModal({{ $payment->id }})">
-                                                    <i class="bx bx-upload me-1"></i> Upload Bukti
-                                                </a>
-                                                <a class="dropdown-item" href="#" wire:click.prevent="openEditModal({{ $payment->id }})">
-                                                    <i class="bx bx-edit me-1"></i> Edit
-                                                </a>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" wire:click.prevent="openProofModal({{ $payment->id }})">
+                                                        <i class="bx bx-upload me-1"></i> Upload Bukti
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" wire:click.prevent="openEditModal({{ $payment->id }})">
+                                                        <i class="bx bx-edit me-1"></i> Edit
+                                                    </a>
+                                                </li>
                                             @endif
                                             @if($payment->getFirstMediaUrl('payment_proofs'))
-                                                <a class="dropdown-item" href="{{ $payment->getFirstMediaUrl('payment_proofs') }}" target="_blank">
-                                                    <i class="bx bx-image me-1"></i> Lihat Bukti
-                                                </a>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ $payment->getFirstMediaUrl('payment_proofs') }}" target="_blank">
+                                                        <i class="bx bx-image me-1"></i> Lihat Bukti
+                                                    </a>
+                                                </li>
                                             @endif
                                             @if($payment->jumlah_bayar == 0)
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item text-danger" href="#"
-                                                   wire:click.prevent="deletePayment({{ $payment->id }})"
-                                                   onclick="return confirm('Yakin ingin menghapus invoice ini?')">
-                                                    <i class="bx bx-trash me-1"></i> Hapus
-                                                </a>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#"
+                                                       wire:click.prevent="deletePayment({{ $payment->id }})"
+                                                       onclick="return confirm('Yakin ingin menghapus invoice ini?')">
+                                                        <i class="bx bx-trash me-1"></i> Hapus
+                                                    </a>
+                                                </li>
                                             @endif
-                                        </div>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4">
-                                    <i class="bx bx-receipt text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">Belum ada invoice</p>
-                                    <button wire:click="openCreateModal" class="btn btn-primary btn-sm">
-                                        <i class="bx bx-plus me-1"></i> Buat Invoice Pertama
-                                    </button>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-receipt text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-1">Belum ada invoice</p>
+                                        <small class="text-muted">Buat invoice pertama Anda.</small>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-3">
+        </div>
+        @if($payments->hasPages())
+            <div class="card-footer">
                 {{ $payments->links() }}
             </div>
-        </div>
+        @endif
     </div>
 
     <!-- Create/Edit Payment Modal -->
@@ -349,20 +419,5 @@
             </div>
         </div>
         <div class="modal-backdrop fade show"></div>
-    @endif
-
-    <!-- Flash Messages -->
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
     @endif
 </div>

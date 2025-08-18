@@ -256,7 +256,7 @@ class PaymentManagement extends Component
     public function render()
     {
         $payments = Payment::where('sales_id', auth()->id())
-            ->with(['order', 'customer'])
+            ->with(['order.customer'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('nomor_nota', 'like', '%' . $this->search . '%')

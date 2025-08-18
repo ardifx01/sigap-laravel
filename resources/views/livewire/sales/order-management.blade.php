@@ -1,25 +1,50 @@
 <div>
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h4 class="mb-1">Manajemen Pre Order</h4>
-            <p class="text-muted mb-0">Kelola pre order pelanggan</p>
+            <h4 class="mb-1">Manajemen Pre-Order</h4>
+            <p class="text-muted mb-0">Buat, lihat, dan kelola semua pre-order Anda.</p>
         </div>
-        <button wire:click="openCreateModal" class="btn btn-primary">
+        <button wire:click="openCreateModal" class="btn btn-primary align-self-md-auto align-self-stretch">
             <i class="bx bx-plus me-1"></i>
-            Buat Pre Order
+            Buat Pre-Order
         </button>
     </div>
+
+    <!-- Flash Messages -->
+    @if (session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-12 col-md-5">
                     <label class="form-label">Cari Order</label>
-                    <input type="text" wire:model.live="search" class="form-control" placeholder="Nomor order atau nama toko...">
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" placeholder="Nomor order atau nama toko...">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Filter Pelanggan</label>
+                     <div wire:ignore>
+                        <select id="customer-filter-select" class="form-select">
+                            <option value="">Semua Pelanggan</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
                     <label class="form-label">Filter Status</label>
                     <select wire:model.live="statusFilter" class="form-select">
                         <option value="">Semua Status</option>
@@ -32,53 +57,89 @@
                         <option value="cancelled">Dibatalkan</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Filter Pelanggan</label>
-                    <select wire:model.live="customerFilter" class="form-select">
-                        <option value="">Semua Pelanggan</option>
-                        @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
-                        @endforeach
-                    </select>
-                </div>
             </div>
         </div>
     </div>
 
     <!-- Orders Table -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Pre-Order</h5>
+        </div>
+        <div class="card-body p-0">
+            <style>
+                @media (max-width: 767.98px) {
+                    .mobile-cards tbody tr {
+                        display: block;
+                        border: 1px solid #ddd;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                    }
+                    .mobile-cards thead {
+                        display: none;
+                    }
+                    .mobile-cards tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border: none;
+                        padding: 0.5rem 0;
+                    }
+                    .mobile-cards tbody td:before {
+                        content: attr(data-label);
+                        font-weight: 600;
+                        margin-right: 1rem;
+                    }
+                    .mobile-cards .order-info-cell {
+                        display: block; /* Override the flex for the main user info */
+                        padding-bottom: 1rem;
+                        margin-bottom: 1rem;
+                        border-bottom: 1px solid #eee;
+                    }
+                    .mobile-cards .order-info-cell:before {
+                        display: none; /* No "User:" label */
+                    }
+                    .mobile-cards .actions-cell {
+                        justify-content: flex-end; /* Align actions to the right */
+                    }
+                    .mobile-cards .actions-cell:before {
+                        display: none; /* No "Aksi:" label */
+                    }
+                }
+            </style>
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0 mobile-cards">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
                             <th>Order</th>
                             <th>Pelanggan</th>
                             <th>Total</th>
                             <th>Status</th>
-                            <th>Tanggal</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($orders as $order)
                             <tr>
-                                <td>
+                                <td data-label="Order" class="order-info-cell">
                                     <div>
-                                        <h6 class="mb-0">{{ $order->nomor_order }}</h6>
+                                        <span class="fw-medium">{{ $order->nomor_order }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ $order->created_at->format('d M Y, H:i') }}</small>
+                                    </div>
+                                </td>
+                                <td data-label="Pelanggan">
+                                    <div>
+                                        <span class="fw-medium">{{ $order->customer->nama_toko }}</span>
+                                        <br>
                                         <small class="text-muted">{{ $order->orderItems->count() }} item</small>
                                     </div>
                                 </td>
-                                <td>
-                                    <div>
-                                        <div class="fw-medium">{{ $order->customer->nama_toko }}</div>
-                                        <small class="text-muted">{{ $order->customer->phone }}</small>
-                                    </div>
+                                <td data-label="Total">
+                                    <span class="fw-medium">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                                 </td>
-                                <td>
-                                    <div class="fw-medium">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
-                                </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge bg-label-{{
                                         $order->status === 'pending' ? 'warning' :
                                         ($order->status === 'confirmed' ? 'info' :
@@ -89,200 +150,302 @@
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </td>
-                                <td>
-                                    <small class="text-muted">{{ $order->created_at->format('d/m/Y H:i') }}</small>
-                                </td>
-                                <td>
+                                <td data-label="Aksi" class="actions-cell">
                                     <div class="dropdown">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                            Aksi
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="bx bx-dots-vertical-rounded"></i>
                                         </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#" onclick="showOrderDetail({{ $order->id }})">
-                                                <i class="bx bx-show me-1"></i> Detail
-                                            </a>
-                                            @if($order->canBeEdited())
-                                                <a class="dropdown-item" href="#" wire:click.prevent="openEditModal({{ $order->id }})">
-                                                    <i class="bx bx-edit me-1"></i> Edit
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="#" wire:click="viewOrder({{ $order->id }})">
+                                                    <i class="bx bx-show me-1"></i> Detail
                                                 </a>
+                                            </li>
+                                            @if($order->canBeEdited())
+                                                <li>
+                                                    <a class="dropdown-item" href="#" wire:click="openEditModal({{ $order->id }})">
+                                                        <i class="bx bx-edit me-1"></i> Edit
+                                                    </a>
+                                                </li>
                                             @endif
                                             @if($order->canBeCancelled())
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item text-danger" href="#"
-                                                   wire:click.prevent="cancelOrder({{ $order->id }})"
-                                                   onclick="return confirm('Yakin ingin membatalkan order ini?')">
-                                                    <i class="bx bx-x-circle me-1"></i> Batalkan
-                                                </a>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#"
+                                                       wire:click="cancelOrder({{ $order->id }})"
+                                                       onclick="return confirm('Anda yakin ingin membatalkan order ini?')">
+                                                        <i class="bx bx-x-circle me-1"></i> Batalkan
+                                                    </a>
+                                                </li>
                                             @endif
-                                        </div>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <i class="bx bx-package text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">Belum ada order</p>
-                                    <button wire:click="openCreateModal" class="btn btn-primary btn-sm">
-                                        <i class="bx bx-plus me-1"></i> Buat Order Pertama
-                                    </button>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bx bx-package text-muted" style="font-size: 3rem;"></i>
+                                        <p class="text-muted mt-2 mb-1">Belum ada data pre-order</p>
+                                        <small class="text-muted">Buat pre-order pertama Anda.</small>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-3">
+        </div>
+        @if($orders->hasPages())
+            <div class="card-footer">
                 {{ $orders->links() }}
             </div>
-        </div>
+        @endif
     </div>
 
-    <!-- Order Modal -->
+    <!-- Create/Edit Order Modal -->
     @if($showModal)
-        <div class="modal fade show" style="display: block;" tabindex="-1">
-            <div class="modal-dialog modal-xl">
+        <div class="modal fade show" style="display: block;" tabindex="-1" wire:ignore.self>
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ $editMode ? 'Edit Pre Order' : 'Buat Pre Order Baru' }}</h5>
+                        <h5 class="modal-title">{{ $editMode ? 'Edit Pre-Order' : 'Buat Pre-Order Baru' }}</h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
                     <form wire:submit.prevent="save">
                         <div class="modal-body">
                             <div class="row g-3">
-                                <!-- Customer Selection -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Pilih Pelanggan <span class="text-danger">*</span></label>
-                                    <select wire:model="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
-                                        <option value="">-- Pilih Pelanggan --</option>
-                                        @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }} - {{ $customer->phone }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('customer_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Notes -->
-                                <div class="col-md-6">
-                                    <label class="form-label">Catatan</label>
-                                    <textarea wire:model="catatan" class="form-control @error('catatan') is-invalid @enderror" rows="2" placeholder="Catatan tambahan..."></textarea>
-                                    @error('catatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Add Product Section -->
                                 <div class="col-12">
-                                    <hr>
+                                    <h6>Informasi Order</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Pelanggan <span class="text-danger">*</span></label>
+                                            <div wire:ignore>
+                                                <select id="customer-select" class="form-select">
+                                                    <option value="">Pilih pelanggan...</option>
+                                                    @foreach($customers as $customer)
+                                                        <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            @error('customer_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Catatan</label>
+                                            <textarea wire:model="catatan" class="form-control" rows="1" placeholder="Catatan untuk gudang..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <hr class="my-2">
                                     <h6>Tambah Produk</h6>
                                     <div class="row g-2 align-items-end">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Pilih Produk</label>
-                                            <select wire:model="selectedProduct" class="form-select">
-                                                <option value="">-- Pilih Produk --</option>
-                                                @foreach($products as $product)
-                                                    <option value="{{ $product->id }}">
-                                                        {{ $product->nama_barang }} - Rp {{ number_format($product->harga_jual, 0, ',', '.') }}
-                                                        (Stok: {{ $product->stok_tersedia }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                        <div class="col-md-7">
+                                            <label class="form-label">Produk</label>
+                                            <div wire:ignore>
+                                                <select id="product-select" class="form-select">
+                                                    <option value="">Cari produk...</option>
+                                                    @foreach($products as $product)
+                                                        <option value="{{ $product->id }}">{{ $product->nama_barang }} (Stok: {{ $product->stok_tersedia }})</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
                                             <label class="form-label">Jumlah</label>
-                                            <input type="number" wire:model="quantity" class="form-control" min="1" value="1">
+                                            <input type="number" wire:model="quantity" class="form-control" min="1">
                                         </div>
                                         <div class="col-md-3">
                                             <button type="button" wire:click="addProduct" class="btn btn-primary w-100">
-                                                <i class="bx bx-plus me-1"></i> Tambah
+                                                <i class="bx bx-plus"></i> Tambah
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Order Items Table -->
                                 <div class="col-12">
-                                    <hr>
-                                    <h6>Daftar Produk Order</h6>
-                                    @if(count($orderItems) > 0)
-                                        <div class="table-responsive">
-                                            <table class="table table-sm">
-                                                <thead>
+                                    <hr class="my-2">
+                                    <h6>Daftar Produk</h6>
+                                    <div class="table-responsive border rounded">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Produk</th>
+                                                    <th style="width: 120px;">Jumlah</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                    <th class="text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($orderItems as $index => $item)
                                                     <tr>
-                                                        <th>Produk</th>
-                                                        <th>Harga</th>
-                                                        <th>Jumlah</th>
-                                                        <th>Total</th>
-                                                        <th>Aksi</th>
+                                                        <td>
+                                                            <span class="fw-medium">{{ $item['product_name'] }}</span><br>
+                                                            <small class="text-muted">@ Rp {{ number_format($item['price'], 0, ',', '.') }}</small>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" wire:change="updateQuantity({{ $index }}, $event.target.value)" value="{{ $item['quantity'] }}" class="form-control form-control-sm" min="1">
+                                                        </td>
+                                                        <td class="text-end">Rp {{ number_format($item['total'], 0, ',', '.') }}</td>
+                                                        <td class="text-center">
+                                                            <button type="button" wire:click="removeProduct({{ $index }})" class="btn btn-sm btn-icon btn-outline-danger">
+                                                                <i class="bx bx-trash"></i>
+                                                            </button>
+                                                        </td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($orderItems as $index => $item)
-                                                        <tr>
-                                                            <td>{{ $item['product_name'] }}</td>
-                                                            <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
-                                                            <td>
-                                                                <input type="number"
-                                                                       wire:change="updateQuantity({{ $index }}, $event.target.value)"
-                                                                       value="{{ $item['quantity'] }}"
-                                                                       class="form-control form-control-sm"
-                                                                       style="width: 80px;"
-                                                                       min="1">
-                                                            </td>
-                                                            <td>Rp {{ number_format($item['total'], 0, ',', '.') }}</td>
-                                                            <td>
-                                                                <button type="button"
-                                                                        wire:click="removeProduct({{ $index }})"
-                                                                        class="btn btn-sm btn-outline-danger">
-                                                                    <i class="bx bx-trash"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                                <tfoot>
-                                                    <tr class="table-active">
-                                                        <th colspan="3">Total Order</th>
-                                                        <th>Rp {{ number_format(collect($orderItems)->sum('total'), 0, ',', '.') }}</th>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4" class="text-center py-4">
+                                                            <p class="mb-0 text-muted">Belum ada produk ditambahkan.</p>
+                                                        </td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                            @if(count($orderItems) > 0)
+                                                <tfoot class="table-light">
+                                                    <tr>
+                                                        <th colspan="2" class="text-end">Total:</th>
+                                                        <th class="text-end">Rp {{ number_format(collect($orderItems)->sum('total'), 0, ',', '.') }}</th>
                                                         <th></th>
                                                     </tr>
                                                 </tfoot>
-                                            </table>
-                                        </div>
-                                    @else
-                                        <div class="text-center py-3">
-                                            <i class="bx bx-package text-muted" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mt-2">Belum ada produk ditambahkan</p>
-                                        </div>
-                                    @endif
+                                            @endif
+                                        </table>
+                                    </div>
+                                    @error('orderItems') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">Batal</button>
-                            <button type="submit" class="btn btn-primary" {{ count($orderItems) === 0 ? 'disabled' : '' }}>
-                                {{ $editMode ? 'Update Order' : 'Buat Order' }}
+                            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" {{ count($orderItems) === 0 ? 'disabled' : '' }}>
+                                <span wire:loading wire:target="save" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                {{ $editMode ? 'Update Order' : 'Simpan Order' }}
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop fade show"></div>
+        <div class="modal-backdrop fade show" wire:ignore.self></div>
     @endif
 
-    <!-- Flash Messages -->
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- View Order Modal -->
+    @if($viewOrder)
+        <div class="modal fade show" style="display: block;" tabindex="-1" wire:ignore.self>
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detail Order: {{ $viewOrder->nomor_order }}</h5>
+                        <button type="button" class="btn-close" wire:click="closeViewModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <h6 class="mb-2">Informasi Pelanggan</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-1"><span class="fw-medium">Toko:</span> {{ $viewOrder->customer->nama_toko }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Telepon:</span> {{ $viewOrder->customer->phone }}</li>
+                                    <li><span class="fw-medium">Alamat:</span> {{ $viewOrder->customer->alamat }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-2">Informasi Order</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-1"><span class="fw-medium">Tanggal:</span> {{ $viewOrder->created_at->format('d M Y, H:i') }}</li>
+                                    <li class="mb-1"><span class="fw-medium">Status:</span>
+                                        <span class="badge bg-label-primary">{{ ucfirst($viewOrder->status) }}</span>
+                                    </li>
+                                    <li><span class="fw-medium">Total:</span> Rp {{ number_format($viewOrder->total_amount, 0, ',', '.') }}</li>
+                                </ul>
+                            </div>
+                            @if($viewOrder->catatan)
+                            <div class="col-12">
+                                <h6 class="mb-2">Catatan</h6>
+                                <p class="text-muted">{{ $viewOrder->catatan }}</p>
+                            </div>
+                            @endif
+                            <div class="col-12">
+                                <h6 class="mb-2">Daftar Item</h6>
+                                <div class="table-responsive border rounded">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Produk</th>
+                                                <th>Jumlah</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($viewOrder->orderItems as $item)
+                                                <tr>
+                                                    <td>
+                                                        <span class="fw-medium">{{ $item->product->nama_barang }}</span><br>
+                                                        <small class="text-muted">@ Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</small>
+                                                    </td>
+                                                    <td>{{ $item->jumlah_pesan }}</td>
+                                                    <td class="text-end">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="2" class="text-end">Total Akhir:</th>
+                                                <th class="text-end">Rp {{ number_format($viewOrder->total_amount, 0, ',', '.') }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeViewModal">Tutup</button>
+                        <button type="button" class="btn btn-primary"><i class="bx bx-printer me-1"></i> Cetak</button>
+                    </div>
+                </div>
+            </div>
         </div>
+        <div class="modal-backdrop fade show" wire:ignore.self></div>
     @endif
 
-    @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3" style="z-index: 9999;">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('livewire:init', () => {
+            const initTomSelect = (elementId, model) => {
+                const el = document.getElementById(elementId);
+                if (!el) return null;
+
+                const tomSelect = new TomSelect(el, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" },
+                    placeholder: el.getAttribute('placeholder') || 'Pilih...',
+                    onChange: (value) => {
+                        @this.set(model, value);
+                    }
+                });
+                return tomSelect;
+            };
+
+            const customerFilterSelect = initTomSelect('customer-filter-select', 'customerFilter');
+
+            Livewire.on('show-modal', () => {
+                setTimeout(() => {
+                    const customerSelect = initTomSelect('customer-select', 'customer_id');
+                    const productSelect = initTomSelect('product-select', 'selectedProduct');
+
+                    if (customerSelect && @this.get('customer_id')) {
+                        customerSelect.setValue(@this.get('customer_id'), true);
+                    }
+
+                    window.addEventListener('close-order-modal', () => {
+                        if(customerSelect) customerSelect.destroy();
+                        if(productSelect) productSelect.destroy();
+                    });
+                }, 100);
+            });
+        });
+    </script>
 </div>
