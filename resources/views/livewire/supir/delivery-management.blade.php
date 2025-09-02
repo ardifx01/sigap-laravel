@@ -212,11 +212,18 @@
                                     </div>
                                 </td>
                                 <td data-label="Status">
-                                    <span class="badge bg-label-{{
-                                        $delivery->status === 'assigned' ? 'warning' :
-                                        ($delivery->status === 'in_progress' ? 'info' : 'success')
-                                    }}">
-                                        {{ ucfirst(str_replace('_', ' ', $delivery->status)) }}
+                                    @php
+                                        $statusConfig = [
+                                            'assigned' => ['color' => 'warning', 'label' => 'Menunggu K3'],
+                                            'k3_checked' => ['color' => 'info', 'label' => 'Siap Berangkat'],
+                                            'in_progress' => ['color' => 'primary', 'label' => 'Dalam Perjalanan'],
+                                            'delivered' => ['color' => 'success', 'label' => 'Terkirim'],
+                                            'cancelled' => ['color' => 'danger', 'label' => 'Dibatalkan']
+                                        ];
+                                        $config = $statusConfig[$delivery->status] ?? ['color' => 'secondary', 'label' => $delivery->status];
+                                    @endphp
+                                    <span class="badge bg-label-{{ $config['color'] }}">
+                                        {{ $config['label'] }}
                                     </span>
                                 </td>
                                 <td data-label="K3 Checklist">
@@ -247,18 +254,22 @@
                                 </td>
                                 <td data-label="Aksi" class="actions-cell">
                                     @if($delivery->status === 'assigned')
-                                        @if($delivery->canBeStarted())
-                                            <button wire:click="openStartModal({{ $delivery->id }})" class="btn btn-sm btn-primary">
-                                                <i class="bx bx-play me-1"></i> Mulai
-                                            </button>
+                                        @if($delivery->needsK3Checklist())
+                                            <a href="{{ route('supir.k3-checklist') }}" class="btn btn-sm btn-warning">
+                                                <i class="bx bx-shield me-1"></i> K3 Checklist
+                                            </a>
                                         @else
-                                            <span class="text-muted">Menunggu K3 approval</span>
+                                            <span class="text-muted">Menunggu K3 validasi</span>
                                         @endif
+                                    @elseif($delivery->status === 'k3_checked')
+                                        <button wire:click="openStartModal({{ $delivery->id }})" class="btn btn-sm btn-primary">
+                                            <i class="bx bx-play me-1"></i> Mulai Perjalanan
+                                        </button>
                                     @elseif($delivery->status === 'in_progress')
                                         <button wire:click="openCompleteModal({{ $delivery->id }})" class="btn btn-sm btn-success">
                                             <i class="bx bx-check-circle me-1"></i> Selesaikan
                                         </button>
-                                    @else
+                                    @elseif($delivery->status === 'delivered')
                                         <div class="dropdown">
                                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
                                                 <i class="bx bx-dots-vertical-rounded"></i>
@@ -280,6 +291,8 @@
                                                 @endif
                                             </ul>
                                         </div>
+                                    @else
+                                        <span class="text-muted">{{ ucfirst($delivery->status) }}</span>
                                     @endif
                                 </td>
                             </tr>

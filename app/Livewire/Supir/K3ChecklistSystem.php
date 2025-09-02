@@ -87,17 +87,38 @@ class K3ChecklistSystem extends Component
         $this->validate();
 
         try {
-            // Check if already have checklist today
-            $existingChecklist = K3Checklist::where('driver_id', auth()->id())
-                                          ->whereDate('checked_at', today())
-                                          ->when($this->delivery_id, function($q) {
-                                              $q->where('delivery_id', $this->delivery_id);
-                                          })
-                                          ->first();
+            // Check if already have checklist for this delivery
+            if ($this->delivery_id) {
+                $existingChecklist = K3Checklist::where('driver_id', auth()->id())
+                                              ->where('delivery_id', $this->delivery_id)
+                                              ->first();
 
-            if ($existingChecklist) {
-                session()->flash('error', 'Anda sudah membuat checklist hari ini!');
-                return;
+                if ($existingChecklist) {
+                    session()->flash('error', 'Checklist untuk delivery ini sudah ada!');
+                    return;
+                }
+
+                // Validate delivery exists and belongs to current driver
+                $delivery = Delivery::where('id', $this->delivery_id)
+                                  ->where('driver_id', auth()->id())
+                                  ->where('status', 'assigned')
+                                  ->first();
+
+                if (!$delivery) {
+                    session()->flash('error', 'Delivery tidak valid atau tidak dapat diupdate!');
+                    return;
+                }
+            } else {
+                // General checklist - check if already have one today
+                $existingChecklist = K3Checklist::where('driver_id', auth()->id())
+                                              ->whereDate('checked_at', today())
+                                              ->whereNull('delivery_id')
+                                              ->first();
+
+                if ($existingChecklist) {
+                    session()->flash('error', 'Anda sudah membuat checklist umum hari ini!');
+                    return;
+                }
             }
 
             // Create checklist
@@ -121,8 +142,27 @@ class K3ChecklistSystem extends Component
                     ->toMediaCollection('vehicle_photos');
             }
 
+            // Update delivery status if checklist is complete and linked to delivery
+            if ($this->delivery_id && $checklist->isAllItemsPassed()) {
+                $delivery = Delivery::find($this->delivery_id);
+                if ($delivery && $delivery->status === 'assigned') {
+                    $delivery->update([
+                        'status' => 'k3_checked',
+                        'k3_checked_at' => now(),
+                    ]);
+                }
+            }
+
             $this->closeChecklistModal();
-            session()->flash('success', 'K3 Checklist berhasil dibuat!');
+            
+            $message = 'K3 Checklist berhasil dibuat!';
+            if ($this->delivery_id && $checklist->isAllItemsPassed()) {
+                $message .= ' Delivery sudah siap untuk dimulai.';
+            } elseif ($this->delivery_id && !$checklist->isAllItemsPassed()) {
+                $message .= ' Harap lengkapi semua item checklist untuk dapat memulai delivery.';
+            }
+            
+            session()->flash('success', $message);
 
         } catch (\Exception $e) {
             session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -143,6 +183,86 @@ class K3ChecklistSystem extends Component
         $this->selectedChecklist = null;
     }
 
+    public function editChecklist($checklistId)
+    {
+        $checklist = K3Checklist::where('driver_id', auth()->id())
+                               ->findOrFail($checklistId);
+        
+        // Only allow editing if from today and delivery not started yet
+        if (!$checklist->checked_at->isToday()) {
+            session()->flash('error', 'Hanya checklist hari ini yang dapat diedit!');
+            return;
+        }
+        
+        if ($checklist->delivery && in_array($checklist->delivery->status, ['in_progress', 'delivered'])) {
+            session()->flash('error', 'Delivery sudah dimulai, checklist tidak dapat diedit!');
+            return;
+        }
+        
+        // Load checklist data to form
+        $this->checklistId = $checklist->id;
+        $this->delivery_id = $checklist->delivery_id;
+        $this->cek_ban = $checklist->cek_ban;
+        $this->cek_oli = $checklist->cek_oli;
+        $this->cek_air_radiator = $checklist->cek_air_radiator;
+        $this->cek_rem = $checklist->cek_rem;
+        $this->cek_bbm = $checklist->cek_bbm;
+        $this->cek_terpal = $checklist->cek_terpal;
+        $this->catatan = $checklist->catatan;
+        
+        $this->showChecklistModal = true;
+    }
+    
+    public function updateChecklist()
+    {
+        $this->validate();
+        
+        try {
+            $checklist = K3Checklist::where('driver_id', auth()->id())
+                                   ->findOrFail($this->checklistId);
+            
+            if (!$checklist->checked_at->isToday()) {
+                session()->flash('error', 'Hanya checklist hari ini yang dapat diedit!');
+                return;
+            }
+            
+            // Update checklist
+            $checklist->update([
+                'cek_ban' => $this->cek_ban,
+                'cek_oli' => $this->cek_oli,
+                'cek_air_radiator' => $this->cek_air_radiator,
+                'cek_rem' => $this->cek_rem,
+                'cek_bbm' => $this->cek_bbm,
+                'cek_terpal' => $this->cek_terpal,
+                'catatan' => $this->catatan,
+            ]);
+            
+            // Update delivery status based on checklist completion
+            if ($checklist->delivery_id) {
+                $delivery = Delivery::find($checklist->delivery_id);
+                if ($delivery) {
+                    if ($checklist->isAllItemsPassed() && $delivery->status === 'assigned') {
+                        $delivery->update([
+                            'status' => 'k3_checked',
+                            'k3_checked_at' => now(),
+                        ]);
+                    } elseif (!$checklist->isAllItemsPassed() && $delivery->status === 'k3_checked') {
+                        $delivery->update([
+                            'status' => 'assigned',
+                            'k3_checked_at' => null,
+                        ]);
+                    }
+                }
+            }
+            
+            $this->closeChecklistModal();
+            session()->flash('success', 'K3 Checklist berhasil diupdate!');
+            
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
     public function deleteChecklist($checklistId)
     {
         try {
@@ -153,6 +273,17 @@ class K3ChecklistSystem extends Component
             if (!$checklist->checked_at->isToday()) {
                 session()->flash('error', 'Hanya checklist hari ini yang dapat dihapus!');
                 return;
+            }
+            
+            // Check if delivery is linked and update status back to assigned
+            if ($checklist->delivery_id) {
+                $delivery = Delivery::find($checklist->delivery_id);
+                if ($delivery && $delivery->status === 'k3_checked') {
+                    $delivery->update([
+                        'status' => 'assigned',
+                        'k3_checked_at' => null,
+                    ]);
+                }
             }
 
             $checklist->delete();

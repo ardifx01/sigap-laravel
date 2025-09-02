@@ -263,7 +263,7 @@
                         <h5 class="modal-title">K3 Checklist - Keselamatan dan Kesehatan Kerja</h5>
                         <button type="button" class="btn-close" wire:click="closeChecklistModal"></button>
                     </div>
-                    <form wire:submit.prevent="createChecklist">
+                    <form wire:submit.prevent="{{ $checklistId ? 'updateChecklist' : 'createChecklist' }}">
                         <div class="modal-body">
                             <div class="alert alert-info">
                                 <i class="bx bx-info-circle me-2"></i>
