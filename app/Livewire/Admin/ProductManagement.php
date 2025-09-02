@@ -7,6 +7,8 @@ use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use App\Models\Product;
 use App\Models\ProductUnit;
+use App\Exports\ProductsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductManagement extends Component
 {
@@ -227,6 +229,24 @@ class ProductManagement extends Component
             ->latest();
 
         return $query->paginate($this->perPage);
+    }
+
+    public function exportToExcel()
+    {
+        try {
+            $filters = [
+                'search' => $this->search,
+                'is_active' => $this->statusFilter,
+                'stock_filter' => $this->stockFilter,
+            ];
+
+            return Excel::download(
+                new ProductsExport($filters), 
+                'products-export-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengekspor data: ' . $e->getMessage());
+        }
     }
 
     public function getJenisOptionsProperty()

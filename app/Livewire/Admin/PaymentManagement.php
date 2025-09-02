@@ -8,7 +8,9 @@ use Livewire\WithFileUploads;
 use App\Models\Payment;
 use App\Models\Order;
 use App\Models\Customer;
+use App\Exports\PaymentsExport;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PaymentManagement extends Component
 {
@@ -242,6 +244,41 @@ class PaymentManagement extends Component
             ->latest();
 
         return $query->paginate($this->perPage);
+    }
+
+    public function exportToExcel()
+    {
+        try {
+            // Check if there are any payments with missing relationships
+            $paymentsWithoutOrder = Payment::whereNull('order_id')->count();
+            $paymentsWithoutCustomer = Payment::whereHas('order', function($query) {
+                $query->whereNull('customer_id');
+            })->count();
+            
+            if ($paymentsWithoutOrder > 0) {
+                session()->flash('warning', "Ada {$paymentsWithoutOrder} pembayaran tanpa order yang akan dilewati dalam export.");
+            }
+            
+            if ($paymentsWithoutCustomer > 0) {
+                session()->flash('warning', "Ada {$paymentsWithoutCustomer} pembayaran dengan order tanpa customer.");
+            }
+
+            $filters = [
+                'search' => $this->search,
+                'status' => $this->statusFilter,
+                'method' => $this->methodFilter,
+                'customer_id' => $this->customerFilter,
+                'date_filter' => $this->dateFilter,
+            ];
+
+            return Excel::download(
+                new PaymentsExport($filters), 
+                'payments-export-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengekspor data: ' . $e->getMessage() . ' Line: ' . $e->getLine());
+            \Log::error('Export error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        }
     }
 
     public function getOrdersProperty()

@@ -6,6 +6,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Customer;
 use App\Models\User;
+use App\Exports\CustomersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerManagement extends Component
 {
@@ -169,6 +171,24 @@ class CustomerManagement extends Component
             ->latest();
 
         return $query->paginate($this->perPage);
+    }
+
+    public function exportToExcel()
+    {
+        try {
+            $filters = [
+                'search' => $this->search,
+                'is_active' => $this->statusFilter,
+                'sales_id' => $this->salesFilter,
+            ];
+
+            return Excel::download(
+                new CustomersExport($filters), 
+                'customers-export-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengekspor data: ' . $e->getMessage());
+        }
     }
 
     public function getSalesUsersProperty()
