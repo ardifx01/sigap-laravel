@@ -232,21 +232,62 @@
                                     </div>
                                 </td>
                                 <td data-label="Jenis">
-                                    <span class="badge bg-label-info">{{ ucfirst($product->jenis) }}</span>
+                                    @if($product->uses_multiple_units && $product->units->count() > 0)
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach($product->units->take(2) as $unit)
+                                                <span class="badge bg-label-{{ $unit->is_base_unit ? 'primary' : 'info' }}" title="{{ $unit->formatted_unit }}">
+                                                    {{ $unit->unit_code }}
+                                                </span>
+                                            @endforeach
+                                            @if($product->units->count() > 2)
+                                                <span class="badge bg-label-secondary">+{{ $product->units->count() - 2 }}</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="badge bg-label-info">{{ ucfirst($product->jenis) }}</span>
+                                    @endif
                                 </td>
                                 <td data-label="Harga">
-                                    <div>
-                                        <span class="fw-medium">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</span>
-                                    </div>
+                                    @if($product->uses_multiple_units && $product->units->count() > 0)
+                                        @php $primaryUnit = $product->getPrimaryUnit(); @endphp
+                                        @if($primaryUnit)
+                                            <span class="fw-medium">Rp {{ number_format($primaryUnit->price_per_unit, 0, ',', '.') }}</span>
+                                            <br><small class="text-muted">per {{ $primaryUnit->unit_code }}</small>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    @else
+                                        <div>
+                                            <span class="fw-medium">Rp {{ number_format($product->harga_jual, 0, ',', '.') }}</span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td data-label="Stok">
-                                    <div>
-                                        <span class="fw-medium {{ $product->stok_tersedia <= $product->stok_minimum ? 'text-danger' : ($product->stok_tersedia == 0 ? 'text-danger' : 'text-success') }}">
-                                            {{ $product->stok_tersedia }} {{ $product->jenis }}
-                                        </span>
-                                        <br>
-                                        <small class="text-muted">Min: {{ $product->stok_minimum }}</small>
-                                    </div>
+                                    @if($product->uses_multiple_units && $product->units->count() > 0)
+                                        @php $primaryUnit = $product->getPrimaryUnit(); @endphp
+                                        @if($primaryUnit)
+                                            <div>
+                                                <span class="fw-medium {{ $primaryUnit->stock_available <= $primaryUnit->stock_minimum ? 'text-danger' : ($primaryUnit->stock_available == 0 ? 'text-danger' : 'text-success') }}">
+                                                    {{ $primaryUnit->stock_available }} {{ $primaryUnit->unit_code }}
+                                                </span>
+                                                <br>
+                                                <small class="text-muted">Min: {{ $primaryUnit->stock_minimum }}</small>
+                                                @if($primaryUnit->stock_available <= $primaryUnit->stock_minimum)
+                                                    <br><small class="text-warning"><i class="bx bx-error-circle"></i> Stok Kritis</small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    @else
+                                        <div>
+                                            <span class="fw-medium {{ $product->stok_tersedia <= $product->stok_minimum ? 'text-danger' : ($product->stok_tersedia == 0 ? 'text-danger' : 'text-success') }}">
+                                                {{ $product->stok_tersedia }} {{ $product->jenis }}
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">Min: {{ $product->stok_minimum }}</small>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td data-label="Status">
                                     <span class="badge bg-label-{{ $product->is_active ? 'success' : 'danger' }}">
@@ -270,6 +311,19 @@
                                                     {{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                                 </a>
                                             </li>
+                                            @if($product->uses_multiple_units)
+                                                <li>
+                                                    <a class="dropdown-item" href="#" wire:click.prevent="openUnitsModal({{ $product->id }})">
+                                                        <i class="bx bx-cube me-1"></i> Kelola Satuan
+                                                    </a>
+                                                </li>
+                                            @else
+                                                <li>
+                                                    <a class="dropdown-item" href="#" wire:click.prevent="convertToMultipleUnits({{ $product->id }})">
+                                                        <i class="bx bx-plus-circle me-1"></i> Aktifkan Multi-Satuan
+                                                    </a>
+                                                </li>
+                                            @endif
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item" href="#" onclick="adjustStock({{ $product->id }}, 'add')">
@@ -391,6 +445,135 @@
                         <button type="button" class="btn btn-secondary" wire:click="$set('showProductModal', false)">Batal</button>
                         <button type="button" wire:click="saveProduct" class="btn btn-primary">
                             <i class="bx bx-save"></i> {{ $productId ? 'Update' : 'Simpan' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    @endif
+
+    <!-- Multiple Units Management Modal -->
+    @if($showUnitsModal)
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Kelola Satuan Produk</h5>
+                        <button type="button" class="btn-close" wire:click="closeUnitsModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-4">
+                            <i class="bx bx-info-circle me-2"></i>
+                            <strong>Petunjuk:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Minimal harus ada satu satuan yang aktif</li>
+                                <li>Hanya boleh ada satu satuan dasar (base unit)</li>
+                                <li>Nilai konversi menunjukkan berapa unit dasar dalam satuan ini</li>
+                                <li>Contoh: 1 Karton = 12 Pcs, maka nilai konversi Karton = 12</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" wire:click="addUnit" class="btn btn-outline-primary">
+                                <i class="bx bx-plus"></i> Tambah Satuan
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nama Satuan</th>
+                                        <th>Kode</th>
+                                        <th>Konversi</th>
+                                        <th>Harga/Unit</th>
+                                        <th>Stok</th>
+                                        <th>Min. Stok</th>
+                                        <th>Base Unit</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($units as $index => $unit)
+                                        <tr>
+                                            <td>
+                                                <input type="text" wire:model="units.{{ $index }}.unit_name" 
+                                                       class="form-control form-control-sm" 
+                                                       placeholder="Nama satuan...">
+                                            </td>
+                                            <td>
+                                                <input type="text" wire:model="units.{{ $index }}.unit_code" 
+                                                       class="form-control form-control-sm" 
+                                                       placeholder="Kode..." style="width: 80px;">
+                                            </td>
+                                            <td>
+                                                <input type="number" wire:model="units.{{ $index }}.conversion_value" 
+                                                       class="form-control form-control-sm" 
+                                                       min="0.01" step="0.01" style="width: 90px;">
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">Rp</span>
+                                                    <input type="number" wire:model="units.{{ $index }}.price_per_unit" 
+                                                           class="form-control" 
+                                                           min="0" step="100">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" wire:model="units.{{ $index }}.stock_available" 
+                                                       class="form-control form-control-sm" 
+                                                       min="0" style="width: 90px;">
+                                            </td>
+                                            <td>
+                                                <input type="number" wire:model="units.{{ $index }}.stock_minimum" 
+                                                       class="form-control form-control-sm" 
+                                                       min="0" style="width: 90px;">
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="base_unit" 
+                                                           wire:click="setBaseUnit({{ $index }})" 
+                                                           {{ $unit['is_base_unit'] ? 'checked' : '' }}>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           wire:model="units.{{ $index }}.is_active">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if(count($units) > 1)
+                                                    <button type="button" wire:click="removeUnit({{ $index }})" 
+                                                            class="btn btn-sm btn-outline-danger" 
+                                                            title="Hapus satuan">
+                                                        <i class="bx bx-trash"></i>
+                                                    </button>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if(empty($units))
+                            <div class="text-center py-4">
+                                <i class="bx bx-cube text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2">Belum ada satuan</p>
+                                <button type="button" wire:click="addUnit" class="btn btn-primary">
+                                    <i class="bx bx-plus"></i> Tambah Satuan Pertama
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closeUnitsModal">Batal</button>
+                        <button type="button" wire:click="saveUnits" class="btn btn-primary">
+                            <i class="bx bx-save"></i> Simpan Satuan
                         </button>
                     </div>
                 </div>
