@@ -31,6 +31,14 @@ class PaymentManagement extends Component
     public $catatan;
     public $bukti_transfer;
 
+    // Searchable fields
+    public $orderSearch = '';
+    public $customerSearch = '';
+    public $selectedOrderText = '';
+    public $selectedCustomerText = '';
+    public $showOrderSuggestions = false;
+    public $showCustomerSuggestions = false;
+
     // Upload payment proof modal
     public $showProofModal = false;
     public $proofPaymentId;
@@ -86,6 +94,7 @@ class PaymentManagement extends Component
     public function openEditModal($paymentId)
     {
         $payment = Payment::where('sales_id', auth()->id())
+                         ->with('order.customer')
                          ->findOrFail($paymentId);
 
         $this->paymentId = $payment->id;
@@ -97,6 +106,12 @@ class PaymentManagement extends Component
         $this->tanggal_jatuh_tempo = $payment->tanggal_jatuh_tempo->format('Y-m-d');
         $this->tanggal_pembayaran = $payment->tanggal_bayar?->format('Y-m-d');
         $this->catatan = $payment->catatan;
+
+        // Populate search fields for edit mode
+        $this->orderSearch = $payment->order->nomor_order . ' - ' . $payment->order->customer->nama_toko . ' (Rp ' . number_format($payment->order->total_amount, 0, ',', '.') . ')';
+        $this->customerSearch = $payment->order->customer->nama_toko;
+        $this->selectedOrderText = $this->orderSearch;
+        $this->selectedCustomerText = $this->customerSearch;
 
         $this->showPaymentModal = true;
         $this->editMode = true;
@@ -112,11 +127,14 @@ class PaymentManagement extends Component
     {
         $this->reset([
             'paymentId', 'order_id', 'customer_id', 'jumlah_tagihan', 'jumlah_dibayar',
-            'metode_pembayaran', 'tanggal_jatuh_tempo', 'tanggal_pembayaran', 'catatan', 'bukti_transfer'
+            'metode_pembayaran', 'tanggal_jatuh_tempo', 'tanggal_pembayaran', 'catatan', 'bukti_transfer',
+            'orderSearch', 'customerSearch', 'selectedOrderText', 'selectedCustomerText'
         ]);
         $this->metode_pembayaran = 'transfer';
         $this->jumlah_tagihan = 0;
         $this->jumlah_dibayar = 0;
+        $this->showOrderSuggestions = false;
+        $this->showCustomerSuggestions = false;
     }
 
     public function updatedOrderId()
@@ -307,6 +325,83 @@ class PaymentManagement extends Component
             'totalTagihan' => $totalTagihan,
             'overdueCount' => $overdueCount,
         ]);
+    }
+
+    // Search methods
+    public function updatedOrderSearch()
+    {
+        $this->showOrderSuggestions = !empty($this->orderSearch);
+    }
+
+    public function updatedCustomerSearch()
+    {
+        $this->showCustomerSuggestions = !empty($this->customerSearch);
+    }
+
+    public function selectOrder($orderId)
+    {
+        $order = Order::where('sales_id', auth()->id())
+                     ->with('customer')
+                     ->find($orderId);
+
+        if ($order) {
+            $this->order_id = $order->id;
+            $this->customer_id = $order->customer_id;
+            $this->jumlah_tagihan = $order->total_amount;
+            $this->selectedOrderText = $order->nomor_order . ' - ' . $order->customer->nama_toko . ' (Rp ' . number_format($order->total_amount, 0, ',', '.') . ')';
+            $this->selectedCustomerText = $order->customer->nama_toko;
+            $this->orderSearch = $this->selectedOrderText;
+            $this->customerSearch = $this->selectedCustomerText;
+        }
+
+        $this->showOrderSuggestions = false;
+        $this->showCustomerSuggestions = false;
+    }
+
+    public function selectCustomer($customerId)
+    {
+        $customer = Customer::where('sales_id', auth()->id())
+                          ->find($customerId);
+
+        if ($customer) {
+            $this->customer_id = $customer->id;
+            $this->selectedCustomerText = $customer->nama_toko;
+            $this->customerSearch = $this->selectedCustomerText;
+        }
+
+        $this->showCustomerSuggestions = false;
+    }
+
+    public function getOrderSuggestionsProperty()
+    {
+        if (empty($this->orderSearch) || !$this->showOrderSuggestions) {
+            return collect();
+        }
+
+        return Order::where('sales_id', auth()->id())
+                   ->whereNotIn('id', Payment::where('sales_id', auth()->id())->pluck('order_id'))
+                   ->with('customer')
+                   ->where(function ($query) {
+                       $query->where('nomor_order', 'like', '%' . $this->orderSearch . '%')
+                             ->orWhereHas('customer', function ($customerQuery) {
+                                 $customerQuery->where('nama_toko', 'like', '%' . $this->orderSearch . '%');
+                             });
+                   })
+                   ->limit(10)
+                   ->get();
+    }
+
+    public function getCustomerSuggestionsProperty()
+    {
+        if (empty($this->customerSearch) || !$this->showCustomerSuggestions) {
+            return collect();
+        }
+
+        return Customer::where('sales_id', auth()->id())
+                      ->where('is_active', true)
+                      ->where('nama_toko', 'like', '%' . $this->customerSearch . '%')
+                      ->limit(10)
+                      ->get();
     }
 
     private function generateNotaNumber()

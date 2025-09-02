@@ -30,6 +30,14 @@ class OrderManagement extends Component
     public $selectedProduct;
     public $quantity = 1;
 
+    // Searchable fields
+    public $customerSearch = '';
+    public $productSearch = '';
+    public $selectedCustomerText = '';
+    public $selectedProductText = '';
+    public $showCustomerSuggestions = false;
+    public $showProductSuggestions = false;
+
     protected $paginationTheme = 'bootstrap';
 
     public function rules()
@@ -74,7 +82,7 @@ class OrderManagement extends Component
     public function openEditModal($orderId)
     {
         $order = Order::where('sales_id', auth()->id())
-                     ->with(['orderItems.product'])
+                     ->with(['orderItems.product', 'customer'])
                      ->findOrFail($orderId);
 
         if (!$order->canBeEdited()) {
@@ -85,6 +93,10 @@ class OrderManagement extends Component
         $this->orderId = $order->id;
         $this->customer_id = $order->customer_id;
         $this->catatan = $order->catatan;
+
+        // Populate search fields for edit mode
+        $this->customerSearch = $order->customer->nama_toko;
+        $this->selectedCustomerText = $order->customer->nama_toko;
 
         // Load order items
         $this->orderItems = $order->orderItems->map(function ($item) {
@@ -123,7 +135,12 @@ class OrderManagement extends Component
 
     public function resetForm()
     {
-        $this->reset(['orderId', 'customer_id', 'catatan', 'selectedProduct', 'quantity']);
+        $this->reset([
+            'orderId', 'customer_id', 'catatan', 'selectedProduct', 'quantity',
+            'customerSearch', 'productSearch', 'selectedCustomerText', 'selectedProductText'
+        ]);
+        $this->showCustomerSuggestions = false;
+        $this->showProductSuggestions = false;
         $this->resetOrderItems();
     }
 
@@ -168,6 +185,9 @@ class OrderManagement extends Component
         // Reset form
         $this->selectedProduct = null;
         $this->quantity = 1;
+        $this->productSearch = '';
+        $this->selectedProductText = '';
+        $this->showProductSuggestions = false;
     }
 
     public function removeProduct($index)
@@ -311,5 +331,73 @@ class OrderManagement extends Component
             'customers' => $customers,
             'products' => $products,
         ]);
+    }
+
+    // Search methods
+    public function updatedCustomerSearch()
+    {
+        $this->showCustomerSuggestions = !empty($this->customerSearch);
+    }
+
+    public function updatedProductSearch()
+    {
+        $this->showProductSuggestions = !empty($this->productSearch);
+        // Reset selected product when typing
+        $this->selectedProduct = null;
+        $this->selectedProductText = '';
+    }
+
+    public function selectCustomer($customerId)
+    {
+        $customer = Customer::where('sales_id', auth()->id())
+                          ->where('is_active', true)
+                          ->find($customerId);
+
+        if ($customer) {
+            $this->customer_id = $customer->id;
+            $this->selectedCustomerText = $customer->nama_toko;
+            $this->customerSearch = $this->selectedCustomerText;
+        }
+
+        $this->showCustomerSuggestions = false;
+    }
+
+    public function selectProduct($productId)
+    {
+        $product = Product::where('is_active', true)
+                         ->find($productId);
+
+        if ($product) {
+            $this->selectedProduct = $product->id;
+            $this->selectedProductText = $product->nama_barang . ' (Stok: ' . $product->stok_tersedia . ')';
+            $this->productSearch = $this->selectedProductText;
+        }
+
+        $this->showProductSuggestions = false;
+    }
+
+    public function getCustomerSuggestionsProperty()
+    {
+        if (empty($this->customerSearch) || !$this->showCustomerSuggestions) {
+            return collect();
+        }
+
+        return Customer::where('sales_id', auth()->id())
+                      ->where('is_active', true)
+                      ->where('nama_toko', 'like', '%' . $this->customerSearch . '%')
+                      ->limit(10)
+                      ->get();
+    }
+
+    public function getProductSuggestionsProperty()
+    {
+        if (empty($this->productSearch) || !$this->showProductSuggestions) {
+            return collect();
+        }
+
+        return Product::where('is_active', true)
+                     ->where('nama_barang', 'like', '%' . $this->productSearch . '%')
+                     ->limit(10)
+                     ->get();
     }
 }

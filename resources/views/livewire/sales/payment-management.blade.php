@@ -105,6 +105,52 @@
         </div>
         <div class="card-body p-0">
             <style>
+                /* Searchable dropdown suggestions */
+                .dropdown-suggestions {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #ddd;
+                    border-radius: 0.375rem;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    max-height: 250px;
+                    overflow-y: auto;
+                    z-index: 1050;
+                    margin-top: 2px;
+                }
+                
+                .suggestion-item {
+                    padding: 12px 16px;
+                    border-bottom: 1px solid #f0f0f0;
+                    cursor: pointer;
+                    transition: background-color 0.15s ease;
+                }
+                
+                .suggestion-item:hover {
+                    background-color: #f8f9fa;
+                }
+                
+                .suggestion-item:last-child {
+                    border-bottom: none;
+                }
+                
+                .suggestion-item .fw-medium {
+                    color: #374151;
+                    margin-bottom: 2px;
+                }
+                
+                .suggestion-item .text-muted {
+                    color: #6b7280 !important;
+                    font-size: 0.875rem;
+                }
+                
+                .suggestion-item .text-success {
+                    color: #059669 !important;
+                    font-size: 0.875rem;
+                }
+
                 @media (max-width: 767.98px) {
                     .mobile-cards tbody tr {
                         display: block;
@@ -284,30 +330,53 @@
                     <form wire:submit.prevent="save">
                         <div class="modal-body">
                             <div class="row g-3">
-                                <!-- Order Selection -->
+                                <!-- Order Selection - Searchable -->
                                 <div class="col-md-6">
                                     <label class="form-label">Pilih Order <span class="text-danger">*</span></label>
-                                    <select wire:model.live="order_id" class="form-select @error('order_id') is-invalid @enderror" {{ $editMode ? 'disabled' : '' }}>
-                                        <option value="">-- Pilih Order --</option>
-                                        @foreach($orders as $order)
-                                            <option value="{{ $order->id }}">
-                                                {{ $order->nomor_order }} - {{ $order->customer->nama_toko }}
-                                                (Rp {{ number_format($order->total_amount, 0, ',', '.') }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <div class="position-relative">
+                                        <input type="text" 
+                                               wire:model.live.debounce.300ms="orderSearch"
+                                               class="form-control @error('order_id') is-invalid @enderror" 
+                                               placeholder="Ketik nomor order atau nama toko..."
+                                               autocomplete="off"
+                                               {{ $editMode ? 'disabled' : '' }}>
+                                        
+                                        @if($this->orderSuggestions->count() > 0 && $showOrderSuggestions)
+                                            <div class="dropdown-suggestions">
+                                                @foreach($this->orderSuggestions as $order)
+                                                    <div class="suggestion-item" wire:click="selectOrder({{ $order->id }})">
+                                                        <div class="fw-medium">{{ $order->nomor_order }}</div>
+                                                        <div class="text-muted small">{{ $order->customer->nama_toko }}</div>
+                                                        <div class="text-success small">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
                                     @error('order_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <!-- Customer (Auto-filled) -->
+                                <!-- Customer - Searchable -->
                                 <div class="col-md-6">
                                     <label class="form-label">Pelanggan <span class="text-danger">*</span></label>
-                                    <select wire:model="customer_id" class="form-select @error('customer_id') is-invalid @enderror" disabled>
-                                        <option value="">-- Pilih Pelanggan --</option>
-                                        @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="position-relative">
+                                        <input type="text" 
+                                               wire:model.live.debounce.300ms="customerSearch"
+                                               class="form-control @error('customer_id') is-invalid @enderror" 
+                                               placeholder="Ketik nama toko..."
+                                               autocomplete="off">
+                                        
+                                        @if($this->customerSuggestions->count() > 0 && $showCustomerSuggestions)
+                                            <div class="dropdown-suggestions">
+                                                @foreach($this->customerSuggestions as $customer)
+                                                    <div class="suggestion-item" wire:click="selectCustomer({{ $customer->id }})">
+                                                        <div class="fw-medium">{{ $customer->nama_toko }}</div>
+                                                        <div class="text-muted small">{{ $customer->phone }}</div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
                                     @error('customer_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
