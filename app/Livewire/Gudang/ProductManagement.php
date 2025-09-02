@@ -8,7 +8,11 @@ use Livewire\WithFileUploads;
 use App\Models\Product;
 use App\Models\ProductUnit;
 use App\Models\InventoryLog;
+use App\Exports\OutOfStockExport;
+use App\Exports\LowStockExport;
+use App\Exports\InventoryReportExport;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductManagement extends Component
 {
@@ -469,6 +473,66 @@ class ProductManagement extends Component
         }
     }
 
+    /**
+     * Export Out of Stock Products
+     */
+    public function exportOutOfStock()
+    {
+        try {
+            $filters = [
+                'search' => $this->search,
+                'jenis' => $this->jenisFilter,
+            ];
+
+            return Excel::download(
+                new OutOfStockExport($filters),
+                'stock-kosong-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengekspor data stock kosong: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export Low Stock Products
+     */
+    public function exportLowStock()
+    {
+        try {
+            $filters = [
+                'search' => $this->search,
+                'jenis' => $this->jenisFilter,
+            ];
+
+            return Excel::download(
+                new LowStockExport($filters),
+                'stock-rendah-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengekspor data stock rendah: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export Comprehensive Inventory Report (Multiple Sheets)
+     */
+    public function exportInventoryReport()
+    {
+        try {
+            $filters = [
+                'search' => $this->search,
+                'jenis' => $this->jenisFilter,
+            ];
+
+            return Excel::download(
+                new InventoryReportExport($filters),
+                'laporan-inventory-lengkap-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengekspor laporan inventory: ' . $e->getMessage());
+        }
+    }
+
 
     public function render()
     {
@@ -491,8 +555,27 @@ class ProductManagement extends Component
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // Calculate stock statistics
+        $outOfStockCount = Product::where('stok_tersedia', '=', 0)
+            ->where('is_active', true)
+            ->count();
+        
+        $lowStockCount = Product::whereRaw('stok_tersedia <= stok_minimum')
+            ->where('stok_tersedia', '>', 0)
+            ->where('is_active', true)
+            ->count();
+        
+        $totalActiveProducts = Product::where('is_active', true)->count();
+        
+        $averageStock = Product::where('is_active', true)
+            ->avg('stok_tersedia') ?? 0;
+
         return view('livewire.gudang.product-management', [
-            'products' => $products
+            'products' => $products,
+            'outOfStockCount' => $outOfStockCount,
+            'lowStockCount' => $lowStockCount,
+            'totalActiveProducts' => $totalActiveProducts,
+            'averageStock' => round($averageStock, 2),
         ]);
     }
 }

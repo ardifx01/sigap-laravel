@@ -5,10 +5,58 @@
             <h4 class="mb-1">Data Master Barang</h4>
             <p class="text-muted mb-0">Kelola data produk dan inventory</p>
         </div>
-        <button wire:click="openCreateModal" class="btn btn-primary align-self-md-auto align-self-stretch">
-            <i class="bx bx-plus me-1"></i>
-            Tambah Produk
-        </button>
+        <div class="d-flex flex-column flex-md-row gap-2">
+            <!-- Export Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bx bx-export me-1"></i>
+                    Export Data
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <h6 class="dropdown-header">Export Stock</h6>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" wire:click.prevent="exportOutOfStock">
+                            <i class="bx bx-error-circle text-danger me-2"></i>
+                            <div>
+                                <strong>Stock Kosong</strong>
+                                <br><small class="text-muted">Produk yang stok-nya 0</small>
+                                @if($outOfStockCount > 0)
+                                    <span class="badge bg-danger ms-1">{{ $outOfStockCount }}</span>
+                                @endif
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" wire:click.prevent="exportLowStock">
+                            <i class="bx bx-error text-warning me-2"></i>
+                            <div>
+                                <strong>Stock Rendah</strong>
+                                <br><small class="text-muted">Stok <= minimum</small>
+                                @if($lowStockCount > 0)
+                                    <span class="badge bg-warning ms-1">{{ $lowStockCount }}</span>
+                                @endif
+                            </div>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#" wire:click.prevent="exportInventoryReport">
+                            <i class="bx bx-file-blank text-primary me-2"></i>
+                            <div>
+                                <strong>Laporan Lengkap</strong>
+                                <br><small class="text-muted">3 sheet dalam 1 file</small>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <button wire:click="openCreateModal" class="btn btn-primary">
+                <i class="bx bx-plus me-1"></i>
+                Tambah Produk
+            </button>
+        </div>
     </div>
 
     <!-- Flash Messages -->
