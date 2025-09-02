@@ -287,7 +287,7 @@
                                 <!-- Order Selection -->
                                 <div class="col-md-6">
                                     <label class="form-label">Pilih Order <span class="text-danger">*</span></label>
-                                    <select wire:model="order_id" wire:change="updatedOrderId" class="form-select @error('order_id') is-invalid @enderror" {{ $editMode ? 'disabled' : '' }}>
+                                    <select wire:model.live="order_id" class="form-select @error('order_id') is-invalid @enderror" {{ $editMode ? 'disabled' : '' }}>
                                         <option value="">-- Pilih Order --</option>
                                         @foreach($orders as $order)
                                             <option value="{{ $order->id }}">
@@ -325,9 +325,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
                                     <select wire:model="metode_pembayaran" class="form-select @error('metode_pembayaran') is-invalid @enderror">
-                                        <option value="cash">Cash</option>
+                                        <option value="tunai">Tunai</option>
                                         <option value="transfer">Transfer Bank</option>
-                                        <option value="credit">Kredit</option>
+                                        <option value="giro">Giro</option>
                                     </select>
                                     @error('metode_pembayaran') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>

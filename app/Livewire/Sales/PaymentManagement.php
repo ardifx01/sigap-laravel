@@ -46,7 +46,7 @@ class PaymentManagement extends Component
             'order_id' => 'required|exists:orders,id',
             'customer_id' => 'required|exists:customers,id',
             'jumlah_tagihan' => 'required|numeric|min:0',
-            'metode_pembayaran' => 'required|in:cash,transfer,credit',
+            'metode_pembayaran' => 'required|in:tunai,transfer,giro',
             'tanggal_jatuh_tempo' => 'required|date|after_or_equal:today',
             'catatan' => 'nullable|string|max:500',
         ];
@@ -146,7 +146,7 @@ class PaymentManagement extends Component
                     'order_id' => $this->order_id,
                     'customer_id' => $this->customer_id,
                     'jumlah_tagihan' => $this->jumlah_tagihan,
-                    'metode_pembayaran' => $this->metode_pembayaran,
+                    'jenis_pembayaran' => $this->metode_pembayaran,
                     'tanggal_jatuh_tempo' => $this->tanggal_jatuh_tempo,
                     'catatan' => $this->catatan,
                 ]);
