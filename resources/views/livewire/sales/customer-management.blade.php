@@ -51,7 +51,56 @@
             <h5 class="mb-0">Daftar Pelanggan Anda</h5>
         </div>
         <div class="card-body p-0">
-             <style>
+            <style>
+                /* Modal scroll fix */
+                .modal-dialog-scrollable {
+                    height: calc(100vh - 10vh);
+                }
+                .modal-dialog-scrollable .modal-content {
+                    max-height: calc(100vh - 10vh);
+                    overflow: hidden;
+                }
+                .modal-dialog-scrollable .modal-body {
+                    overflow-y: auto;
+                    max-height: calc(90vh - 180px);
+                    -webkit-overflow-scrolling: touch;
+                }
+                .modal-dialog-scrollable .modal-footer {
+                    position: sticky;
+                    bottom: 0;
+                    background: white;
+                    z-index: 10;
+                    border-top: 1px solid #dee2e6;
+                    flex-shrink: 0;
+                    padding: 1rem 1.5rem 1.5rem 1.5rem;
+                }
+                
+                /* Mobile modal fixes */
+                @media (max-width: 767.98px) {
+                    .modal-dialog {
+                        margin: 1rem;
+                        max-height: calc(100vh - 2rem);
+                    }
+                    .modal-dialog-scrollable {
+                        height: calc(100vh - 2rem);
+                    }
+                    .modal-dialog-scrollable .modal-content {
+                        max-height: calc(100vh - 2rem);
+                    }
+                    .modal-dialog-scrollable .modal-body {
+                        max-height: calc(100vh - 200px);
+                        overflow-y: auto;
+                    }
+                    .modal-dialog-scrollable .modal-footer {
+                        position: sticky;
+                        bottom: 0;
+                        background: white;
+                        z-index: 10;
+                        border-top: 1px solid #dee2e6;
+                        padding: 1rem 1rem 1.5rem 1rem;
+                    }
+                }
+                
                 @media (max-width: 767.98px) {
                     .mobile-cards tbody tr {
                         display: block;
@@ -212,102 +261,104 @@
 
     <!-- Modal -->
     @if($showModal)
-        <div class="modal fade show" style="display: block;" tabindex="-1" wire:ignore.self>
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
+        <div class="modal fade show" style="display: block; overflow-y: auto;" tabindex="-1" wire:ignore.self>
+            <div class="modal-dialog modal-lg modal-dialog-scrollable" style="max-height: 90vh; margin: 5vh auto;">
+                <div class="modal-content" style="max-height: 90vh;">
                     <div class="modal-header">
                         <h5 class="modal-title">{{ $editMode ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru' }}</h5>
                         <button type="button" class="btn-close" wire:click="closeModal"></button>
                     </div>
-                    <form wire:submit.prevent="save">
-                        <div class="modal-body">
+                    <form wire:submit.prevent="save" id="customer-form">
+                        <div class="modal-body" style="overflow-y: auto; max-height: calc(90vh - 180px); padding: 1.5rem;">
                             <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Nama Toko <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="nama_toko" class="form-control @error('nama_toko') is-invalid @enderror" placeholder="Contoh: Toko Berkah Jaya">
-                                    @error('nama_toko') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">No. Telepon <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="phone" class="form-control @error('phone') is-invalid @enderror" placeholder="Contoh: 081234567890">
-                                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
-                                    <textarea wire:model="alamat" class="form-control @error('alamat') is-invalid @enderror" rows="3" placeholder="Masukkan alamat lengkap toko"></textarea>
-                                    @error('alamat') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Foto KTP <span class="text-danger">{{ $editMode ? '' : '*' }}</span></label>
-                                    <input type="file" wire:model="foto_ktp" class="form-control @error('foto_ktp') is-invalid @enderror" accept="image/*">
-                                    @if(!$editMode) <small class="text-muted">Wajib diisi untuk pelanggan baru.</small> @else <small class="text-muted">Kosongkan jika tidak ingin mengubah.</small> @endif
-                                    @error('foto_ktp') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                    
-                                    <div wire:loading wire:target="foto_ktp" class="mt-2">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                        <span>Uploading...</span>
+                            <div class="col-md-6">
+                                <label class="form-label">Nama Toko <span class="text-danger">*</span></label>
+                                <input type="text" wire:model="nama_toko" class="form-control @error('nama_toko') is-invalid @enderror" placeholder="Contoh: Toko Berkah Jaya">
+                                @error('nama_toko') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">No. Telepon <span class="text-danger">*</span></label>
+                                <input type="text" wire:model="phone" class="form-control @error('phone') is-invalid @enderror" placeholder="Contoh: 081234567890">
+                                @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
+                                <textarea wire:model="alamat" class="form-control @error('alamat') is-invalid @enderror" rows="3" placeholder="Masukkan alamat lengkap toko"></textarea>
+                                @error('alamat') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Foto KTP <span class="text-danger">{{ $editMode ? '' : '*' }}</span></label>
+                                <input type="file" wire:model="foto_ktp" class="form-control @error('foto_ktp') is-invalid @enderror" accept="image/*">
+                                @if(!$editMode) <small class="text-muted">Wajib diisi untuk pelanggan baru.</small> @else <small class="text-muted">Kosongkan jika tidak ingin mengubah.</small> @endif
+                                @error('foto_ktp') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                
+                                <div wire:loading wire:target="foto_ktp" class="mt-2">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
                                     </div>
+                                    <span>Uploading...</span>
+                                </div>
 
-                                    @if ($foto_ktp)
-                                        <div class="mt-2">
-                                            <img src="{{ $foto_ktp->temporaryUrl() }}" class="img-thumbnail" style="max-height: 150px;">
-                                        </div>
-                                    @elseif($editMode && $customer->getFirstMediaUrl('ktp_photos'))
-                                         <div class="mt-2">
-                                            <img src="{{ $customer->getFirstMediaUrl('ktp_photos') }}" class="img-thumbnail" style="max-height: 150px;">
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Status</label>
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" wire:model="is_active" id="is_active_customer">
-                                        <label class="form-check-label" for="is_active_customer">
-                                            {{ $is_active ? 'Aktif' : 'Nonaktif' }}
-                                        </label>
+                                @if ($foto_ktp)
+                                    <div class="mt-2">
+                                        <img src="{{ $foto_ktp->temporaryUrl() }}" class="img-thumbnail" style="max-height: 150px;">
                                     </div>
-                                </div>
-                                <hr class="my-3">
-                                <div class="col-12">
-                                     <p class="fw-medium">Pengaturan Piutang</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Limit Hari Piutang <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <input type="number" wire:model="limit_hari_piutang" class="form-control @error('limit_hari_piutang') is-invalid @enderror" min="1" max="365">
-                                        <span class="input-group-text">hari</span>
+                                @elseif($editMode && $customer->getFirstMediaUrl('ktp_photos'))
+                                     <div class="mt-2">
+                                        <img src="{{ $customer->getFirstMediaUrl('ktp_photos') }}" class="img-thumbnail" style="max-height: 150px;">
                                     </div>
-                                    @error('limit_hari_piutang') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Limit Amount Piutang <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rp</span>
-                                        <input type="number" wire:model="limit_amount_piutang" class="form-control @error('limit_amount_piutang') is-invalid @enderror" min="0" step="1000">
-                                    </div>
-                                    @error('limit_amount_piutang') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <hr class="my-3">
-                                <div class="col-12">
-                                     <p class="fw-medium">Lokasi GPS (Opsional)</p>
-                                </div>
-                                <div class="col-12">
-                                    <div class="input-group">
-                                        <input type="text" wire:model="latitude" class="form-control @error('latitude') is-invalid @enderror" placeholder="Latitude">
-                                        <input type="text" wire:model="longitude" class="form-control @error('longitude') is-invalid @enderror" placeholder="Longitude">
-                                        <button class="btn btn-outline-primary" type="button" wire:click="getCurrentLocation">
-                                            <i class="bx bx-current-location"></i>
-                                        </button>
-                                    </div>
-                                     @error('latitude') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                                     @error('longitude') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                                    <small class="text-muted">Klik tombol untuk mengambil lokasi saat ini atau isi manual.</small>
+                                @endif
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" wire:model="is_active" id="is_active_customer">
+                                    <label class="form-check-label" for="is_active_customer">
+                                        {{ $is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </label>
                                 </div>
                             </div>
+                            <hr class="my-3">
+                            <div class="col-12">
+                                 <p class="fw-medium">Pengaturan Piutang</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Limit Hari Piutang <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" wire:model="limit_hari_piutang" class="form-control @error('limit_hari_piutang') is-invalid @enderror" min="1" max="365">
+                                    <span class="input-group-text">hari</span>
+                                </div>
+                                @error('limit_hari_piutang') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Limit Amount Piutang <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" wire:model="limit_amount_piutang" class="form-control @error('limit_amount_piutang') is-invalid @enderror" min="0" step="1000">
+                                </div>
+                                @error('limit_amount_piutang') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <hr class="my-3">
+                            <div class="col-12">
+                                 <p class="fw-medium">Lokasi GPS (Opsional)</p>
+                            </div>
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <input type="text" wire:model="latitude" class="form-control @error('latitude') is-invalid @enderror" placeholder="Latitude">
+                                    <input type="text" wire:model="longitude" class="form-control @error('longitude') is-invalid @enderror" placeholder="Longitude">
+                                    <button class="btn btn-outline-primary" type="button" wire:click="getCurrentLocation">
+                                        <i class="bx bx-current-location"></i>
+                                    </button>
+                                </div>
+                                 @error('latitude') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                                 @error('longitude') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                                <small class="text-muted">Klik tombol untuk mengambil lokasi saat ini atau isi manual.</small>
+                            </div>
                         </div>
-                        <div class="modal-footer">
+                            <!-- Extra padding untuk scroll -->
+                            <div class="pb-3"></div>
+                        </div>
+                        <div class="modal-footer" style="position: sticky; bottom: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6; padding: 1rem 1.5rem 1.5rem 1.5rem;">
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">Batal</button>
                             <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                                 <span wire:loading wire:target="save" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -318,7 +369,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop fade show" wire:ignore.self></div>
+        <div class="modal-backdrop fade show" wire:ignore.self style="position: fixed;"></div>
     @endif
 
     <!-- GPS Script -->
