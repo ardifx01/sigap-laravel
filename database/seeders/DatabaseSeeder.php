@@ -29,46 +29,46 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Master data
-        $this->command->info('📦 Creating products...');
-        $this->call([
-            ProductSeeder::class,
-        ]);
+        // $this->command->info('📦 Creating products...');
+        // $this->call([
+        //     ProductSeeder::class,
+        // ]);
 
-        $this->command->info('🏪 Creating customers...');
-        $this->call([
-            CustomerSeeder::class,
-        ]);
+        // $this->command->info('🏪 Creating customers...');
+        // $this->call([
+        //     CustomerSeeder::class,
+        // ]);
 
         // Business operations
-        $this->command->info('📍 Creating check-ins...');
-        $this->call([
-            CheckInSeeder::class,
-        ]);
+        // $this->command->info('📍 Creating check-ins...');
+        // $this->call([
+        //     CheckInSeeder::class,
+        // ]);
 
-        $this->command->info('📋 Creating orders...');
-        $this->call([
-            OrderSeeder::class,
-        ]);
+        // $this->command->info('📋 Creating orders...');
+        // $this->call([
+        //     OrderSeeder::class,
+        // ]);
 
-        $this->command->info('🚚 Creating deliveries...');
-        $this->call([
-            DeliverySeeder::class,
-        ]);
+        // $this->command->info('🚚 Creating deliveries...');
+        // $this->call([
+        //     DeliverySeeder::class,
+        // ]);
 
-        $this->command->info('💰 Creating payments...');
-        $this->call([
-            PaymentSeeder::class,
-        ]);
+        // $this->command->info('💰 Creating payments...');
+        // $this->call([
+        //     PaymentSeeder::class,
+        // ]);
 
-        $this->command->info('📦 Creating backorders...');
-        $this->call([
-            BackorderSeeder::class,
-        ]);
+        // $this->command->info('📦 Creating backorders...');
+        // $this->call([
+        //     BackorderSeeder::class,
+        // ]);
 
-        $this->command->info('📊 Creating inventory logs...');
-        $this->call([
-            InventorySeeder::class,
-        ]);
+        // $this->command->info('📊 Creating inventory logs...');
+        // $this->call([
+        //     InventorySeeder::class,
+        // ]);
 
         $this->command->info('✅ SIGAP Database seeding completed successfully!');
         $this->command->info('');
