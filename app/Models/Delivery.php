@@ -6,12 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-
-class Delivery extends Model implements HasMedia
+class Delivery extends Model
 {
-    use HasFactory, LogsActivity, InteractsWithMedia;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'order_id',
@@ -184,5 +181,27 @@ class Delivery extends Model implements HasMedia
         }
 
         return $this->started_at->diffInMinutes($this->delivered_at);
+    }
+
+    /**
+     * Get delivery proof URL
+     */
+    public function getDeliveryProofUrlAttribute()
+    {
+        return $this->delivery_proof_photo ? asset('storage/delivery_proofs/' . $this->delivery_proof_photo) : null;
+    }
+
+    /**
+     * Delete delivery proof file when delivery is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::deleting(function ($delivery) {
+            if ($delivery->delivery_proof_photo) {
+                \Storage::disk('public')->delete('delivery_proofs/' . $delivery->delivery_proof_photo);
+            }
+        });
     }
 }

@@ -104,7 +104,7 @@
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
                                             @if($user->photo)
-                                                <img src="{{ $user->getFirstMediaUrl('photos') }}" alt="{{ $user->name }}" class="rounded-circle">
+                                                <img src="{{ $user->photo ? asset('storage/photos/' . $user->photo) : asset('assets/img/avatars/1.png') }}" alt="{{ $user->name }}" class="rounded-circle">
                                             @else
                                                 <span class="avatar-initial rounded-circle bg-label-primary">
                                                     {{ $user->initials() }}

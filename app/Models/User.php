@@ -10,13 +10,10 @@ use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-
-class User extends Authenticatable implements HasMedia
+class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, LogsActivity, InteractsWithMedia;
+    use HasFactory, Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -143,5 +140,27 @@ class User extends Authenticatable implements HasMedia
     public function isSupir()
     {
         return $this->role === 'supir';
+    }
+
+    /**
+     * Get user photo URL
+     */
+    public function getPhotoUrlAttribute()
+    {
+        return $this->photo ? asset('storage/photos/' . $this->photo) : null;
+    }
+
+    /**
+     * Delete photo file when user is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::deleting(function ($user) {
+            if ($user->photo) {
+                \Storage::disk('public')->delete('photos/' . $user->photo);
+            }
+        });
     }
 }

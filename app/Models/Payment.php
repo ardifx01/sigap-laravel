@@ -6,12 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-
-class Payment extends Model implements HasMedia
+class Payment extends Model
 {
-    use HasFactory, LogsActivity, InteractsWithMedia;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'nomor_nota',
@@ -131,5 +128,27 @@ class Payment extends Model implements HasMedia
         }
 
         $this->save();
+    }
+
+    /**
+     * Get payment proof URL
+     */
+    public function getPaymentProofUrlAttribute()
+    {
+        return $this->bukti_transfer ? asset('storage/payment_proofs/' . $this->bukti_transfer) : null;
+    }
+
+    /**
+     * Delete payment proof file when payment is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::deleting(function ($payment) {
+            if ($payment->bukti_transfer) {
+                \Storage::disk('public')->delete('payment_proofs/' . $payment->bukti_transfer);
+            }
+        });
     }
 }

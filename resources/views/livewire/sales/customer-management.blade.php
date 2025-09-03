@@ -158,8 +158,8 @@
                                 <td data-label="Toko" class="customer-info-cell">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
-                                            @if($customer->getFirstMediaUrl('ktp_photos'))
-                                                <img src="{{ $customer->getFirstMediaUrl('ktp_photos') }}" alt="KTP" class="rounded-circle">
+                                            @if($customer->foto_ktp)
+                                                <img src="{{ asset('storage/ktp_photos/' . $customer->foto_ktp) }}" alt="KTP" class="rounded-circle">
                                             @else
                                                 <span class="avatar-initial rounded-circle bg-label-primary">
                                                     <i class="bx bx-store"></i>
@@ -211,9 +211,9 @@
                                                     <i class="bx bx-edit me-1"></i> Edit
                                                 </a>
                                             </li>
-                                            @if($customer->getFirstMediaUrl('ktp_photos'))
+                                            @if($customer->foto_ktp)
                                                 <li>
-                                                    <a class="dropdown-item" href="{{ $customer->getFirstMediaUrl('ktp_photos') }}" target="_blank">
+                                                    <a class="dropdown-item" href="{{ asset('storage/ktp_photos/' . $customer->foto_ktp) }}" target="_blank">
                                                         <i class="bx bx-id-card me-1"></i> Lihat KTP
                                                     </a>
                                                 </li>
@@ -303,9 +303,9 @@
                                     <div class="mt-2">
                                         <img src="{{ $foto_ktp->temporaryUrl() }}" class="img-thumbnail" style="max-height: 150px;">
                                     </div>
-                                @elseif($editMode && $customer->getFirstMediaUrl('ktp_photos'))
+                                @elseif($editMode && $currentCustomer && $currentCustomer->foto_ktp)
                                      <div class="mt-2">
-                                        <img src="{{ $customer->getFirstMediaUrl('ktp_photos') }}" class="img-thumbnail" style="max-height: 150px;">
+                                        <img src="{{ asset('storage/ktp_photos/' . $currentCustomer->foto_ktp) }}" class="img-thumbnail" style="max-height: 150px;">
                                     </div>
                                 @endif
                             </div>
@@ -344,15 +344,27 @@
                             </div>
                             <div class="col-12">
                                 <div class="input-group">
-                                    <input type="text" wire:model="latitude" class="form-control @error('latitude') is-invalid @enderror" placeholder="Latitude">
-                                    <input type="text" wire:model="longitude" class="form-control @error('longitude') is-invalid @enderror" placeholder="Longitude">
-                                    <button class="btn btn-outline-primary" type="button" wire:click="getCurrentLocation">
-                                        <i class="bx bx-current-location"></i>
+                                    <input type="number" step="any" wire:model="latitude" class="form-control @error('latitude') is-invalid @enderror" placeholder="Latitude" id="latitude-input">
+                                    <input type="number" step="any" wire:model="longitude" class="form-control @error('longitude') is-invalid @enderror" placeholder="Longitude" id="longitude-input">
+                                    <button class="btn btn-outline-primary" type="button" onclick="getCurrentLocationJS()" id="gps-button">
+                                        <i class="bx bx-current-location"></i> GPS
                                     </button>
                                 </div>
                                  @error('latitude') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                  @error('longitude') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                                <small class="text-muted">Klik tombol untuk mengambil lokasi saat ini atau isi manual.</small>
+                                <small class="text-muted">Klik tombol GPS untuk mengambil lokasi saat ini otomatis.</small>
+                                @if($latitude && $longitude)
+                                    <div class="mt-2">
+                                        <small class="text-success">
+                                            <i class="bx bx-check-circle"></i> 
+                                            GPS tersimpan: {{ number_format($latitude, 6) }}, {{ number_format($longitude, 6) }}
+                                        </small>
+                                        <br>
+                                        <a href="https://maps.google.com/?q={{ $latitude }},{{ $longitude }}" target="_blank" class="small text-primary">
+                                            <i class="bx bx-map"></i> Lihat di Google Maps
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                             <!-- Extra padding untuk scroll -->
@@ -374,21 +386,110 @@
 
     <!-- GPS Script -->
     <script>
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('getCurrentLocation', () => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        @this.dispatch('setLocation', {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        });
-                    }, function(error) {
-                        alert('Error: ' + error.message);
-                    });
-                } else {
-                    alert('Geolocation tidak didukung oleh browser ini.');
-                }
-            });
-        });
+        function getCurrentLocationJS() {
+            console.log('GPS button clicked');
+            const gpsButton = document.getElementById('gps-button');
+            const latInput = document.getElementById('latitude-input');
+            const lonInput = document.getElementById('longitude-input');
+            
+            // Show loading state
+            gpsButton.disabled = true;
+            gpsButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Getting...';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        
+                        console.log('GPS Success:', lat, lon, 'Accuracy:', accuracy);
+                        
+                        // Direct set to Livewire component
+                        @this.set('latitude', lat.toFixed(6));
+                        @this.set('longitude', lon.toFixed(6));
+                        
+                        // Reset button immediately
+                        gpsButton.disabled = false;
+                        gpsButton.innerHTML = '<i class="bx bx-current-location"></i> GPS';
+                        
+                        // Show success message without refresh
+                        const existingAlert = document.querySelector('.modal-body .alert');
+                        if (existingAlert) {
+                            existingAlert.remove();
+                        }
+                        
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-2';
+                        alertDiv.innerHTML = `
+                            <i class="bx bx-check-circle me-1"></i>
+                            GPS berhasil! Akurasi: ${Math.round(accuracy)} meter - Koordinat: ${lat.toFixed(6)}, ${lon.toFixed(6)}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('.modal-body').insertBefore(alertDiv, document.querySelector('.modal-body .row'));
+                        
+                        // Auto remove alert after 4 seconds
+                        setTimeout(() => {
+                            if (alertDiv.parentNode) {
+                                alertDiv.remove();
+                            }
+                        }, 4000);
+                    },
+                    function(error) {
+                        console.error('GPS error:', error);
+                        
+                        // Reset button
+                        gpsButton.disabled = false;
+                        gpsButton.innerHTML = '<i class="bx bx-current-location"></i> GPS';
+                        
+                        let message = 'Terjadi kesalahan tidak diketahui.';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = 'Izin akses lokasi ditolak. Aktifkan lokasi di browser.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = 'Lokasi tidak tersedia. Coba lagi nanti.';
+                                break;
+                            case error.TIMEOUT:
+                                message = 'Timeout. GPS butuh waktu lama.';
+                                break;
+                        }
+                        
+                        // Remove existing alerts
+                        const existingAlert = document.querySelector('.modal-body .alert');
+                        if (existingAlert) {
+                            existingAlert.remove();
+                        }
+                        
+                        // Show error alert
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-2';
+                        alertDiv.innerHTML = `
+                            <i class="bx bx-error-circle me-1"></i>
+                            GPS Error: ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        document.querySelector('.modal-body').insertBefore(alertDiv, document.querySelector('.modal-body .row'));
+                        
+                        // Auto remove alert after 5 seconds
+                        setTimeout(() => {
+                            if (alertDiv.parentNode) {
+                                alertDiv.remove();
+                            }
+                        }, 5000);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                // Reset button
+                gpsButton.disabled = false;
+                gpsButton.innerHTML = '<i class="bx bx-current-location"></i> GPS';
+                alert('Geolocation tidak didukung oleh browser ini.');
+            }
+        }
     </script>
 </div>

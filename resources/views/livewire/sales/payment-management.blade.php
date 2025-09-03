@@ -275,9 +275,9 @@
                                                     </a>
                                                 </li>
                                             @endif
-                                            @if($payment->getFirstMediaUrl('payment_proofs'))
+                                            @if($payment->bukti_transfer)
                                                 <li>
-                                                    <a class="dropdown-item" href="{{ $payment->getFirstMediaUrl('payment_proofs') }}" target="_blank">
+                                                    <a class="dropdown-item" href="{{ asset('storage/payment_proofs/' . $payment->bukti_transfer) }}" target="_blank">
                                                         <i class="bx bx-image me-1"></i> Lihat Bukti
                                                     </a>
                                                 </li>

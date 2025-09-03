@@ -275,9 +275,9 @@
                                                 <i class="bx bx-dots-vertical-rounded"></i>
                                             </button>
                                             <ul class="dropdown-menu">
-                                                @if($delivery->getFirstMediaUrl('delivery_proofs'))
+                                                @if($delivery->delivery_proof_photo)
                                                     <li>
-                                                        <a class="dropdown-item" href="{{ $delivery->getFirstMediaUrl('delivery_proofs') }}" target="_blank">
+                                                        <a class="dropdown-item" href="{{ asset('storage/delivery_proofs/' . $delivery->delivery_proof_photo) }}" target="_blank">
                                                             <i class="bx bx-image me-1"></i> Bukti Delivery
                                                         </a>
                                                     </li>

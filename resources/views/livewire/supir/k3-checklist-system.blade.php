@@ -211,9 +211,9 @@
                                                     <i class="bx bx-show me-1"></i> Detail
                                                 </a>
                                             </li>
-                                            @if($checklist->getFirstMediaUrl('vehicle_photos'))
+                                            @if($checklist->vehicle_photo)
                                                 <li>
-                                                    <a class="dropdown-item" href="{{ $checklist->getFirstMediaUrl('vehicle_photos') }}" target="_blank">
+                                                    <a class="dropdown-item" href="{{ asset('storage/vehicle_photos/' . $checklist->vehicle_photo) }}" target="_blank">
                                                         <i class="bx bx-image me-1"></i> Lihat Foto
                                                     </a>
                                                 </li>

@@ -6,12 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-
-class K3Checklist extends Model implements HasMedia
+class K3Checklist extends Model
 {
-    use HasFactory, LogsActivity, InteractsWithMedia;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'driver_id',
@@ -127,5 +124,27 @@ class K3Checklist extends Model implements HasMedia
     public function isAllItemsPassed()
     {
         return $this->getPassedItemsCount() === $this->getTotalItemsCount();
+    }
+
+    /**
+     * Get vehicle photo URL
+     */
+    public function getVehiclePhotoUrlAttribute()
+    {
+        return $this->vehicle_photo ? asset('storage/vehicle_photos/' . $this->vehicle_photo) : null;
+    }
+
+    /**
+     * Delete vehicle photo file when K3 checklist is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::deleting(function ($k3checklist) {
+            if ($k3checklist->vehicle_photo) {
+                \Storage::disk('public')->delete('vehicle_photos/' . $k3checklist->vehicle_photo);
+            }
+        });
     }
 }

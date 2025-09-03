@@ -6,12 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-
-class CheckIn extends Model implements HasMedia
+class CheckIn extends Model
 {
-    use HasFactory, LogsActivity, InteractsWithMedia;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'sales_id',
@@ -105,5 +102,27 @@ class CheckIn extends Model implements HasMedia
     {
         $distance = $this->getDistanceFromCustomer();
         return $distance !== null && $distance <= $radiusMeters;
+    }
+
+    /**
+     * Get selfie photo URL
+     */
+    public function getSelfiePhotoUrlAttribute()
+    {
+        return $this->foto_selfie ? asset('storage/selfie_photos/' . $this->foto_selfie) : null;
+    }
+
+    /**
+     * Delete selfie photo file when checkin is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::deleting(function ($checkIn) {
+            if ($checkIn->foto_selfie) {
+                \Storage::disk('public')->delete('selfie_photos/' . $checkIn->foto_selfie);
+            }
+        });
     }
 }

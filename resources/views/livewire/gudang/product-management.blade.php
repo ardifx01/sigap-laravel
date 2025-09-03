@@ -167,8 +167,8 @@
                                 <td data-label="Produk" class="product-info-cell">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
-                                            @if($product->getFirstMediaUrl('product_photos'))
-                                                <img src="{{ $product->getFirstMediaUrl('product_photos') }}" alt="Product" class="rounded">
+                                            @if($product->foto_produk)
+                                                <img src="{{ asset('storage/product_photos/' . $product->foto_produk) }}" alt="Product" class="rounded">
                                             @else
                                                 <span class="avatar-initial rounded bg-label-primary">
                                                     <i class="bx bx-package"></i>
@@ -277,9 +277,9 @@
                                                     </a>
                                                 </li>
                                             @endif
-                                            @if($product->getFirstMediaUrl('product_photos'))
+                                            @if($product->foto_produk)
                                                 <li>
-                                                    <a class="dropdown-item" href="{{ $product->getFirstMediaUrl('product_photos') }}" target="_blank">
+                                                    <a class="dropdown-item" href="{{ asset('storage/product_photos/' . $product->foto_produk) }}" target="_blank">
                                                         <i class="bx bx-image me-1"></i> Lihat Foto
                                                     </a>
                                                 </li>

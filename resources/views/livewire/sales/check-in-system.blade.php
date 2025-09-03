@@ -156,7 +156,7 @@
                                 <td data-label="Toko" class="check-in-info-cell">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-3">
-                                            <img src="{{ $checkIn->getFirstMediaUrl('selfie_photos') ?: asset('assets/img/avatars/1.png') }}" alt="Selfie" class="rounded-circle">
+                                            <img src="{{ $checkIn->foto_selfie ? asset('storage/selfie_photos/' . $checkIn->foto_selfie) : asset('assets/img/avatars/1.png') }}" alt="Selfie" class="rounded-circle">
                                         </div>
                                         <div>
                                             <span class="fw-medium">{{ $checkIn->customer->nama_toko }}</span>
@@ -324,7 +324,7 @@
                     <div class="modal-body">
                         <div class="row g-4">
                             <div class="col-12 text-center">
-                                <img src="{{ $selectedCheckIn->getFirstMediaUrl('selfie_photos') }}" alt="Selfie" class="img-fluid rounded" style="max-height: 300px;">
+                                <img src="{{ $selectedCheckIn->foto_selfie ? asset('storage/selfie_photos/' . $selectedCheckIn->foto_selfie) : asset('assets/img/avatars/1.png') }}" alt="Selfie" class="img-fluid rounded" style="max-height: 300px;">
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-2">Informasi Toko</h6>

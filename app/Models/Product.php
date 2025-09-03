@@ -6,12 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-
-class Product extends Model implements HasMedia
+class Product extends Model
 {
-    use HasFactory, LogsActivity, InteractsWithMedia;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'kode_item',
@@ -191,5 +188,27 @@ class Product extends Model implements HasMedia
         ]);
 
         $this->update(['uses_multiple_units' => true]);
+    }
+
+    /**
+     * Get product photo URL
+     */
+    public function getPhotoUrlAttribute()
+    {
+        return $this->foto_produk ? asset('storage/product_photos/' . $this->foto_produk) : null;
+    }
+
+    /**
+     * Delete photo file when product is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::deleting(function ($product) {
+            if ($product->foto_produk) {
+                \Storage::disk('public')->delete('product_photos/' . $product->foto_produk);
+            }
+        });
     }
 }

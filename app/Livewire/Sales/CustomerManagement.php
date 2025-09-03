@@ -19,6 +19,7 @@ class CustomerManagement extends Component
     public $showModal = false;
     public $editMode = false;
     public $customerId;
+    public $currentCustomer;
     public $nama_toko;
     public $phone;
     public $alamat;
@@ -37,7 +38,7 @@ class CustomerManagement extends Component
             'nama_toko' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'alamat' => 'required|string',
-            'foto_ktp' => $this->editMode ? 'nullable|image|max:2048' : 'required|image|max:2048',
+            'foto_ktp' => $this->editMode ? 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'limit_hari_piutang' => 'required|integer|min:1|max:365',
             'limit_amount_piutang' => 'required|numeric|min:0',
             'latitude' => 'nullable|numeric|between:-90,90',
@@ -68,6 +69,7 @@ class CustomerManagement extends Component
         $customer = Customer::where('sales_id', auth()->id())
                            ->findOrFail($customerId);
 
+        $this->currentCustomer = $customer;
         $this->customerId = $customer->id;
         $this->nama_toko = $customer->nama_toko;
         $this->phone = $customer->phone;
@@ -91,7 +93,7 @@ class CustomerManagement extends Component
     public function resetForm()
     {
         $this->reset([
-            'customerId', 'nama_toko', 'phone', 'alamat', 'foto_ktp',
+            'customerId', 'currentCustomer', 'nama_toko', 'phone', 'alamat', 'foto_ktp',
             'limit_hari_piutang', 'limit_amount_piutang', 'latitude', 'longitude', 'is_active'
         ]);
         $this->is_active = true;
@@ -120,8 +122,6 @@ class CustomerManagement extends Component
                 ];
 
                 $customer->update($customerData);
-
-                session()->flash('success', 'Data pelanggan berhasil diperbarui!');
             } else {
                 $customer = Customer::create([
                     'sales_id' => auth()->id(),
@@ -134,26 +134,38 @@ class CustomerManagement extends Component
                     'longitude' => $this->longitude,
                     'is_active' => $this->is_active,
                 ]);
-
-                session()->flash('success', 'Data pelanggan berhasil ditambahkan!');
             }
 
             // Handle KTP photo upload
             if ($this->foto_ktp) {
                 // Remove old photo if editing
-                if ($this->editMode) {
-                    $customer->clearMediaCollection('ktp_photos');
+                if ($this->editMode && $customer->foto_ktp) {
+                    \Storage::disk('public')->delete('ktp_photos/' . $customer->foto_ktp);
                 }
 
-                $customer->addMediaFromDisk($this->foto_ktp->getRealPath())
-                    ->usingName($this->nama_toko . ' - KTP')
-                    ->toMediaCollection('ktp_photos');
+                // Store the uploaded file
+                $fileName = 'ktp_' . $customer->id . '_' . time() . '.' . $this->foto_ktp->getClientOriginalExtension();
+                $filePath = $this->foto_ktp->storeAs('ktp_photos', $fileName, 'public');
+                
+                // Update customer dengan path file
+                $customer->update(['foto_ktp' => $fileName]);
             }
 
+            $message = $this->editMode ? 'Data pelanggan berhasil diperbarui!' : 'Data pelanggan berhasil ditambahkan!';
+            session()->flash('success', $message);
+            
             $this->closeModal();
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            \Log::error('Customer save error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+                'customer_data' => [
+                    'nama_toko' => $this->nama_toko,
+                    'phone' => $this->phone
+                ]
+            ]);
+            session()->flash('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
         }
     }
 
@@ -181,19 +193,6 @@ class CustomerManagement extends Component
         }
     }
 
-    public function getCurrentLocation()
-    {
-        // This will be handled by JavaScript
-        $this->dispatch('getCurrentLocation');
-    }
-
-    #[\Livewire\Attributes\On('setLocation')]
-    public function setLocation($latitude, $longitude)
-    {
-        $this->latitude = $latitude;
-        $this->longitude = $longitude;
-        session()->flash('success', 'Lokasi berhasil diambil!');
-    }
 
     public function render()
     {
