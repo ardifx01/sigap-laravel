@@ -73,6 +73,14 @@ class ProductManagement extends Component
         return $rules;
     }
 
+    public function messages()
+    {
+        return [
+            'foto_produk.image' => 'File harus berupa gambar (jpg, jpeg, png, bmp, gif, svg, webp)',
+            'foto_produk.max' => 'Ukuran file maksimal 2MB',
+        ];
+    }
+
     public function stockRules()
     {
         return [
@@ -117,6 +125,7 @@ class ProductManagement extends Component
         $this->stok_tersedia = $product->stok_tersedia;
         $this->stok_minimum = $product->stok_minimum;
         $this->is_active = $product->is_active;
+        $this->foto_produk = null; // Reset foto upload
 
         $this->showModal = true;
         $this->editMode = true;
@@ -143,6 +152,13 @@ class ProductManagement extends Component
 
     public function save()
     {
+        \Log::info('Product save started', [
+            'edit_mode' => $this->editMode,
+            'product_id' => $this->productId,
+            'has_foto_produk' => !empty($this->foto_produk),
+            'foto_produk_type' => $this->foto_produk ? get_class($this->foto_produk) : null
+        ]);
+
         $this->validate();
 
         try {
@@ -167,8 +183,6 @@ class ProductManagement extends Component
                 if ($oldStock != $this->stok_tersedia) {
                     $this->logInventoryChange($product, $oldStock, $this->stok_tersedia, 'adjustment', 'Manual adjustment via product edit');
                 }
-
-                session()->flash('success', 'Data produk berhasil diperbarui!');
             } else {
                 $product = Product::create([
                     'kode_item' => $this->kode_item,
@@ -185,21 +199,56 @@ class ProductManagement extends Component
                 if ($this->stok_tersedia > 0) {
                     $this->logInventoryChange($product, 0, $this->stok_tersedia, 'in', 'Initial stock');
                 }
-
-                session()->flash('success', 'Data produk berhasil ditambahkan!');
             }
 
-            // Handle product photo upload
+            // Handle product photo upload BEFORE setting success message
             if ($this->foto_produk) {
-                // Remove old photo if editing
-                if ($this->editMode && $product->foto_produk) {
-                    \Storage::disk('public')->delete('product_photos/' . $product->foto_produk);
-                }
+                try {
+                    \Log::info('Product photo upload started', [
+                        'product_id' => $product->id,
+                        'file_name' => $this->foto_produk->getClientOriginalName(),
+                        'file_size' => $this->foto_produk->getSize(),
+                        'edit_mode' => $this->editMode
+                    ]);
 
-                // Store new photo
-                $filename = time() . '_' . $this->foto_produk->getClientOriginalName();
-                $path = $this->foto_produk->storeAs('product_photos', $filename, 'public');
-                $product->update(['foto_produk' => $filename]);
+                    // Remove old photo if editing
+                    if ($this->editMode && $product->foto_produk) {
+                        \Storage::disk('public')->delete('product_photos/' . $product->foto_produk);
+                        \Log::info('Old product photo deleted', ['old_filename' => $product->foto_produk]);
+                    }
+
+                    // Store new photo
+                    $filename = time() . '_' . $this->foto_produk->getClientOriginalName();
+                    $path = $this->foto_produk->storeAs('product_photos', $filename, 'public');
+
+                    if (!$path) {
+                        throw new \Exception('Failed to store product photo');
+                    }
+
+                    $product->update(['foto_produk' => $filename]);
+
+                    \Log::info('Product photo uploaded successfully', [
+                        'product_id' => $product->id,
+                        'filename' => $filename,
+                        'path' => $path
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Product photo upload failed', [
+                        'product_id' => $product->id,
+                        'error_message' => $e->getMessage(),
+                        'error_file' => $e->getFile(),
+                        'error_line' => $e->getLine()
+                    ]);
+                    session()->flash('error', 'Gagal upload foto produk: ' . $e->getMessage());
+                    return;
+                }
+            }
+
+            // Set success message after photo upload is successful
+            if ($this->editMode) {
+                session()->flash('success', 'Data produk berhasil diperbarui!');
+            } else {
+                session()->flash('success', 'Data produk berhasil ditambahkan!');
             }
 
             $this->closeModal();
