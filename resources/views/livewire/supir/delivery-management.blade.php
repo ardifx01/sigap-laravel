@@ -383,7 +383,7 @@
                         <div class="modal-body">
                             <div class="alert alert-success">
                                 <i class="bx bx-check-circle me-2"></i>
-                                Konfirmasi pengiriman dengan mengambil lokasi GPS, foto bukti, dan tanda tangan customer.
+                                Konfirmasi pengiriman dengan mengambil lokasi GPS dan foto bukti bersama customer.
                             </div>
 
                             <div class="row g-3">
@@ -426,25 +426,10 @@
                                             <img src="{{ $deliveryProofPhoto->temporaryUrl() }}" alt="Preview" class="img-thumbnail" style="max-height: 200px;">
                                         </div>
                                     @endif
-                                    <small class="text-muted">Ambil foto barang yang sudah diterima customer</small>
+                                    <small class="text-muted">Ambil foto bukti pengiriman bersama customer</small>
                                 </div>
 
-                                <!-- Customer Signature -->
-                                <div class="col-12">
-                                    <label class="form-label">Tanda Tangan Customer (Opsional)</label>
-                                    <div class="border rounded p-3" style="min-height: 150px; background: #f8f9fa;">
-                                        <canvas id="signatureCanvas" width="400" height="120" style="width: 100%; height: 120px; border: 1px dashed #dee2e6; background: white; cursor: crosshair;"></canvas>
-                                        <div class="mt-2">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature()">
-                                                <i class="bx bx-eraser me-1"></i> Hapus
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="saveSignature()">
-                                                <i class="bx bx-save me-1"></i> Simpan Tanda Tangan
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" wire:model="customerSignature">
-                                </div>
+
 
                                 <!-- Delivery Notes -->
                                 <div class="col-12">
@@ -482,30 +467,9 @@
         </div>
     @endif
 
-    <!-- GPS & Signature Scripts -->
+    <!-- GPS Scripts -->
     <script>
-        let canvas, ctx, isDrawing = false;
-
         document.addEventListener('livewire:init', () => {
-            // Initialize signature canvas
-            canvas = document.getElementById('signatureCanvas');
-            if (canvas) {
-                ctx = canvas.getContext('2d');
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-
-                // Mouse events
-                canvas.addEventListener('mousedown', startDrawing);
-                canvas.addEventListener('mousemove', draw);
-                canvas.addEventListener('mouseup', stopDrawing);
-                canvas.addEventListener('mouseout', stopDrawing);
-
-                // Touch events for mobile
-                canvas.addEventListener('touchstart', handleTouch);
-                canvas.addEventListener('touchmove', handleTouch);
-                canvas.addEventListener('touchend', stopDrawing);
-            }
 
             // GPS Location handlers
             Livewire.on('getCurrentLocationForStart', () => {
@@ -527,39 +491,60 @@
         });
 
         function getCurrentLocation(eventName) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        Livewire.dispatch(eventName, {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                            accuracy: position.coords.accuracy
-                        });
-                    },
-                    function(error) {
-                        let message = 'Unknown error';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                message = 'Akses lokasi ditolak. Silakan izinkan akses lokasi.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                message = 'Informasi lokasi tidak tersedia.';
-                                break;
-                            case error.TIMEOUT:
-                                message = 'Timeout mendapatkan lokasi.';
-                                break;
-                        }
-                        alert('Error GPS: ' + message);
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000
-                    }
-                );
-            } else {
+            console.log('Getting current location for:', eventName);
+
+            if (!navigator.geolocation) {
                 alert('Geolocation tidak didukung oleh browser ini.');
+                return;
             }
+
+            // Show loading state
+            const loadingMessage = eventName === 'setStartLocation' ? 'Mengambil lokasi start...' : 'Mengambil lokasi delivery...';
+            console.log(loadingMessage);
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    console.log('Location received:', position.coords);
+
+                    const locationData = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+
+                    console.log('Dispatching event:', eventName, locationData);
+
+                    // Use the correct Livewire dispatch method
+                    if (window.Livewire) {
+                        window.Livewire.dispatch(eventName, locationData);
+                    } else {
+                        console.error('Livewire not found');
+                    }
+                },
+                function(error) {
+                    console.error('GPS Error:', error);
+                    let message = 'Unknown error';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = 'Akses lokasi ditolak. Silakan izinkan akses lokasi di browser dan refresh halaman.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = 'Informasi lokasi tidak tersedia. Pastikan GPS aktif.';
+                            break;
+                        case error.TIMEOUT:
+                            message = 'Timeout mendapatkan lokasi. Coba lagi.';
+                            break;
+                        default:
+                            message = error.message || 'Error tidak diketahui';
+                    }
+                    alert('Error GPS: ' + message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 30000
+                }
+            );
         }
 
         // GPS Tracking functions
@@ -598,45 +583,6 @@
             }
         }
 
-        // Signature functions
-        function startDrawing(e) {
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            ctx.beginPath();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-        }
 
-        function draw(e) {
-            if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            ctx.stroke();
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-        }
-
-        function handleTouch(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' :
-                                            e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }
-
-        function clearSignature() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            @this.set('customerSignature', '');
-        }
-
-        function saveSignature() {
-            const dataURL = canvas.toDataURL();
-            @this.set('customerSignature', dataURL);
-            alert('Tanda tangan berhasil disimpan!');
-        }
     </script>
 </div>

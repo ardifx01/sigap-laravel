@@ -87,8 +87,29 @@ class OrderManagement extends Component
     public function updateOrderStatus($orderId, $status)
     {
         try {
-            $order = Order::find($orderId);
+            $order = Order::with('payment')->find($orderId);
             $oldStatus = $order->status;
+
+            // Validate payment status before shipping
+            if ($status === 'shipped') {
+                if (!$order->payment) {
+                    session()->flash('error', 'Order belum memiliki invoice/payment!');
+                    return;
+                }
+
+                if ($order->payment->status !== 'lunas') {
+                    session()->flash('error', 'Order hanya bisa dikirim setelah pembayaran lunas!');
+                    return;
+                }
+
+                // Log the shipping action
+                \Log::info('Order shipping initiated', [
+                    'order_id' => $order->id,
+                    'order_number' => $order->nomor_order,
+                    'current_status' => $oldStatus,
+                    'payment_status' => $order->payment->status
+                ]);
+            }
 
             $order->update(['status' => $status]);
 
@@ -99,6 +120,31 @@ class OrderManagement extends Component
                     break;
                 case 'shipped':
                     $order->update(['shipped_at' => now()]);
+
+                    // Auto-create delivery when order is shipped
+                    if (!$order->delivery) {
+                        // Find first available driver (supir)
+                        $defaultDriver = \App\Models\User::where('role', 'supir')->where('is_active', true)->first();
+
+                        if (!$defaultDriver) {
+                            session()->flash('error', 'Tidak ada supir aktif yang tersedia untuk delivery!');
+                            return;
+                        }
+
+                        \App\Models\Delivery::create([
+                            'order_id' => $order->id,
+                            'driver_id' => $defaultDriver->id,
+                            'assigned_by' => auth()->id(),
+                            'rute_kota' => 'TBD', // To Be Determined by Gudang
+                            'status' => 'assigned',
+                            'assigned_at' => now(),
+                        ]);
+
+                        \Log::info('Delivery auto-created for shipped order', [
+                            'order_id' => $order->id,
+                            'order_number' => $order->nomor_order
+                        ]);
+                    }
                     break;
                 case 'delivered':
                     $order->update(['delivered_at' => now()]);
@@ -108,7 +154,18 @@ class OrderManagement extends Component
                     break;
             }
 
-            session()->flash('success', "Status order berhasil diubah dari {$oldStatus} ke {$status}!");
+            $message = "Status order berhasil diubah dari {$oldStatus} ke {$status}!";
+
+            // Add delivery creation message if applicable
+            if ($status === 'shipped') {
+                $delivery = $order->fresh()->delivery;
+                if ($delivery) {
+                    $driverName = $delivery->driver->name ?? 'Unknown';
+                    $message .= " Delivery telah dibuat dan di-assign ke {$driverName}.";
+                }
+            }
+
+            session()->flash('success', $message);
 
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal mengubah status order: ' . $e->getMessage());
@@ -145,7 +202,7 @@ class OrderManagement extends Component
 
     public function getOrdersProperty()
     {
-        $query = Order::with(['customer', 'sales'])
+        $query = Order::with(['customer', 'sales', 'payment'])
             ->when($this->search, function ($query) {
                 $query->where('nomor_order', 'like', '%' . $this->search . '%')
                       ->orWhereHas('customer', function ($q) {
@@ -181,7 +238,7 @@ class OrderManagement extends Component
             ];
 
             return Excel::download(
-                new OrdersExport($filters), 
+                new OrdersExport($filters),
                 'orders-export-' . now()->format('Y-m-d-H-i-s') . '.xlsx'
             );
         } catch (\Exception $e) {

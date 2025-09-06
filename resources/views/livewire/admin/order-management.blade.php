@@ -144,6 +144,8 @@
                         <option value="">Semua Status</option>
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
+                        <option value="ready">Ready</option>
+                        <option value="assigned">Assigned</option>
                         <option value="shipped">Shipped</option>
                         <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
@@ -239,6 +241,7 @@
                             <th>Sales</th>
                             <th>Total</th>
                             <th>Status</th>
+                            <th>Payment</th>
                             <th>Tanggal</th>
                             <th>Aksi</th>
                         </tr>
@@ -265,6 +268,8 @@
                                         $statusColors = [
                                             'pending' => 'warning',
                                             'confirmed' => 'info',
+                                            'ready' => 'info',
+                                            'assigned' => 'primary',
                                             'shipped' => 'primary',
                                             'delivered' => 'success',
                                             'cancelled' => 'danger'
@@ -273,6 +278,22 @@
                                     <span class="badge bg-label-{{ $statusColors[$order->status] ?? 'secondary' }}">
                                         {{ ucfirst($order->status) }}
                                     </span>
+                                </td>
+                                <td data-label="Payment">
+                                    @if($order->payment)
+                                        @php
+                                            $paymentColors = [
+                                                'belum_lunas' => 'warning',
+                                                'lunas' => 'success',
+                                                'overdue' => 'danger'
+                                            ];
+                                        @endphp
+                                        <span class="badge bg-label-{{ $paymentColors[$order->payment->status] ?? 'secondary' }}">
+                                            {{ ucfirst(str_replace('_', ' ', $order->payment->status)) }}
+                                        </span>
+                                    @else
+                                        <span class="badge bg-label-secondary">No Invoice</span>
+                                    @endif
                                 </td>
                                 <td data-label="Tanggal">
                                     <div>
@@ -298,7 +319,7 @@
                                                     </a>
                                                 </li>
                                             @endif
-                                            @if($order->status === 'confirmed')
+                                            @if(in_array($order->status, ['confirmed', 'ready']))
                                                 <li>
                                                     <a class="dropdown-item" href="#" wire:click="updateOrderStatus({{ $order->id }}, 'shipped')">
                                                         <i class="bx bx-car me-1"></i> Kirim
@@ -312,7 +333,7 @@
                                                     </a>
                                                 </li>
                                             @endif
-                                            @if(in_array($order->status, ['pending', 'confirmed']))
+                                            @if(in_array($order->status, ['pending', 'confirmed', 'ready']))
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item text-danger" href="#"

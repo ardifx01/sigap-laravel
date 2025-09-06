@@ -31,7 +31,7 @@ class DeliveryManagement extends Component
     public $deliveryLocationAccuracy;
     public $deliveryNotes;
     public $deliveryProofPhoto;
-    public $customerSignature;
+
     public $isDeliveryLocationValid = false;
 
     // GPS tracking
@@ -47,7 +47,7 @@ class DeliveryManagement extends Component
             'deliveryLongitude' => 'required|numeric|between:-180,180',
             'deliveryNotes' => 'nullable|string|max:500',
             'deliveryProofPhoto' => 'required|image|max:2048',
-            'customerSignature' => 'nullable|string',
+
         ];
     }
 
@@ -185,7 +185,7 @@ class DeliveryManagement extends Component
     {
         $this->reset([
             'deliveryLatitude', 'deliveryLongitude', 'deliveryLocationAccuracy',
-            'deliveryNotes', 'deliveryProofPhoto', 'customerSignature', 'isDeliveryLocationValid'
+            'deliveryNotes', 'deliveryProofPhoto', 'isDeliveryLocationValid'
         ]);
     }
 
@@ -225,7 +225,7 @@ class DeliveryManagement extends Component
                 'delivery_latitude' => $this->deliveryLatitude,
                 'delivery_longitude' => $this->deliveryLongitude,
                 'delivery_notes' => $this->deliveryNotes,
-                'customer_signature' => $this->customerSignature,
+
             ]);
 
             // Upload proof photo
