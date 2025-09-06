@@ -120,32 +120,32 @@
                     z-index: 1050;
                     margin-top: 2px;
                 }
-                
+
                 .suggestion-item {
                     padding: 12px 16px;
                     border-bottom: 1px solid #f0f0f0;
                     cursor: pointer;
                     transition: background-color 0.15s ease;
                 }
-                
+
                 .suggestion-item:hover {
                     background-color: #f8f9fa;
                 }
-                
+
                 .suggestion-item:last-child {
                     border-bottom: none;
                 }
-                
+
                 .suggestion-item .fw-medium {
                     color: #374151;
                     margin-bottom: 2px;
                 }
-                
+
                 .suggestion-item .text-muted {
                     color: #6b7280 !important;
                     font-size: 0.875rem;
                 }
-                
+
                 .suggestion-item .text-success {
                     color: #059669 !important;
                     font-size: 0.875rem;
@@ -334,13 +334,13 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Pilih Order <span class="text-danger">*</span></label>
                                     <div class="position-relative">
-                                        <input type="text" 
+                                        <input type="text"
                                                wire:model.live.debounce.300ms="orderSearch"
-                                               class="form-control @error('order_id') is-invalid @enderror" 
+                                               class="form-control @error('order_id') is-invalid @enderror"
                                                placeholder="Ketik nomor order atau nama toko..."
                                                autocomplete="off"
                                                {{ $editMode ? 'disabled' : '' }}>
-                                        
+
                                         @if($this->orderSuggestions->count() > 0 && $showOrderSuggestions)
                                             <div class="dropdown-suggestions">
                                                 @foreach($this->orderSuggestions as $order)
@@ -360,12 +360,12 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Pelanggan <span class="text-danger">*</span></label>
                                     <div class="position-relative">
-                                        <input type="text" 
+                                        <input type="text"
                                                wire:model.live.debounce.300ms="customerSearch"
-                                               class="form-control @error('customer_id') is-invalid @enderror" 
+                                               class="form-control @error('customer_id') is-invalid @enderror"
                                                placeholder="Ketik nama toko..."
                                                autocomplete="off">
-                                        
+
                                         @if($this->customerSuggestions->count() > 0 && $showCustomerSuggestions)
                                             <div class="dropdown-suggestions">
                                                 @foreach($this->customerSuggestions as $customer)
@@ -451,7 +451,7 @@
                                     <label class="form-label">Jumlah Dibayar <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="number" wire:model="proofAmount" class="form-control @error('proofAmount') is-invalid @enderror" min="1" step="100">
+                                        <input type="number" wire:model="proofAmount" class="form-control @error('proofAmount') is-invalid @enderror" min="1" step="0.01" lang="en">
                                     </div>
                                     @error('proofAmount') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>

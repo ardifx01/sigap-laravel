@@ -69,6 +69,18 @@ class PaymentManagement extends Component
         ];
     }
 
+    public function messages()
+    {
+        return [
+            'proofAmount.required' => 'Jumlah pembayaran harus diisi',
+            'proofAmount.numeric' => 'Jumlah pembayaran harus berupa angka',
+            'proofAmount.min' => 'Jumlah pembayaran minimal 1',
+            'proofPhoto.required' => 'Bukti pembayaran harus diupload',
+            'proofPhoto.image' => 'File harus berupa gambar (jpg, jpeg, png, bmp, gif, svg, webp)',
+            'proofPhoto.max' => 'Ukuran file maksimal 2MB',
+        ];
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -199,7 +211,19 @@ class PaymentManagement extends Component
                          ->findOrFail($paymentId);
 
         $this->proofPaymentId = $payment->id;
-        $this->proofAmount = $payment->jumlah_tagihan - $payment->jumlah_bayar;
+        // Ensure proper numeric format for HTML input
+        $sisaTagihan = $payment->jumlah_tagihan - $payment->jumlah_bayar;
+        $this->proofAmount = max(0, (float) $sisaTagihan); // Ensure non-negative value
+
+        \Log::info('Proof modal opened', [
+            'payment_id' => $payment->id,
+            'jumlah_tagihan' => $payment->jumlah_tagihan,
+            'jumlah_bayar' => $payment->jumlah_bayar,
+            'sisa_tagihan' => $sisaTagihan,
+            'final_proof_amount' => $this->proofAmount,
+            'proof_amount_type' => gettype($this->proofAmount)
+        ]);
+
         $this->resetProofForm();
         $this->showProofModal = true;
     }
@@ -217,6 +241,13 @@ class PaymentManagement extends Component
 
     public function uploadPaymentProof()
     {
+        \Log::info('Payment proof upload started', [
+            'payment_id' => $this->proofPaymentId,
+            'proof_amount' => $this->proofAmount,
+            'has_proof_photo' => !empty($this->proofPhoto),
+            'user_id' => auth()->id()
+        ]);
+
         $this->validate($this->proofRules());
 
         try {
@@ -224,21 +255,56 @@ class PaymentManagement extends Component
                              ->findOrFail($this->proofPaymentId);
 
             // Update payment
-            $payment->jumlah_dibayar += $this->proofAmount;
-            $payment->tanggal_pembayaran = now();
+            $payment->jumlah_bayar += $this->proofAmount;
+            $payment->tanggal_bayar = now();
             $payment->updatePaymentStatus();
 
             // Upload proof photo
             if ($this->proofPhoto) {
-                // Remove old proof if exists
-                if ($payment->bukti_transfer) {
-                    \Storage::disk('public')->delete('payment_proofs/' . $payment->bukti_transfer);
-                }
+                try {
+                    \Log::info('Payment proof photo upload started', [
+                        'payment_id' => $payment->id,
+                        'file_name' => $this->proofPhoto->getClientOriginalName(),
+                        'file_size' => $this->proofPhoto->getSize()
+                    ]);
 
-                $filename = 'payment_proof_' . time() . '.' . $this->proofPhoto->getClientOriginalExtension();
-                $path = $this->proofPhoto->storeAs('payment_proofs', $filename, 'public');
-                $payment->update(['bukti_transfer' => $filename]);
+                    // Remove old proof if exists
+                    if ($payment->bukti_transfer) {
+                        \Storage::disk('public')->delete('payment_proofs/' . $payment->bukti_transfer);
+                        \Log::info('Old payment proof deleted', ['old_filename' => $payment->bukti_transfer]);
+                    }
+
+                    $filename = 'payment_proof_' . time() . '.' . $this->proofPhoto->getClientOriginalExtension();
+                    $path = $this->proofPhoto->storeAs('payment_proofs', $filename, 'public');
+
+                    if (!$path) {
+                        throw new \Exception('Failed to store payment proof file');
+                    }
+
+                    $payment->update(['bukti_transfer' => $filename]);
+
+                    \Log::info('Payment proof photo uploaded successfully', [
+                        'payment_id' => $payment->id,
+                        'filename' => $filename,
+                        'path' => $path
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Payment proof photo upload failed', [
+                        'payment_id' => $payment->id,
+                        'error_message' => $e->getMessage(),
+                        'error_file' => $e->getFile(),
+                        'error_line' => $e->getLine()
+                    ]);
+                    session()->flash('error', 'Gagal upload bukti pembayaran: ' . $e->getMessage());
+                    return;
+                }
             }
+
+            \Log::info('Payment proof upload completed successfully', [
+                'payment_id' => $payment->id,
+                'new_jumlah_bayar' => $payment->jumlah_bayar,
+                'new_status' => $payment->status
+            ]);
 
             $this->closeProofModal();
             session()->flash('success', 'Bukti pembayaran berhasil diupload!');
