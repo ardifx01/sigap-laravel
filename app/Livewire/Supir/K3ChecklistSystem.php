@@ -137,9 +137,9 @@ class K3ChecklistSystem extends Component
 
             // Upload vehicle photo if provided
             if ($this->foto_kendaraan) {
-                $checklist->addMediaFromDisk($this->foto_kendaraan->getRealPath())
-                    ->usingName('K3 Checklist Vehicle Photo')
-                    ->toMediaCollection('vehicle_photos');
+                $filename = time() . '_' . $this->foto_kendaraan->getClientOriginalName();
+                $path = $this->foto_kendaraan->storeAs('vehicle_photos', $filename, 'public');
+                $checklist->update(['vehicle_photo' => $filename]);
             }
 
             // Update delivery status if checklist is complete and linked to delivery
@@ -154,14 +154,14 @@ class K3ChecklistSystem extends Component
             }
 
             $this->closeChecklistModal();
-            
+
             $message = 'K3 Checklist berhasil dibuat!';
             if ($this->delivery_id && $checklist->isAllItemsPassed()) {
                 $message .= ' Delivery sudah siap untuk dimulai.';
             } elseif ($this->delivery_id && !$checklist->isAllItemsPassed()) {
                 $message .= ' Harap lengkapi semua item checklist untuk dapat memulai delivery.';
             }
-            
+
             session()->flash('success', $message);
 
         } catch (\Exception $e) {
@@ -187,18 +187,18 @@ class K3ChecklistSystem extends Component
     {
         $checklist = K3Checklist::where('driver_id', auth()->id())
                                ->findOrFail($checklistId);
-        
+
         // Only allow editing if from today and delivery not started yet
         if (!$checklist->checked_at->isToday()) {
             session()->flash('error', 'Hanya checklist hari ini yang dapat diedit!');
             return;
         }
-        
+
         if ($checklist->delivery && in_array($checklist->delivery->status, ['in_progress', 'delivered'])) {
             session()->flash('error', 'Delivery sudah dimulai, checklist tidak dapat diedit!');
             return;
         }
-        
+
         // Load checklist data to form
         $this->checklistId = $checklist->id;
         $this->delivery_id = $checklist->delivery_id;
@@ -209,23 +209,23 @@ class K3ChecklistSystem extends Component
         $this->cek_bbm = $checklist->cek_bbm;
         $this->cek_terpal = $checklist->cek_terpal;
         $this->catatan = $checklist->catatan;
-        
+
         $this->showChecklistModal = true;
     }
-    
+
     public function updateChecklist()
     {
         $this->validate();
-        
+
         try {
             $checklist = K3Checklist::where('driver_id', auth()->id())
                                    ->findOrFail($this->checklistId);
-            
+
             if (!$checklist->checked_at->isToday()) {
                 session()->flash('error', 'Hanya checklist hari ini yang dapat diedit!');
                 return;
             }
-            
+
             // Update checklist
             $checklist->update([
                 'cek_ban' => $this->cek_ban,
@@ -236,7 +236,7 @@ class K3ChecklistSystem extends Component
                 'cek_terpal' => $this->cek_terpal,
                 'catatan' => $this->catatan,
             ]);
-            
+
             // Update delivery status based on checklist completion
             if ($checklist->delivery_id) {
                 $delivery = Delivery::find($checklist->delivery_id);
@@ -254,10 +254,10 @@ class K3ChecklistSystem extends Component
                     }
                 }
             }
-            
+
             $this->closeChecklistModal();
             session()->flash('success', 'K3 Checklist berhasil diupdate!');
-            
+
         } catch (\Exception $e) {
             session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -274,7 +274,7 @@ class K3ChecklistSystem extends Component
                 session()->flash('error', 'Hanya checklist hari ini yang dapat dihapus!');
                 return;
             }
-            
+
             // Check if delivery is linked and update status back to assigned
             if ($checklist->delivery_id) {
                 $delivery = Delivery::find($checklist->delivery_id);

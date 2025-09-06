@@ -155,9 +155,15 @@ class UserManagement extends Component
 
             // Handle photo upload
             if ($this->photo) {
-                $user->addMediaFromDisk($this->photo->getRealPath())
-                    ->usingName($this->name . ' Photo')
-                    ->toMediaCollection('photos');
+                // Remove old photo if editing
+                if ($this->editMode && $user->photo) {
+                    \Storage::disk('public')->delete('photos/' . $user->photo);
+                }
+
+                // Store new photo
+                $filename = time() . '_' . $this->photo->getClientOriginalName();
+                $path = $this->photo->storeAs('photos', $filename, 'public');
+                $user->update(['photo' => $filename]);
             }
 
             $this->closeModal();

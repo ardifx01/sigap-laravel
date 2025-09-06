@@ -230,9 +230,9 @@ class DeliveryManagement extends Component
 
             // Upload proof photo
             if ($this->deliveryProofPhoto) {
-                $delivery->addMediaFromDisk($this->deliveryProofPhoto->getRealPath())
-                    ->usingName('Delivery Proof - ' . $delivery->order->nomor_order)
-                    ->toMediaCollection('delivery_proofs');
+                $filename = time() . '_' . $this->deliveryProofPhoto->getClientOriginalName();
+                $path = $this->deliveryProofPhoto->storeAs('delivery_proofs', $filename, 'public');
+                $delivery->update(['delivery_proof_photo' => $filename]);
             }
 
             // Create final tracking log

@@ -230,10 +230,14 @@ class PaymentManagement extends Component
 
             // Upload proof photo
             if ($this->proofPhoto) {
-                $payment->addMediaFromDisk($this->proofPhoto->getRealPath())
-                    ->usingName('Payment Proof - ' . $payment->nomor_invoice)
-                    ->usingFileName('payment_proof_' . time() . '.' . $this->proofPhoto->getClientOriginalExtension())
-                    ->toMediaCollection('payment_proofs');
+                // Remove old proof if exists
+                if ($payment->bukti_transfer) {
+                    \Storage::disk('public')->delete('payment_proofs/' . $payment->bukti_transfer);
+                }
+
+                $filename = 'payment_proof_' . time() . '.' . $this->proofPhoto->getClientOriginalExtension();
+                $path = $this->proofPhoto->storeAs('payment_proofs', $filename, 'public');
+                $payment->update(['bukti_transfer' => $filename]);
             }
 
             $this->closeProofModal();

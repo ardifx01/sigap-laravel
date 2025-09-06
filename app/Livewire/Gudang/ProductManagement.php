@@ -192,13 +192,14 @@ class ProductManagement extends Component
             // Handle product photo upload
             if ($this->foto_produk) {
                 // Remove old photo if editing
-                if ($this->editMode) {
-                    $product->clearMediaCollection('product_photos');
+                if ($this->editMode && $product->foto_produk) {
+                    \Storage::disk('public')->delete('product_photos/' . $product->foto_produk);
                 }
 
-                $product->addMediaFromDisk($this->foto_produk->getRealPath())
-                    ->usingName($this->nama_barang . ' - Photo')
-                    ->toMediaCollection('product_photos');
+                // Store new photo
+                $filename = time() . '_' . $this->foto_produk->getClientOriginalName();
+                $path = $this->foto_produk->storeAs('product_photos', $filename, 'public');
+                $product->update(['foto_produk' => $filename]);
             }
 
             $this->closeModal();
@@ -307,7 +308,7 @@ class ProductManagement extends Component
     public function loadProductUnits()
     {
         $product = Product::with('units')->findOrFail($this->unitsProductId);
-        
+
         if ($product->uses_multiple_units) {
             $this->units = $product->units->map(function($unit) {
                 return [
@@ -364,7 +365,7 @@ class ProductManagement extends Component
                 session()->flash('error', 'Tidak bisa menghapus satuan dasar terakhir!');
                 return;
             }
-            
+
             unset($this->units[$index]);
             $this->units = array_values($this->units); // Re-index array
         }
@@ -377,7 +378,7 @@ class ProductManagement extends Component
 
         try {
             $product = Product::findOrFail($this->unitsProductId);
-            
+
             // Convert to multiple units system if not already
             if (!$product->uses_multiple_units) {
                 $product->update(['uses_multiple_units' => true]);
@@ -446,7 +447,7 @@ class ProductManagement extends Component
         foreach ($this->units as $i => $unit) {
             $this->units[$i]['is_base_unit'] = false;
         }
-        
+
         // Set selected unit as base
         if (isset($this->units[$index])) {
             $this->units[$index]['is_base_unit'] = true;
@@ -466,7 +467,7 @@ class ProductManagement extends Component
         try {
             $product = Product::findOrFail($productId);
             $product->convertToMultipleUnits();
-            
+
             session()->flash('success', 'Produk berhasil dikonversi ke sistem multi-satuan!');
         } catch (\Exception $e) {
             session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -559,14 +560,14 @@ class ProductManagement extends Component
         $outOfStockCount = Product::where('stok_tersedia', '=', 0)
             ->where('is_active', true)
             ->count();
-        
+
         $lowStockCount = Product::whereRaw('stok_tersedia <= stok_minimum')
             ->where('stok_tersedia', '>', 0)
             ->where('is_active', true)
             ->count();
-        
+
         $totalActiveProducts = Product::where('is_active', true)->count();
-        
+
         $averageStock = Product::where('is_active', true)
             ->avg('stok_tersedia') ?? 0;
 

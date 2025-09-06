@@ -134,9 +134,9 @@ class CheckInSystem extends Component
 
             // Upload selfie photo
             if ($this->foto_selfie) {
-                $checkIn->addMediaFromDisk($this->foto_selfie->getRealPath())
-                    ->usingName('Check-in Selfie - ' . $customer->nama_toko)
-                    ->toMediaCollection('selfie_photos');
+                $filename = time() . '_' . $this->foto_selfie->getClientOriginalName();
+                $path = $this->foto_selfie->storeAs('selfie_photos', $filename, 'public');
+                $checkIn->update(['foto_selfie' => $filename]);
             }
 
             $this->closeCheckInModal();
