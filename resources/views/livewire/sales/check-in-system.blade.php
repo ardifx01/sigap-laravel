@@ -25,20 +25,6 @@
         </div>
     @endif
 
-    <!-- Flash Messages -->
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-    @if (session()->has('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6">
@@ -235,27 +221,28 @@
 
     <!-- Check-in Modal -->
     @if($showCheckInModal)
-        <div class="modal fade show" style="display: block;" tabindex="-1" wire:ignore.self>
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal fade show" id="checkInModal" style="display: block;" tabindex="-1" wire:ignore.self>
+            <div class="modal-dialog modal-lg modal-dialog-scrollable" @click.stop>
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Formulir Check-in</h5>
-                        <button type="button" class="btn-close" wire:click="closeCheckInModal"></button>
+                        <button type="button" class="btn-close" wire:click.prevent="closeCheckInModal" aria-label="Close"></button>
                     </div>
                     <form wire:submit.prevent="checkIn">
                         <div class="modal-body">
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label class="form-label">Pilih Toko <span class="text-danger">*</span></label>
-                                    <div wire:ignore>
-                                        <select id="customer-select" class="form-select @error('customer_id') is-invalid @enderror">
-                                            <option value="">Pilih pelanggan...</option>
-                                            @foreach($customers as $customer)
-                                                <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                    <select wire:model="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
+                                        <option value="">Pilih pelanggan...</option>
+                                        @foreach($customers as $customer)
+                                            <option value="{{ $customer->id }}">{{ $customer->nama_toko }}</option>
+                                        @endforeach
+                                    </select>
                                     @error('customer_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                                    @if($customer_id)
+                                        <small class="text-success">✓ Toko dipilih: {{ $customers->find($customer_id)->nama_toko ?? 'Unknown' }}</small>
+                                    @endif
                                 </div>
 
                                 <div class="col-12">
@@ -299,7 +286,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" wire:click="closeCheckInModal">Batal</button>
+                            <button type="button" class="btn btn-secondary" wire:click.prevent="closeCheckInModal">Batal</button>
                             <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" {{ !$isLocationValid ? 'disabled' : '' }}>
                                 <span wire:loading wire:target="checkIn" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 Check-in
@@ -372,38 +359,63 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('livewire:init', () => {
-            let tomSelectInstance = null;
-
-            // Initialize TomSelect when modal opens
-            Livewire.on('show-check-in-modal', () => {
-                setTimeout(() => {
-                    const customerSelect = document.getElementById('customer-select');
-                    if (customerSelect && !tomSelectInstance) {
-                        tomSelectInstance = new TomSelect(customerSelect, {
-                            create: false,
-                            sortField: { field: "text", direction: "asc" },
-                            placeholder: 'Pilih pelanggan...'
-                        });
-
-                        tomSelectInstance.on('change', (value) => {
-                            @this.set('customer_id', value);
-                        });
-                    }
-                }, 100);
-            });
-
-            // Clean up TomSelect when modal closes
-            Livewire.on('close-check-in-modal', () => {
-                if (tomSelectInstance) {
-                    tomSelectInstance.destroy();
-                    tomSelectInstance = null;
+            // Prevent modal backdrop click from causing issues
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal') && e.target.id === 'checkInModal') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Optionally close modal on backdrop click
+                    // @this.call('closeCheckInModal');
                 }
             });
 
+            // GPS functionality
+
             Livewire.on('getCurrentLocation', () => {
-                if (navigator.geolocation) {
+                console.log('GPS: getCurrentLocation event triggered');
+
+                // Check if geolocation is supported
+                if (!navigator.geolocation) {
+                    console.error('GPS: Geolocation not supported');
+                    @this.dispatch('locationError', { message: 'Geolocation tidak didukung oleh browser ini.' });
+                    return;
+                }
+
+                // Check permissions first
+                if (navigator.permissions) {
+                    navigator.permissions.query({ name: 'geolocation' }).then(function(permissionStatus) {
+                        console.log('GPS: Permission status:', permissionStatus.state);
+
+                        if (permissionStatus.state === 'denied') {
+                            @this.dispatch('locationError', {
+                                message: 'Izin akses lokasi telah diblokir. Mohon aktifkan di pengaturan browser (klik ikon gembok di address bar).'
+                            });
+                            return;
+                        }
+
+                        // Proceed with getting location
+                        getLocationNow();
+                    }).catch(function(error) {
+                        console.log('GPS: Permission query failed, proceeding anyway:', error);
+                        getLocationNow();
+                    });
+                } else {
+                    // Fallback for browsers without permissions API
+                    console.log('GPS: Permissions API not supported, proceeding with geolocation');
+                    getLocationNow();
+                }
+
+                function getLocationNow() {
+                    console.log('GPS: Requesting current position...');
+
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
+                            console.log('GPS: Success!', {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                accuracy: position.coords.accuracy
+                            });
+
                             @this.dispatch('setLocation', {
                                 latitude: position.coords.latitude,
                                 longitude: position.coords.longitude,
@@ -411,18 +423,29 @@
                             });
                         },
                         (error) => {
+                            console.error('GPS: Error occurred:', error);
+
                             let message = 'Terjadi kesalahan tidak diketahui.';
                             switch(error.code) {
-                                case error.PERMISSION_DENIED: message = 'Izin akses lokasi ditolak.'; break;
-                                case error.POSITION_UNAVAILABLE: message = 'Informasi lokasi tidak tersedia.'; break;
-                                case error.TIMEOUT: message = 'Waktu permintaan lokasi habis.'; break;
+                                case error.PERMISSION_DENIED:
+                                    message = 'Izin akses lokasi ditolak. Mohon izinkan akses lokasi dan coba lagi.';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    message = 'Informasi lokasi tidak tersedia. Pastikan GPS aktif.';
+                                    break;
+                                case error.TIMEOUT:
+                                    message = 'Waktu permintaan lokasi habis. Coba lagi.';
+                                    break;
                             }
+
                             @this.dispatch('locationError', { message: message });
                         },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
                     );
-                } else {
-                     @this.dispatch('locationError', { message: 'Geolocation tidak didukung oleh browser ini.' });
                 }
             });
         });
